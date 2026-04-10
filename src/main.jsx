@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter basename="/my-web-app">
+    <BrowserRouter basename="/my-web-app" future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ThemeProvider>
         <AuthProvider>
           <App />

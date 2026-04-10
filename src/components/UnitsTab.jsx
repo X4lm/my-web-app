@@ -80,7 +80,7 @@ export default function UnitsTab({ propertyId }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">
-            {units.length} units &middot; {occupied} occupied &middot; ${totalRent.toLocaleString()}/mo total rent
+            {units.length} {units.length === 1 ? 'unit' : 'units'} &middot; {occupied} occupied &middot; ${totalRent.toLocaleString()}/mo total rent
           </p>
         </div>
         <Button size="sm" onClick={() => { setEditing(null); setDialogOpen(true) }}>
@@ -103,6 +103,7 @@ export default function UnitsTab({ propertyId }) {
               </Button>
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -172,6 +173,7 @@ export default function UnitsTab({ propertyId }) {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

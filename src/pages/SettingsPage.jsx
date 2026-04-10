@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { updateProfile } from 'firebase/auth'
+import { updateProfile, sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '@/firebase/config'
 
 export default function SettingsPage() {
@@ -14,6 +14,8 @@ export default function SettingsPage() {
   const [name, setName] = useState(currentUser?.displayName || '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+  const [resetSending, setResetSending] = useState(false)
 
   async function handleSave(e) {
     e.preventDefault()
@@ -76,11 +78,41 @@ export default function SettingsPage() {
             <CardTitle className="text-base">Account</CardTitle>
             <CardDescription>Manage your account settings.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Account ID</p>
                 <p className="text-xs text-muted-foreground font-mono">{currentUser?.uid}</p>
+              </div>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Password</p>
+                <p className="text-xs text-muted-foreground">Send a password reset link to your email.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={resetSending}
+                  onClick={async () => {
+                    setResetSending(true)
+                    setResetSent(false)
+                    try {
+                      await sendPasswordResetEmail(auth, currentUser.email)
+                      setResetSent(true)
+                      setTimeout(() => setResetSent(false), 5000)
+                    } catch (err) {
+                      console.error('[Settings] Password reset error:', err)
+                    } finally {
+                      setResetSending(false)
+                    }
+                  }}
+                >
+                  {resetSending ? 'Sending...' : 'Reset Password'}
+                </Button>
+                {resetSent && <span className="text-sm text-emerald-600">Email sent!</span>}
               </div>
             </div>
           </CardContent>

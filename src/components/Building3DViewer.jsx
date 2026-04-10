@@ -200,7 +200,7 @@ function CameraController({ controlsRef }) {
 }
 
 // ── Main component ──
-export default function Building3DViewer({ propertyId }) {
+export default function Building3DViewer({ propertyId, property }) {
   const { currentUser } = useAuth()
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
@@ -302,6 +302,18 @@ export default function Building3DViewer({ propertyId }) {
       </Card>
 
       {/* Selected unit detail */}
+      {/* Floor plan reference */}
+      {property?.floorPlan && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">2D Floor Plan Reference</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <img src={property.floorPlan} alt="Floor Plan" className="rounded-md max-h-80 w-full object-contain" />
+          </CardContent>
+        </Card>
+      )}
+
       {selectedUnit && (
         <Card>
           <CardHeader className="pb-2">

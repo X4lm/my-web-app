@@ -46,7 +46,6 @@ export default function Dashboard() {
       unsubscribes.push(unsub)
     })
 
-    if (buildings.length === 0) setUnitsLoading(false)
     return () => unsubscribes.forEach(u => u())
   }, [currentUser, properties, loading])
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box } from 'lucide-react'
+import { formatDate } from '@/lib/utils'
 
 const TYPE_LABELS = {
   villa: 'Villa', townhouse: 'Townhouse', apartment: 'Apartment',
@@ -23,10 +24,13 @@ const TYPE_LABELS = {
 
 export default function PropertyDetail() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const { currentUser } = useAuth()
   const navigate = useNavigate()
   const [property, setProperty] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  const tabFromUrl = searchParams.get('tab')
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -69,7 +73,7 @@ export default function PropertyDetail() {
   }
 
   const isBuilding = property.type === 'residential_building'
-  const defaultTab = isBuilding ? 'overview' : 'overview'
+  const defaultTab = tabFromUrl || 'overview'
 
   return (
     <AppLayout>
@@ -102,13 +106,15 @@ export default function PropertyDetail() {
 
         {/* Tabs */}
         <Tabs defaultValue={defaultTab}>
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            {isBuilding && <TabsTrigger value="units">Units</TabsTrigger>}
-            <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-            <TabsTrigger value="financials">Financials</TabsTrigger>
-            {isBuilding && <TabsTrigger value="3d-model">3D Model</TabsTrigger>}
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              {isBuilding && <TabsTrigger value="units">Units</TabsTrigger>}
+              <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+              <TabsTrigger value="financials">Financials</TabsTrigger>
+              {isBuilding && <TabsTrigger value="3d-model">3D Model</TabsTrigger>}
+            </TabsList>
+          </div>
 
           <TabsContent value="overview">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -179,13 +185,13 @@ export default function PropertyDetail() {
                     {property.insuranceExpiry && (
                       <div>
                         <p className="text-muted-foreground">Insurance Expiry</p>
-                        <p className="font-medium">{property.insuranceExpiry}</p>
+                        <p className="font-medium">{formatDate(property.insuranceExpiry)}</p>
                       </div>
                     )}
                     {property.municipalityPermitExpiry && (
                       <div>
                         <p className="text-muted-foreground">Municipality Permit Expiry</p>
-                        <p className="font-medium">{property.municipalityPermitExpiry}</p>
+                        <p className="font-medium">{formatDate(property.municipalityPermitExpiry)}</p>
                       </div>
                     )}
                   </div>
@@ -223,7 +229,7 @@ export default function PropertyDetail() {
           {isBuilding && (
             <TabsContent value="3d-model">
               <Suspense fallback={<p className="text-sm text-muted-foreground py-12 text-center">Loading 3D viewer...</p>}>
-                <Building3DViewer propertyId={id} />
+                <Building3DViewer propertyId={id} property={property} />
               </Suspense>
             </TabsContent>
           )}

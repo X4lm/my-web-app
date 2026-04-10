@@ -18,16 +18,19 @@ export default function WeatherWidget() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const useFahrenheit = navigator.language?.startsWith('en-US')
+
     async function fetchWeather(lat, lon) {
       try {
+        const tempUnit = useFahrenheit ? '&temperature_unit=fahrenheit' : ''
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto${tempUnit}`
         )
         const data = await res.json()
         const temp = Math.round(data.current.temperature_2m)
         const code = data.current.weather_code
         const condition = getConditionFromCode(code)
-        setWeather({ temp, condition })
+        setWeather({ temp, condition, unit: useFahrenheit ? '°F' : '°C' })
       } catch (err) {
         console.error('[Weather] Fetch error:', err)
       } finally {
@@ -75,7 +78,7 @@ export default function WeatherWidget() {
   return (
     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
       <Icon className="h-4 w-4" />
-      <span className="font-medium">{weather.temp}°C</span>
+      <span className="font-medium">{weather.temp}{weather.unit}</span>
     </div>
   )
 }

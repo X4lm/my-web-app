@@ -7,12 +7,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import ImageUpload from '@/components/ImageUpload'
+import DocumentUpload from '@/components/DocumentUpload'
 
 const EMPTY = {
   name: '', address: '', type: 'villa', rentAmount: '', status: 'available',
   yearBuilt: '', totalArea: '', marketValue: '', titleDeedNumber: '',
   insuranceExpiry: '', municipalityPermitExpiry: '',
   coverPhoto: '', floorPlan: '',
+  titleDeedDoc: '', insuranceCertDoc: '', permitDoc: '',
 }
 
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
@@ -206,6 +208,27 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
                 onChange={e => set('municipalityPermitExpiry', e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <DocumentUpload
+              value={form.titleDeedDoc}
+              onChange={url => set('titleDeedDoc', url)}
+              folder="title-deeds"
+              label="Title Deed Document"
+            />
+            <DocumentUpload
+              value={form.insuranceCertDoc}
+              onChange={url => set('insuranceCertDoc', url)}
+              folder="insurance"
+              label="Insurance Certificate"
+            />
+            <DocumentUpload
+              value={form.permitDoc}
+              onChange={url => set('permitDoc', url)}
+              folder="permits"
+              label="Municipality Permit"
+            />
           </div>
 
           <Separator />

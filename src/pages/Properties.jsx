@@ -191,6 +191,7 @@ export default function Properties() {
                 )}
               </div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -204,13 +205,10 @@ export default function Properties() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map(p => (
-                    <TableRow key={p.id}>
+                    <TableRow key={p.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/properties/${p.id}`)}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span
-                            className="font-medium cursor-pointer hover:underline"
-                            onClick={() => navigate(`/properties/${p.id}`)}
-                          >{p.name}</span>
+                          <span className="font-medium">{p.name}</span>
                           {(alertsByProperty[p.id]?.length > 0) && (
                             <span className="flex items-center gap-1 text-xs">
                               {alertsByProperty[p.id].some(a => a.level === 'overdue') ? (
@@ -245,7 +243,7 @@ export default function Properties() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={e => e.stopPropagation()}>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -254,13 +252,13 @@ export default function Properties() {
                               <Eye className="mr-2 h-3.5 w-3.5" />
                               View
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openEdit(p)}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(p) }}>
                               <Pencil className="mr-2 h-3.5 w-3.5" />
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() => handleDelete(p.id)}
+                              onClick={(e) => { e.stopPropagation(); handleDelete(p.id) }}
                               className="text-destructive focus:text-destructive"
                             >
                               <Trash2 className="mr-2 h-3.5 w-3.5" />
@@ -273,6 +271,7 @@ export default function Properties() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

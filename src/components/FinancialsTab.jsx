@@ -21,6 +21,7 @@ import {
   DollarSign, TrendingUp, Percent, MoreHorizontal,
   Pencil, Trash2, Plus, Receipt,
 } from 'lucide-react'
+import { formatDate } from '@/lib/utils'
 
 const CATEGORY_LABELS = {
   maintenance: 'Maintenance',
@@ -166,14 +167,27 @@ export default function FinancialsTab({ propertyId, property }) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Occupancy Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {isBuilding ? 'Occupancy Rate' : 'Status'}
+            </CardTitle>
             <Percent className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">{occupancyRate}%</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {occupiedUnits} of {totalUnits} {isBuilding ? 'units' : ''} occupied
-            </p>
+            {isBuilding ? (
+              <>
+                <div className="text-2xl font-semibold">{occupancyRate}%</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {occupiedUnits} of {totalUnits} units occupied
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-semibold">{property?.status === 'occupied' ? 'Occupied' : 'Vacant'}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {property?.status === 'occupied' ? 'Currently rented' : 'Available for rent'}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -247,6 +261,7 @@ export default function FinancialsTab({ propertyId, property }) {
               </Button>
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -261,7 +276,7 @@ export default function FinancialsTab({ propertyId, property }) {
               <TableBody>
                 {expenses.map(exp => (
                   <TableRow key={exp.id}>
-                    <TableCell className="text-sm">{exp.date}</TableCell>
+                    <TableCell className="text-sm">{formatDate(exp.date)}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{CATEGORY_LABELS[exp.category] || exp.category}</Badge>
                     </TableCell>
@@ -295,6 +310,7 @@ export default function FinancialsTab({ propertyId, property }) {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
