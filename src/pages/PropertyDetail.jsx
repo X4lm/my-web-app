@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 
 const TYPE_LABELS = {
@@ -68,8 +68,9 @@ export default function PropertyDetail() {
   async function handleEditSave(data) {
     setEditSaving(true)
     try {
+      const authorName = currentUser.displayName || currentUser.email || 'Unknown'
       await updateDoc(doc(db, 'users', currentUser.uid, 'properties', id), {
-        ...data, updatedAt: serverTimestamp(),
+        ...data, updatedAt: serverTimestamp(), updatedBy: authorName,
       })
       setEditOpen(false)
     } catch (err) {
@@ -122,6 +123,16 @@ export default function PropertyDetail() {
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" /> {property.address}
             </p>
+            {(property.updatedBy || property.createdBy) && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <User className="w-3 h-3" />
+                Last edited by {property.updatedBy || property.createdBy}
+                {property.updatedAt && (() => {
+                  const d = property.updatedAt?.toDate ? property.updatedAt.toDate() : new Date(property.updatedAt)
+                  return ` · ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                })()}
+              </p>
+            )}
           </div>
         </div>
 

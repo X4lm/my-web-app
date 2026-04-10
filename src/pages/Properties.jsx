@@ -74,14 +74,15 @@ export default function Properties() {
     setSaving(true)
     try {
       const col = collection(db, 'users', currentUser.uid, 'properties')
+      const authorName = currentUser.displayName || currentUser.email || 'Unknown'
       if (editing) {
         console.log('[Firestore] Updating property:', editing.id)
         await updateDoc(doc(db, 'users', currentUser.uid, 'properties', editing.id), {
-          ...data, updatedAt: serverTimestamp(),
+          ...data, updatedAt: serverTimestamp(), updatedBy: authorName,
         })
       } else {
         console.log('[Firestore] Adding new property')
-        await addDoc(col, { ...data, createdAt: serverTimestamp() })
+        await addDoc(col, { ...data, createdAt: serverTimestamp(), createdBy: authorName })
       }
       setDialogOpen(false)
       setEditing(null)

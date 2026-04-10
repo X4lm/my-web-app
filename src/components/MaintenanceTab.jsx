@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { formatDate } from '@/lib/utils'
 import {
   Droplets, Snowflake, Zap, Wrench, ArrowUpDown, Power, Flame,
   Home, Bug, Users, Dumbbell, Car, Save, ChevronDown, ChevronRight,
-  AlertTriangle, AlertCircle,
+  AlertTriangle, AlertCircle, User,
 } from 'lucide-react'
 
 const ICON_MAP = {
@@ -23,11 +24,13 @@ const ICON_MAP = {
 export default function MaintenanceTab({ propertyId, section }) {
   const { currentUser } = useAuth()
   const [data, setData] = useState({})
+  const [meta, setMeta] = useState({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [expanded, setExpanded] = useState({})
   const [enabledOptional, setEnabledOptional] = useState({})
+  const [dirtyKeys, setDirtyKeys] = useState(new Set())
 
   const docPath = `users/${currentUser.uid}/properties/${propertyId}`
 
@@ -37,11 +40,13 @@ export default function MaintenanceTab({ propertyId, section }) {
         const snap = await getDoc(doc(db, docPath, 'maintenance', 'data'))
         if (snap.exists()) {
           const d = snap.data()
-          setData(d)
+          setMeta(d._meta || {})
+          const { _meta, ...rest } = d
+          setData(rest)
           // Auto-enable optional sections that have data
           const enabled = {}
           for (const s of MAINTENANCE_SECTIONS) {
-            if (s.optional && d[s.key]) enabled[s.key] = true
+            if (s.optional && rest[s.key]) enabled[s.key] = true
           }
           setEnabledOptional(enabled)
         }
@@ -72,16 +77,26 @@ export default function MaintenanceTab({ propertyId, section }) {
       ...d,
       [sectionKey]: { ...(d[sectionKey] || {}), [fieldKey]: value },
     }))
+    setDirtyKeys(prev => new Set(prev).add(sectionKey))
     setSaved(false)
   }
 
   async function handleSave() {
     setSaving(true)
     try {
+      const now = new Date().toISOString()
+      const authorName = currentUser.displayName || currentUser.email || 'Unknown'
+      const updatedMeta = { ...meta }
+      for (const key of dirtyKeys) {
+        updatedMeta[key] = { editedBy: authorName, editedAt: now }
+      }
       await setDoc(doc(db, docPath, 'maintenance', 'data'), {
         ...data,
+        _meta: updatedMeta,
         updatedAt: serverTimestamp(),
       })
+      setMeta(updatedMeta)
+      setDirtyKeys(new Set())
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
@@ -139,6 +154,7 @@ export default function MaintenanceTab({ propertyId, section }) {
         const isOptional = section.optional
         const isEnabled = !isOptional || enabledOptional[section.key]
         const sectionAlerts = alerts.filter(a => a.sectionKey === section.key)
+        const sectionMeta = meta[section.key]
 
         return (
           <Card key={section.key} id={`section-${section.key}`}>
@@ -147,7 +163,7 @@ export default function MaintenanceTab({ propertyId, section }) {
               onClick={() => isEnabled ? toggleExpand(section.key) : toggleOptional(section.key)}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <Icon className="h-4 w-4 text-muted-foreground" />
                   <CardTitle className="text-sm font-medium">{section.label}</CardTitle>
                   {isOptional && !isEnabled && (
@@ -162,6 +178,12 @@ export default function MaintenanceTab({ propertyId, section }) {
                         <Badge variant="warning" className="text-xs">Due Soon</Badge>
                       )}
                     </div>
+                  )}
+                  {sectionMeta && (
+                    <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                      <User className="h-3 w-3" />
+                      {sectionMeta.editedBy} &middot; {formatDate(sectionMeta.editedAt?.split('T')[0])}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
