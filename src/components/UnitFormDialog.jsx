@@ -1,0 +1,199 @@
+import { useState, useEffect } from 'react'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+
+const EMPTY = {
+  unitNumber: '', floor: '', unitType: 'studio', size: '',
+  tenantName: '', tenantContact: '', leaseStart: '', leaseEnd: '',
+  monthlyRent: '', paymentStatus: 'pending', securityDeposit: '',
+  condition: 'good',
+}
+
+const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
+
+export default function UnitFormDialog({ open, onOpenChange, unit, onSave, saving }) {
+  const [form, setForm] = useState(EMPTY)
+  const [errors, setErrors] = useState({})
+
+  useEffect(() => {
+    if (open) {
+      setForm(unit ? { ...EMPTY, ...unit } : EMPTY)
+      setErrors({})
+    }
+  }, [open, unit])
+
+  function set(field, value) {
+    setForm(f => ({ ...f, [field]: value }))
+    if (errors[field]) setErrors(e => ({ ...e, [field]: null }))
+  }
+
+  function validate() {
+    const e = {}
+    if (!form.unitNumber.toString().trim()) e.unitNumber = 'Required'
+    if (!form.floor.toString().trim()) e.floor = 'Required'
+    if (!form.monthlyRent || isNaN(form.monthlyRent) || Number(form.monthlyRent) <= 0)
+      e.monthlyRent = 'Enter a valid amount'
+    return e
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length) return setErrors(errs)
+    onSave({
+      ...form,
+      monthlyRent: Number(form.monthlyRent),
+      size: form.size ? Number(form.size) : '',
+      securityDeposit: form.securityDeposit ? Number(form.securityDeposit) : '',
+    })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{unit ? 'Edit Unit' : 'Add Unit'}</DialogTitle>
+          <DialogDescription>
+            {unit ? 'Update the unit details.' : 'Add a new unit to this property.'}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          {/* Unit Info */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Unit number</Label>
+              <Input
+                value={form.unitNumber}
+                onChange={e => set('unitNumber', e.target.value)}
+                placeholder="e.g. 101"
+              />
+              {errors.unitNumber && <p className="text-xs text-destructive">{errors.unitNumber}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Floor</Label>
+              <Input
+                value={form.floor}
+                onChange={e => set('floor', e.target.value)}
+                placeholder="e.g. 1"
+              />
+              {errors.floor && <p className="text-xs text-destructive">{errors.floor}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Size (sqm)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={form.size}
+                onChange={e => set('size', e.target.value)}
+                placeholder="e.g. 85"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Unit type</Label>
+              <select value={form.unitType} onChange={e => set('unitType', e.target.value)} className={SELECT_CLASS}>
+                <option value="studio">Studio</option>
+                <option value="1br">1 BR</option>
+                <option value="2br">2 BR</option>
+                <option value="3br">3 BR</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Condition</Label>
+              <select value={form.condition} onChange={e => set('condition', e.target.value)} className={SELECT_CLASS}>
+                <option value="good">Good</option>
+                <option value="needs_attention">Needs Attention</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+          </div>
+
+          <Separator />
+          <p className="text-sm font-semibold text-muted-foreground">Tenant & Lease</p>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Tenant name</Label>
+              <Input
+                value={form.tenantName}
+                onChange={e => set('tenantName', e.target.value)}
+                placeholder="Leave empty if vacant"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tenant contact</Label>
+              <Input
+                value={form.tenantContact}
+                onChange={e => set('tenantContact', e.target.value)}
+                placeholder="Phone or email"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Lease start</Label>
+              <Input type="date" value={form.leaseStart} onChange={e => set('leaseStart', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Lease end</Label>
+              <Input type="date" value={form.leaseEnd} onChange={e => set('leaseEnd', e.target.value)} />
+            </div>
+          </div>
+
+          <Separator />
+          <p className="text-sm font-semibold text-muted-foreground">Financials</p>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Monthly rent</Label>
+              <Input
+                type="number"
+                min="0"
+                value={form.monthlyRent}
+                onChange={e => set('monthlyRent', e.target.value)}
+                placeholder="0"
+              />
+              {errors.monthlyRent && <p className="text-xs text-destructive">{errors.monthlyRent}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Payment status</Label>
+              <select value={form.paymentStatus} onChange={e => set('paymentStatus', e.target.value)} className={SELECT_CLASS}>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Security deposit</Label>
+              <Input
+                type="number"
+                min="0"
+                value={form.securityDeposit}
+                onChange={e => set('securityDeposit', e.target.value)}
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? 'Saving...' : unit ? 'Save Changes' : 'Add Unit'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}

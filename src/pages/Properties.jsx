@@ -19,9 +19,17 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
+import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCircle } from 'lucide-react'
 
-const TYPE_LABELS = { apartment: 'Apartment', villa: 'Villa', commercial: 'Commercial' }
+const TYPE_LABELS = {
+  villa: 'Villa',
+  townhouse: 'Townhouse',
+  apartment: 'Apartment',
+  residential_building: 'Residential Building',
+  commercial: 'Commercial',
+}
 
 export default function Properties() {
   const { currentUser } = useAuth()
@@ -33,6 +41,8 @@ export default function Properties() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
+  const navigate = useNavigate()
+  const { alertsByProperty } = usePropertyAlerts()
 
   useEffect(() => {
     const q = query(
@@ -147,9 +157,10 @@ export default function Properties() {
                   className="h-9 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 >
                   <option value="all">All Types</option>
-                  <option value="apartment">Apartment</option>
                   <option value="villa">Villa</option>
-                  <option value="commercial">Commercial</option>
+                  <option value="townhouse">Townhouse</option>
+                  <option value="apartment">Apartment</option>
+                  <option value="residential_building">Residential Building</option>
                 </select>
               </div>
             </div>
@@ -195,7 +206,26 @@ export default function Properties() {
                   {filtered.map(p => (
                     <TableRow key={p.id}>
                       <TableCell>
-                        <div className="font-medium">{p.name}</div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="font-medium cursor-pointer hover:underline"
+                            onClick={() => navigate(`/properties/${p.id}`)}
+                          >{p.name}</span>
+                          {(alertsByProperty[p.id]?.length > 0) && (
+                            <span className="flex items-center gap-1 text-xs">
+                              {alertsByProperty[p.id].some(a => a.level === 'overdue') ? (
+                                <Badge variant="destructive" className="text-xs px-1.5 py-0">
+                                  <AlertCircle className="h-3 w-3 mr-0.5" />
+                                  {alertsByProperty[p.id].length}
+                                </Badge>
+                              ) : (
+                                <Badge variant="warning" className="text-xs px-1.5 py-0">
+                                  {alertsByProperty[p.id].length}
+                                </Badge>
+                              )}
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-muted-foreground sm:hidden">{TYPE_LABELS[p.type]}</div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
@@ -220,6 +250,10 @@ export default function Properties() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => navigate(`/properties/${p.id}`)}>
+                              <Eye className="mr-2 h-3.5 w-3.5" />
+                              View
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openEdit(p)}>
                               <Pencil className="mr-2 h-3.5 w-3.5" />
                               Edit
