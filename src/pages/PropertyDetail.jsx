@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { doc, onSnapshot } from 'firebase/firestore'
+import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import AppLayout from '@/components/AppLayout'
 import UnitsTab from '@/components/UnitsTab'
 import MaintenanceTab from '@/components/MaintenanceTab'
 import FinancialsTab from '@/components/FinancialsTab'
+import PropertyFormDialog from '@/components/PropertyFormDialog'
 import { lazy, Suspense } from 'react'
 
 const Building3DViewer = lazy(() => import('@/components/Building3DViewer'))
@@ -14,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 
 const TYPE_LABELS = {
@@ -29,6 +30,8 @@ export default function PropertyDetail() {
   const navigate = useNavigate()
   const [property, setProperty] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editSaving, setEditSaving] = useState(false)
 
   const tabFromUrl = searchParams.get('tab')
   const sectionFromUrl = searchParams.get('section')
@@ -51,6 +54,30 @@ export default function PropertyDetail() {
     )
     return unsub
   }, [currentUser.uid, id])
+
+  // Scroll to Documents & Permits section when coming from a property-level alert
+  useEffect(() => {
+    if (!loading && property && sectionFromUrl === 'property') {
+      setTimeout(() => {
+        const el = document.getElementById('section-documents')
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 200)
+    }
+  }, [loading, property, sectionFromUrl])
+
+  async function handleEditSave(data) {
+    setEditSaving(true)
+    try {
+      await updateDoc(doc(db, 'users', currentUser.uid, 'properties', id), {
+        ...data, updatedAt: serverTimestamp(),
+      })
+      setEditOpen(false)
+    } catch (err) {
+      console.error('[Firestore] Update error:', err.code, err.message)
+    } finally {
+      setEditSaving(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -169,11 +196,16 @@ export default function PropertyDetail() {
 
             {/* Documents section */}
             {(property.titleDeedNumber || property.insuranceExpiry || property.municipalityPermitExpiry) && (
-              <Card className="mt-4">
+              <Card className={`mt-4 ${sectionFromUrl === 'property' ? 'ring-2 ring-primary' : ''}`} id="section-documents">
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <FileText className="w-4 h-4" /> Documents & Permits
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <FileText className="w-4 h-4" /> Documents & Permits
+                    </CardTitle>
+                    <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                      <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 sm:grid-cols-3 text-sm">
@@ -186,13 +218,13 @@ export default function PropertyDetail() {
                     {property.insuranceExpiry && (
                       <div>
                         <p className="text-muted-foreground">Insurance Expiry</p>
-                        <p className="font-medium">{formatDate(property.insuranceExpiry)}</p>
+                        <p className={`font-medium ${new Date(property.insuranceExpiry) < new Date() ? 'text-destructive' : ''}`}>{formatDate(property.insuranceExpiry)}</p>
                       </div>
                     )}
                     {property.municipalityPermitExpiry && (
                       <div>
                         <p className="text-muted-foreground">Municipality Permit Expiry</p>
-                        <p className="font-medium">{formatDate(property.municipalityPermitExpiry)}</p>
+                        <p className={`font-medium ${new Date(property.municipalityPermitExpiry) < new Date() ? 'text-destructive' : ''}`}>{formatDate(property.municipalityPermitExpiry)}</p>
                       </div>
                     )}
                   </div>
@@ -236,6 +268,14 @@ export default function PropertyDetail() {
           )}
         </Tabs>
       </div>
+
+      <PropertyFormDialog
+        open={editOpen}
+        onOpenChange={(open) => { if (!editSaving) setEditOpen(open) }}
+        property={property}
+        onSave={handleEditSave}
+        saving={editSaving}
+      />
     </AppLayout>
   )
 }
