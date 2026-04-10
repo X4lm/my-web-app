@@ -23,7 +23,8 @@ export default function Signup() {
       await signup(email, password, name)
       navigate('/')
     } catch (err) {
-      setError(getErrorMessage(err.code))
+      console.error('Signup error:', err)
+      setError(err.code ? getErrorMessage(err.code) : err.message)
     } finally {
       setLoading(false)
     }
