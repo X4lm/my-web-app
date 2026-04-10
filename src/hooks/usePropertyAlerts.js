@@ -56,18 +56,18 @@ export function usePropertyAlerts() {
           const d = new Date(p.insuranceExpiry)
           const diff = d.getTime() - now.getTime()
           if (diff < 0) {
-            propAlerts.push({ level: 'overdue', section: 'Property', field: 'Insurance expiry', date: p.insuranceExpiry, propertyId: p.id, propertyName: p.name })
+            propAlerts.push({ level: 'overdue', section: 'Property', field: 'Insurance expiry', date: p.insuranceExpiry, sectionKey: 'property', propertyId: p.id, propertyName: p.name })
           } else if (diff < thirtyDays) {
-            propAlerts.push({ level: 'upcoming', section: 'Property', field: 'Insurance expiry', date: p.insuranceExpiry, propertyId: p.id, propertyName: p.name })
+            propAlerts.push({ level: 'upcoming', section: 'Property', field: 'Insurance expiry', date: p.insuranceExpiry, sectionKey: 'property', propertyId: p.id, propertyName: p.name })
           }
         }
         if (p.municipalityPermitExpiry) {
           const d = new Date(p.municipalityPermitExpiry)
           const diff = d.getTime() - now.getTime()
           if (diff < 0) {
-            propAlerts.push({ level: 'overdue', section: 'Property', field: 'Municipality permit expiry', date: p.municipalityPermitExpiry, propertyId: p.id, propertyName: p.name })
+            propAlerts.push({ level: 'overdue', section: 'Property', field: 'Municipality permit expiry', date: p.municipalityPermitExpiry, sectionKey: 'property', propertyId: p.id, propertyName: p.name })
           } else if (diff < thirtyDays) {
-            propAlerts.push({ level: 'upcoming', section: 'Property', field: 'Municipality permit expiry', date: p.municipalityPermitExpiry, propertyId: p.id, propertyName: p.name })
+            propAlerts.push({ level: 'upcoming', section: 'Property', field: 'Municipality permit expiry', date: p.municipalityPermitExpiry, sectionKey: 'property', propertyId: p.id, propertyName: p.name })
           }
         }
 

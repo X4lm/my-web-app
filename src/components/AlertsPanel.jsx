@@ -17,8 +17,11 @@ function getRelativeTime(alert) {
   return `Due in ${days} day${days !== 1 ? 's' : ''}`
 }
 
-function getAlertTab(alert) {
-  return alert.section === 'Property' ? 'overview' : 'maintenance'
+function getAlertUrl(alert) {
+  if (alert.section === 'Property') {
+    return `/properties/${alert.propertyId}?tab=overview`
+  }
+  return `/properties/${alert.propertyId}?tab=maintenance${alert.sectionKey ? `&section=${alert.sectionKey}` : ''}`
 }
 
 export default function AlertsPanel({ alerts, title = 'Active Alerts', maxItems = 10 }) {
@@ -66,7 +69,7 @@ export default function AlertsPanel({ alerts, title = 'Active Alerts', maxItems 
             <div
               key={i}
               className="flex items-start gap-3 p-2.5 rounded-md border cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => navigate(`/properties/${alert.propertyId}?tab=${getAlertTab(alert)}`)}
+              onClick={() => navigate(getAlertUrl(alert))}
             >
               {alert.level === 'overdue' ? (
                 <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />

@@ -20,7 +20,7 @@ const ICON_MAP = {
   Home, Bug, Users, Dumbbell, Car,
 }
 
-export default function MaintenanceTab({ propertyId }) {
+export default function MaintenanceTab({ propertyId, section }) {
   const { currentUser } = useAuth()
   const [data, setData] = useState({})
   const [loading, setLoading] = useState(true)
@@ -53,6 +53,19 @@ export default function MaintenanceTab({ propertyId }) {
     }
     load()
   }, [docPath])
+
+  // Auto-expand and scroll to section from URL param
+  useEffect(() => {
+    if (section && !loading) {
+      setExpanded(e => ({ ...e, [section]: true }))
+      // Also enable if it's an optional section
+      setEnabledOptional(e => ({ ...e, [section]: true }))
+      setTimeout(() => {
+        const el = document.getElementById(`section-${section}`)
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    }
+  }, [section, loading])
 
   function setField(sectionKey, fieldKey, value) {
     setData(d => ({
@@ -128,7 +141,7 @@ export default function MaintenanceTab({ propertyId }) {
         const sectionAlerts = alerts.filter(a => a.sectionKey === section.key)
 
         return (
-          <Card key={section.key}>
+          <Card key={section.key} id={`section-${section.key}`}>
             <CardHeader
               className="cursor-pointer py-3 px-4"
               onClick={() => isEnabled ? toggleExpand(section.key) : toggleOptional(section.key)}

@@ -31,6 +31,7 @@ export default function PropertyDetail() {
   const [loading, setLoading] = useState(true)
 
   const tabFromUrl = searchParams.get('tab')
+  const sectionFromUrl = searchParams.get('section')
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -219,7 +220,7 @@ export default function PropertyDetail() {
           )}
 
           <TabsContent value="maintenance">
-            <MaintenanceTab propertyId={id} />
+            <MaintenanceTab propertyId={id} section={sectionFromUrl} />
           </TabsContent>
 
           <TabsContent value="financials">
