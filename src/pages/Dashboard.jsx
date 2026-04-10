@@ -12,6 +12,7 @@ import {
   Home, ArrowRight, Receipt, UserPlus, Pencil, Trash2, Plus,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { formatDate } from '@/lib/utils'
 
 export default function Dashboard() {
   const { currentUser } = useAuth()
@@ -247,7 +248,7 @@ export default function Dashboard() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{exp.description}</p>
-                          <p className="text-xs text-muted-foreground">{exp.propertyName} &middot; {exp.date}</p>
+                          <p className="text-xs text-muted-foreground">{exp.propertyName} &middot; {formatDate(exp.date)}</p>
                         </div>
                       </div>
                       <div className="text-right shrink-0 ml-3">
