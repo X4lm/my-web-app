@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { storage } from '@/firebase/config'
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import app from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Upload, X, Loader2 } from 'lucide-react'
@@ -15,6 +15,7 @@ export default function ImageUpload({ value, onChange, folder, label }) {
     if (!file) return
     setUploading(true)
     try {
+      const storage = getStorage(app)
       const storageRef = ref(storage, `${currentUser.uid}/${folder}/${Date.now()}_${file.name}`)
       await uploadBytes(storageRef, file)
       const url = await getDownloadURL(storageRef)
