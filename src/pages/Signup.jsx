@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import styles from './Auth.module.css'
+import { useAuth } from '@/contexts/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Home } from 'lucide-react'
 
 export default function Signup() {
   const [name, setName] = useState('')
@@ -23,98 +27,95 @@ export default function Signup() {
       await signup(email, password, name)
       navigate('/')
     } catch (err) {
-      console.error('Signup error:', err)
+      console.error('[Signup] Error:', err.code, err.message, err)
       setError(`${err.code || 'unknown'}: ${err.message}`)
     } finally {
       setLoading(false)
     }
   }
 
-  function getErrorMessage(code) {
-    switch (code) {
-      case 'auth/email-already-in-use':
-        return 'An account with this email already exists.'
-      case 'auth/invalid-email':
-        return 'Please enter a valid email address.'
-      case 'auth/weak-password':
-        return 'Password must be at least 6 characters.'
-      default:
-        return 'Failed to create account. Please try again.'
-    }
-  }
-
   return (
-    <div className={styles.authPage}>
-      <div className={styles.authCard}>
-        <div className={styles.logo}>
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="#4F46E5"/>
-            <path d="M8 24V14l8-6 8 6v10H20v-6h-4v6H8z" fill="white"/>
-          </svg>
-          <span>PropManager</span>
+    <div className="min-h-screen flex items-center justify-center bg-muted/40 px-4">
+      <div className="w-full max-w-sm">
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground">
+            <Home className="w-4 h-4 text-background" />
+          </div>
+          <span className="text-lg font-semibold tracking-tight">PropManager</span>
         </div>
-        <h1 className={styles.title}>Create your account</h1>
-        <p className={styles.subtitle}>Start managing your properties today</p>
 
-        {error && <div className={styles.errorBanner}>{error}</div>}
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.field}>
-            <label htmlFor="name">Full name</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="John Smith"
-              required
-              autoComplete="name"
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="email">Email address</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              autoComplete="email"
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min. 6 characters"
-              required
-              autoComplete="new-password"
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="confirm">Confirm password</label>
-            <input
-              id="confirm"
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="••••••••"
-              required
-              autoComplete="new-password"
-            />
-          </div>
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? 'Creating account…' : 'Create account'}
-          </button>
-        </form>
-
-        <p className={styles.switchLink}>
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">Create your account</CardTitle>
+            <CardDescription>Start managing your properties today</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {error && (
+              <div className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+                {error}
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="John Smith"
+                  required
+                  autoComplete="name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Min. 6 characters"
+                  required
+                  autoComplete="new-password"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm">Confirm password</Label>
+                <Input
+                  id="confirm"
+                  type="password"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  placeholder="Repeat your password"
+                  required
+                  autoComplete="new-password"
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Creating account...' : 'Create account'}
+              </Button>
+            </form>
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              Already have an account?{' '}
+              <Link to="/login" className="font-medium text-foreground underline underline-offset-4 hover:text-foreground/80">
+                Sign in
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

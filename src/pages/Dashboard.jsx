@@ -1,28 +1,15 @@
 import { useState, useEffect } from 'react'
-import {
-  collection, addDoc, updateDoc, deleteDoc,
-  doc, onSnapshot, query, orderBy, serverTimestamp
-} from 'firebase/firestore'
-import { db } from '../firebase/config'
-import { useAuth } from '../contexts/AuthContext'
-import Navbar from '../components/Navbar'
-import PropertyCard from '../components/PropertyCard'
-import PropertyForm from '../components/PropertyForm'
-import styles from './Dashboard.module.css'
-
-const FILTERS = ['all', 'available', 'occupied']
-const TYPES = ['all', 'apartment', 'villa', 'commercial']
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
+import { db } from '@/firebase/config'
+import { useAuth } from '@/contexts/AuthContext'
+import AppLayout from '@/components/AppLayout'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Building2, DollarSign, CheckCircle, Users } from 'lucide-react'
 
 export default function Dashboard() {
   const { currentUser } = useAuth()
   const [properties, setProperties] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [editingProperty, setEditingProperty] = useState(null)
-  const [saving, setSaving] = useState(false)
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [search, setSearch] = useState('')
 
   useEffect(() => {
     const q = query(
@@ -40,222 +27,86 @@ export default function Dashboard() {
     return unsub
   }, [currentUser.uid])
 
-  async function handleSave(data) {
-    setSaving(true)
-    try {
-      const col = collection(db, 'users', currentUser.uid, 'properties')
-      if (editingProperty) {
-        console.log('[Firestore] Updating property:', editingProperty.id, data)
-        await updateDoc(doc(db, 'users', currentUser.uid, 'properties', editingProperty.id), {
-          ...data,
-          updatedAt: serverTimestamp(),
-        })
-        console.log('[Firestore] Property updated successfully')
-      } else {
-        console.log('[Firestore] Adding new property:', data)
-        const docRef = await addDoc(col, { ...data, createdAt: serverTimestamp() })
-        console.log('[Firestore] Property added with ID:', docRef.id)
-      }
-      setShowForm(false)
-      setEditingProperty(null)
-    } catch (err) {
-      console.error('[Firestore] Save error:', err.code, err.message, err)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  async function handleDelete(id) {
-    try {
-      console.log('[Firestore] Deleting property:', id)
-      await deleteDoc(doc(db, 'users', currentUser.uid, 'properties', id))
-      console.log('[Firestore] Property deleted successfully')
-    } catch (err) {
-      console.error('[Firestore] Delete error:', err.code, err.message, err)
-    }
-  }
-
-  function openEdit(property) {
-    setEditingProperty(property)
-    setShowForm(true)
-  }
-
-  function openAdd() {
-    setEditingProperty(null)
-    setShowForm(true)
-  }
-
-  function closeForm() {
-    if (saving) return
-    setShowForm(false)
-    setEditingProperty(null)
-  }
-
-  const filtered = properties.filter(p => {
-    if (statusFilter !== 'all' && p.status !== statusFilter) return false
-    if (typeFilter !== 'all' && p.type !== typeFilter) return false
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) &&
-        !p.address.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
-
   const stats = {
     total: properties.length,
     available: properties.filter(p => p.status === 'available').length,
     occupied: properties.filter(p => p.status === 'occupied').length,
-    revenue: properties.filter(p => p.status === 'occupied').reduce((s, p) => s + Number(p.rentAmount), 0),
+    revenue: properties.filter(p => p.status === 'occupied').reduce((s, p) => s + Number(p.rentAmount || 0), 0),
   }
 
+  const statCards = [
+    { label: 'Total Properties', value: stats.total, icon: Building2, description: 'All listed properties' },
+    { label: 'Available', value: stats.available, icon: CheckCircle, description: 'Ready to rent' },
+    { label: 'Occupied', value: stats.occupied, icon: Users, description: 'Currently rented' },
+    { label: 'Monthly Revenue', value: `$${stats.revenue.toLocaleString()}`, icon: DollarSign, description: 'From occupied units' },
+  ]
+
+  const recent = properties.slice(0, 5)
+
   return (
-    <div className={styles.page}>
-      <Navbar />
-
-      <main className={styles.main}>
-        <div className={styles.pageHeader}>
-          <div>
-            <h1>Properties</h1>
-            <p>Welcome back, {currentUser?.displayName || 'there'}!</p>
-          </div>
-          <button className={styles.addBtn} onClick={openAdd}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Add Property
-          </button>
+    <AppLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground text-sm">
+            Welcome back, {currentUser?.displayName || 'there'}.
+          </p>
         </div>
 
-        {/* Stats */}
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon} style={{background:'#ede9fe',color:'#6d28d9'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </div>
-            <div>
-              <div className={styles.statValue}>{stats.total}</div>
-              <div className={styles.statLabel}>Total Properties</div>
-            </div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon} style={{background:'#d1fae5',color:'#065f46'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-              </svg>
-            </div>
-            <div>
-              <div className={styles.statValue}>{stats.available}</div>
-              <div className={styles.statLabel}>Available</div>
-            </div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon} style={{background:'#fee2e2',color:'#991b1b'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
-              </svg>
-            </div>
-            <div>
-              <div className={styles.statValue}>{stats.occupied}</div>
-              <div className={styles.statLabel}>Occupied</div>
-            </div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon} style={{background:'#fef3c7',color:'#92400e'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-              </svg>
-            </div>
-            <div>
-              <div className={styles.statValue}>${stats.revenue.toLocaleString()}</div>
-              <div className={styles.statLabel}>Monthly Revenue</div>
-            </div>
-          </div>
+        {/* Stats grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {statCards.map(({ label, value, icon: Icon, description }) => (
+            <Card key={label}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold">{loading ? '—' : value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Filters */}
-        <div className={styles.toolbar}>
-          <div className={styles.searchWrap}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search by name or address…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className={styles.searchInput}
-            />
-          </div>
-          <div className={styles.filters}>
-            <div className={styles.filterGroup}>
-              {FILTERS.map(f => (
-                <button
-                  key={f}
-                  className={`${styles.filterBtn} ${statusFilter === f ? styles.active : ''}`}
-                  onClick={() => setStatusFilter(f)}
-                >
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
-                </button>
-              ))}
-            </div>
-            <select
-              className={styles.typeSelect}
-              value={typeFilter}
-              onChange={e => setTypeFilter(e.target.value)}
-            >
-              <option value="all">All Types</option>
-              <option value="apartment">Apartment</option>
-              <option value="villa">Villa</option>
-              <option value="commercial">Commercial</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Content */}
-        {loading ? (
-          <div className={styles.emptyState}>
-            <div className={styles.spinner} />
-            <p>Loading properties…</p>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className={styles.emptyState}>
-            {properties.length === 0 ? (
-              <>
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.2">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-                <h3>No properties yet</h3>
-                <p>Get started by adding your first property.</p>
-                <button className={styles.addBtn} onClick={openAdd}>Add your first property</button>
-              </>
+        {/* Recent properties */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Recent Properties</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+            ) : recent.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-8 text-center">
+                No properties yet. Go to Properties to add one.
+              </p>
             ) : (
-              <>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.2">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <h3>No results found</h3>
-                <p>Try adjusting your search or filters.</p>
-              </>
+              <div className="space-y-3">
+                {recent.map(p => (
+                  <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-muted">
+                        <Building2 className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">{p.address}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">${Number(p.rentAmount || 0).toLocaleString()}</p>
+                      <p className={`text-xs ${p.status === 'available' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        {p.status === 'available' ? 'Available' : 'Occupied'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
-          </div>
-        ) : (
-          <div className={styles.grid}>
-            {filtered.map(p => (
-              <PropertyCard key={p.id} property={p} onEdit={openEdit} onDelete={handleDelete} />
-            ))}
-          </div>
-        )}
-      </main>
-
-      {showForm && (
-        <PropertyForm
-          property={editingProperty}
-          onSave={handleSave}
-          onClose={closeForm}
-          saving={saving}
-        />
-      )}
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
   )
 }
