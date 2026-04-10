@@ -24,7 +24,7 @@ export default function Signup() {
       navigate('/')
     } catch (err) {
       console.error('Signup error:', err)
-      setError(err.code ? getErrorMessage(err.code) : err.message)
+      setError(`${err.code || 'unknown'}: ${err.message}`)
     } finally {
       setLoading(false)
     }
