@@ -19,7 +19,8 @@ export default function Login() {
       await login(email, password)
       navigate('/')
     } catch (err) {
-      setError(getErrorMessage(err.code))
+      console.error('[Login] Error:', err.code, err.message, err)
+      setError(err.code ? getErrorMessage(err.code) : err.message)
     } finally {
       setLoading(false)
     }

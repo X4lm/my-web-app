@@ -30,7 +30,11 @@ export default function Dashboard() {
       orderBy('createdAt', 'desc')
     )
     const unsub = onSnapshot(q, (snap) => {
+      console.log('[Firestore] Properties loaded:', snap.docs.length)
       setProperties(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setLoading(false)
+    }, (err) => {
+      console.error('[Firestore] Listen error:', err.code, err.message)
       setLoading(false)
     })
     return unsub
@@ -41,22 +45,34 @@ export default function Dashboard() {
     try {
       const col = collection(db, 'users', currentUser.uid, 'properties')
       if (editingProperty) {
+        console.log('[Firestore] Updating property:', editingProperty.id, data)
         await updateDoc(doc(db, 'users', currentUser.uid, 'properties', editingProperty.id), {
           ...data,
           updatedAt: serverTimestamp(),
         })
+        console.log('[Firestore] Property updated successfully')
       } else {
-        await addDoc(col, { ...data, createdAt: serverTimestamp() })
+        console.log('[Firestore] Adding new property:', data)
+        const docRef = await addDoc(col, { ...data, createdAt: serverTimestamp() })
+        console.log('[Firestore] Property added with ID:', docRef.id)
       }
       setShowForm(false)
       setEditingProperty(null)
+    } catch (err) {
+      console.error('[Firestore] Save error:', err.code, err.message, err)
     } finally {
       setSaving(false)
     }
   }
 
   async function handleDelete(id) {
-    await deleteDoc(doc(db, 'users', currentUser.uid, 'properties', id))
+    try {
+      console.log('[Firestore] Deleting property:', id)
+      await deleteDoc(doc(db, 'users', currentUser.uid, 'properties', id))
+      console.log('[Firestore] Property deleted successfully')
+    } catch (err) {
+      console.error('[Firestore] Delete error:', err.code, err.message, err)
+    }
   }
 
   function openEdit(property) {
