@@ -13,6 +13,10 @@ import InspectionTab from '@/components/InspectionTab'
 import CommunicationLog from '@/components/CommunicationLog'
 import AnnouncementsTab from '@/components/AnnouncementsTab'
 import OwnerReportGenerator from '@/components/OwnerReportGenerator'
+import DocumentsTab from '@/components/DocumentsTab'
+import MoveOutWorkflow from '@/components/MoveOutWorkflow'
+import UtilityTracker from '@/components/UtilityTracker'
+import BulkOperations from '@/components/BulkOperations'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
 import { lazy, Suspense } from 'react'
 
@@ -21,7 +25,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText, MessageSquare, Megaphone, FileDown } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText, MessageSquare, Megaphone, FileDown, FolderOpen, LogOut, Zap, Layers } from 'lucide-react'
 import { diffFields, TYPE_LABELS, hasUnits } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 
@@ -171,6 +175,10 @@ export default function PropertyDetail() {
               <TabsTrigger value="inspection">Inspection</TabsTrigger>
               <TabsTrigger value="comms">Comms</TabsTrigger>
               {isBuilding && <TabsTrigger value="announcements">Announcements</TabsTrigger>}
+              <TabsTrigger value="documents">Documents</TabsTrigger>
+              {isBuilding && <TabsTrigger value="utilities">Utilities</TabsTrigger>}
+              {isBuilding && <TabsTrigger value="move-out">Move-Out</TabsTrigger>}
+              {isBuilding && <TabsTrigger value="bulk">Bulk Ops</TabsTrigger>}
               <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
               {isBuilding && <TabsTrigger value="3d-model">3D Model</TabsTrigger>}
@@ -307,6 +315,28 @@ export default function PropertyDetail() {
           {isBuilding && (
             <TabsContent value="announcements">
               <AnnouncementsTab propertyId={id} />
+            </TabsContent>
+          )}
+
+          <TabsContent value="documents">
+            <DocumentsTab propertyId={id} />
+          </TabsContent>
+
+          {isBuilding && (
+            <TabsContent value="utilities">
+              <UtilityTracker propertyId={id} />
+            </TabsContent>
+          )}
+
+          {isBuilding && (
+            <TabsContent value="move-out">
+              <MoveOutWorkflow propertyId={id} />
+            </TabsContent>
+          )}
+
+          {isBuilding && (
+            <TabsContent value="bulk">
+              <BulkOperations propertyId={id} property={property} />
             </TabsContent>
           )}
 

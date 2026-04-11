@@ -80,7 +80,6 @@ export function usePropertyAlerts() {
 
       // Check lease expiry for units in multi-unit properties
       const sixtyDays = 60 * 24 * 60 * 60 * 1000
-      const now = new Date()
       await Promise.all(props.filter(p => hasUnits(p.type)).map(async (p) => {
         try {
           const unitsSnap = await getDocs(collection(db, 'users', currentUser.uid, 'properties', p.id, 'units'))
