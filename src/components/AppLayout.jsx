@@ -1,5 +1,7 @@
 import Sidebar from './Sidebar'
 import Header from './Header'
+import InvitationChecker from './InvitationChecker'
+import AnalyticsTracker from './AnalyticsTracker'
 
 export default function AppLayout({ children }) {
   return (
@@ -11,6 +13,8 @@ export default function AppLayout({ children }) {
           {children}
         </main>
       </div>
+      <InvitationChecker />
+      <AnalyticsTracker />
     </div>
   )
 }

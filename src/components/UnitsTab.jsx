@@ -6,10 +6,15 @@ import {
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import {
+  createInvitation, getPropertyInvitations, INVITE_STATUS,
+} from '@/services/invitations'
 import UnitFormDialog from '@/components/UnitFormDialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -17,7 +22,7 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { Plus, MoreHorizontal, Pencil, Trash2, DoorOpen } from 'lucide-react'
+import { Plus, MoreHorizontal, Pencil, Trash2, DoorOpen, UserPlus, Mail, Loader2, Clock, CheckCircle2 } from 'lucide-react'
 
 import { UNIT_TYPE_LABELS } from '@/lib/utils'
 const CONDITION_LABELS = { good: 'Good', needs_attention: 'Needs Attention', critical: 'Critical' }
@@ -25,8 +30,8 @@ const PAYMENT_VARIANT = { paid: 'success', pending: 'warning', overdue: 'destruc
 const PAYMENT_LABELS = { paid: 'Paid', pending: 'Pending', overdue: 'Overdue' }
 const CONDITION_VARIANT = { good: 'success', needs_attention: 'warning', critical: 'destructive' }
 
-export default function UnitsTab({ propertyId, propertyType }) {
-  const { currentUser } = useAuth()
+export default function UnitsTab({ propertyId, propertyType, propertyName }) {
+  const { currentUser, userProfile } = useAuth()
   const { t, formatCurrency } = useLocale()
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
@@ -34,7 +39,16 @@ export default function UnitsTab({ propertyId, propertyType }) {
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
 
+  // Tenant invite state
+  const [inviteUnit, setInviteUnit] = useState(null)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteSending, setInviteSending] = useState(false)
+  const [inviteMsg, setInviteMsg] = useState({ type: '', text: '' })
+  const [unitInvitations, setUnitInvitations] = useState({}) // unitId -> invitation
+
   const basePath = `users/${currentUser.uid}/properties/${propertyId}/units`
+  const myRole = userProfile?.role || 'owner'
+  const canInviteTenant = ['admin', 'owner', 'property_manager'].includes(myRole)
 
   useEffect(() => {
     const q = query(collection(db, basePath), orderBy('unitNumber', 'asc'))
@@ -47,6 +61,70 @@ export default function UnitsTab({ propertyId, propertyType }) {
     })
     return unsub
   }, [basePath])
+
+  // Load tenant invitations for this property
+  useEffect(() => {
+    async function loadInvitations() {
+      try {
+        const invs = await getPropertyInvitations(propertyId)
+        const map = {}
+        invs.forEach(inv => {
+          if (inv.role === 'tenant' && inv.unitId && inv.status !== INVITE_STATUS.REVOKED) {
+            // Keep the most relevant invitation per unit (accepted > pending > declined)
+            const existing = map[inv.unitId]
+            if (!existing || inv.status === INVITE_STATUS.ACCEPTED ||
+                (inv.status === INVITE_STATUS.PENDING && existing.status !== INVITE_STATUS.ACCEPTED)) {
+              map[inv.unitId] = inv
+            }
+          }
+        })
+        setUnitInvitations(map)
+      } catch (err) {
+        console.error('[UnitsTab] Load invitations error:', err)
+      }
+    }
+    loadInvitations()
+  }, [propertyId])
+
+  async function handleInviteTenant(e) {
+    e.preventDefault()
+    if (!inviteEmail || !inviteUnit) return
+    setInviteSending(true)
+    setInviteMsg({ type: '', text: '' })
+    try {
+      await createInvitation({
+        inviterUid: currentUser.uid,
+        inviterName: currentUser.displayName || currentUser.email,
+        inviteeEmail: inviteEmail,
+        propertyId,
+        propertyName: propertyName || '',
+        unitId: inviteUnit.id,
+        unitNumber: inviteUnit.unitNumber,
+        role: 'tenant',
+      })
+      setInviteMsg({ type: 'success', text: t('team.inviteSent') })
+      // Update local invitation map
+      setUnitInvitations(prev => ({
+        ...prev,
+        [inviteUnit.id]: {
+          inviteeEmail: inviteEmail.toLowerCase(),
+          status: INVITE_STATUS.PENDING,
+          role: 'tenant',
+          unitId: inviteUnit.id,
+        }
+      }))
+      setInviteEmail('')
+      setTimeout(() => { setInviteUnit(null); setInviteMsg({ type: '', text: '' }) }, 1500)
+    } catch (err) {
+      if (err.message === 'DUPLICATE_INVITE') {
+        setInviteMsg({ type: 'error', text: t('team.duplicateInvite') })
+      } else {
+        setInviteMsg({ type: 'error', text: err.message })
+      }
+    } finally {
+      setInviteSending(false)
+    }
+  }
 
   async function handleSave(data) {
     setSaving(true)
@@ -133,6 +211,20 @@ export default function UnitsTab({ propertyId, propertyType }) {
                           <p className="text-sm">{u.tenantName}</p>
                           <p className="text-xs text-muted-foreground">{u.tenantContact}</p>
                         </div>
+                      ) : unitInvitations[u.id] ? (
+                        <div className="flex items-center gap-1.5">
+                          {unitInvitations[u.id].status === INVITE_STATUS.ACCEPTED ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                          ) : (
+                            <Clock className="w-3.5 h-3.5 text-amber-500" />
+                          )}
+                          <div>
+                            <p className="text-xs text-muted-foreground">{unitInvitations[u.id].inviteeEmail}</p>
+                            <Badge variant={unitInvitations[u.id].status === INVITE_STATUS.ACCEPTED ? 'success' : 'secondary'} className="text-[9px] mt-0.5">
+                              {t(`team.${unitInvitations[u.id].status}`)}
+                            </Badge>
+                          </div>
+                        </div>
                       ) : (
                         <span className="text-sm text-muted-foreground">{t('units.vacant')}</span>
                       )}
@@ -161,6 +253,11 @@ export default function UnitsTab({ propertyId, propertyType }) {
                           <DropdownMenuItem onClick={() => { setEditing(u); setDialogOpen(true) }}>
                             <Pencil className="mr-2 h-3.5 w-3.5" /> {t('common.edit')}
                           </DropdownMenuItem>
+                          {canInviteTenant && !u.tenantName && (
+                            <DropdownMenuItem onClick={() => { setInviteUnit(u); setInviteEmail(''); setInviteMsg({ type: '', text: '' }) }}>
+                              <UserPlus className="mr-2 h-3.5 w-3.5" /> {t('team.inviteTenant')}
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => handleDelete(u.id)}
@@ -188,6 +285,58 @@ export default function UnitsTab({ propertyId, propertyType }) {
         saving={saving}
         propertyType={propertyType}
       />
+
+      {/* Invite Tenant Dialog */}
+      {inviteUnit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setInviteUnit(null)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="relative z-10 w-[95vw] max-w-sm bg-background rounded-xl shadow-2xl border p-6"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <UserPlus className="w-4 h-4" /> {t('team.inviteTenant')}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('team.inviteTenantDesc')}
+            </p>
+            <p className="text-sm font-medium mt-2">
+              {t('common.unit')}: {inviteUnit.unitNumber}
+            </p>
+
+            {inviteMsg.text && (
+              <div className={`mt-3 p-3 rounded-md text-sm ${inviteMsg.type === 'error' ? 'bg-destructive/10 text-destructive' : 'bg-emerald-500/10 text-emerald-600'}`}>
+                {inviteMsg.text}
+              </div>
+            )}
+
+            <form onSubmit={handleInviteTenant} className="mt-4 space-y-4">
+              <div className="space-y-2">
+                <Label>{t('team.email')}</Label>
+                <Input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                  placeholder={t('team.emailPlaceholder')}
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setInviteUnit(null)}>
+                  {t('common.cancel')}
+                </Button>
+                <Button type="submit" disabled={inviteSending}>
+                  {inviteSending ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> {t('team.sending')}</>
+                  ) : (
+                    <><Mail className="w-4 h-4" /> {t('team.sendInvite')}</>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

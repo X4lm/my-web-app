@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { collection, query, orderBy, onSnapshot, limit, collectionGroup } from 'firebase/firestore'
 import { db } from '@/firebase/config'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth, ROLES } from '@/contexts/AuthContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import AppLayout from '@/components/AppLayout'
 import AlertsPanel from '@/components/AlertsPanel'
+import TenantDashboard from '@/components/TenantDashboard'
+import VendorDashboard from '@/components/VendorDashboard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,7 +19,17 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { hasUnits } from '@/lib/utils'
 
 export default function Dashboard() {
-  const { currentUser } = useAuth()
+  const { currentUser, userProfile } = useAuth()
+
+  // If user is a tenant, render the tenant-specific dashboard
+  if (userProfile?.role === ROLES.TENANT) {
+    return <TenantDashboard />
+  }
+
+  // If user is a vendor, render the vendor-specific dashboard
+  if (userProfile?.role === ROLES.VENDOR) {
+    return <VendorDashboard />
+  }
   const navigate = useNavigate()
   const { t, formatCurrency, formatDate } = useLocale()
   const { properties, allAlerts, loading } = usePropertyAlerts()

@@ -15,10 +15,21 @@ const VendorsPage = lazy(() => import('@/pages/VendorsPage'))
 const MessagesPage = lazy(() => import('@/pages/MessagesPage'))
 const ChequeCalendarPage = lazy(() => import('@/pages/ChequeCalendarPage'))
 const PortfolioPage = lazy(() => import('@/pages/PortfolioPage'))
+const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'))
+const AdminUsersPage = lazy(() => import('@/pages/AdminUsersPage'))
+const AdminAnalyticsPage = lazy(() => import('@/pages/AdminAnalyticsPage'))
+const AdminSettingsPage = lazy(() => import('@/pages/AdminSettingsPage'))
 
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth()
   return currentUser ? children : <Navigate to="/login" />
+}
+
+function AdminRoute({ children }) {
+  const { currentUser, userProfile } = useAuth()
+  if (!currentUser) return <Navigate to="/login" />
+  if (userProfile?.role !== 'admin') return <Navigate to="/dashboard" />
+  return children
 }
 
 function PublicRoute({ children }) {
@@ -56,6 +67,10 @@ export default function App() {
         <Route path="/cheques" element={<PrivateRoute><ChequeCalendarPage /></PrivateRoute>} />
         <Route path="/portfolio" element={<PrivateRoute><PortfolioPage /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+        <Route path="/admin/analytics" element={<AdminRoute><AdminAnalyticsPage /></AdminRoute>} />
+        <Route path="/admin/settings" element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Suspense>

@@ -1,0 +1,83 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper functions ───────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // ─── Users collection ───────────────────────────────────────────────
+    match /users/{userId} {
+      // Users can read their own profile; admins can read any
+      allow read: if isOwner(userId) || isAdmin();
+      // Users can create their own profile on signup
+      allow create: if isOwner(userId);
+      // Users can update their own profile; admins can update any
+      allow update: if isOwner(userId) || isAdmin();
+      // Only admins can delete user profiles
+      allow delete: if isAdmin();
+    }
+
+    // ─── Invitations collection ─────────────────────────────────────────
+    match /invitations/{invitationId} {
+      // Inviter can read their sent invitations
+      // Invitee can read invitations addressed to their email
+      // Admin can read all
+      allow read: if isSignedIn() && (
+        resource.data.inviterUid == request.auth.uid ||
+        resource.data.inviteeEmail == request.auth.token.email ||
+        isAdmin()
+      );
+
+      // Any signed-in user can create an invitation (permission checks happen client-side)
+      allow create: if isSignedIn();
+
+      // Inviter, invitee, or admin can update (accept/decline/revoke)
+      allow update: if isSignedIn() && (
+        resource.data.inviterUid == request.auth.uid ||
+        resource.data.inviteeEmail == request.auth.token.email ||
+        isAdmin()
+      );
+
+      // Only admin can delete invitations
+      allow delete: if isAdmin();
+    }
+
+    // ─── Per-user property data (existing structure) ────────────────────
+    match /users/{userId}/properties/{propertyId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+
+      // Sub-collections under properties
+      match /{subcollection}/{docId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // ─── Analytics collection (Step 12 — future) ────────────────────────
+    match /analytics/{docId} {
+      allow create: if isSignedIn();
+      allow read: if isAdmin();
+    }
+
+    // ─── Login events (Step 12 — future) ────────────────────────────────
+    match /loginEvents/{docId} {
+      allow create: if isSignedIn();
+      allow read: if isAdmin();
+    }
+  }
+}

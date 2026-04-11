@@ -17,6 +17,7 @@ import DocumentsTab from '@/components/DocumentsTab'
 import MoveOutWorkflow from '@/components/MoveOutWorkflow'
 import UtilityTracker from '@/components/UtilityTracker'
 import BulkOperations from '@/components/BulkOperations'
+import TeamTab from '@/components/TeamTab'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
 import { lazy, Suspense } from 'react'
 
@@ -25,15 +26,17 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText, MessageSquare, Megaphone, FileDown, FolderOpen, LogOut, Zap, Layers } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, Users, ScrollText, MessageSquare, Megaphone, FileDown, FolderOpen, LogOut, Zap, Layers } from 'lucide-react'
 import { diffFields, hasUnits } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
+import { canAccess, canEdit, FEATURES } from '@/utils/permissions'
 
 export default function PropertyDetail() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
-  const { currentUser } = useAuth()
+  const { currentUser, userProfile } = useAuth()
   const { t, formatCurrency, formatDate } = useLocale()
+  const role = userProfile?.role || 'owner'
   const navigate = useNavigate()
   const [property, setProperty] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -167,21 +170,22 @@ export default function PropertyDetail() {
         <Tabs defaultValue={defaultTab}>
           <div className="overflow-x-auto">
             <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
-              <TabsTrigger value="overview">{t('property.overview')}</TabsTrigger>
-              {isBuilding && <TabsTrigger value="units">{t('property.units')}</TabsTrigger>}
-              <TabsTrigger value="maintenance">{t('property.maintenance')}</TabsTrigger>
-              <TabsTrigger value="work-orders">{t('property.workOrders')}</TabsTrigger>
-              <TabsTrigger value="financials">{t('property.financials')}</TabsTrigger>
-              <TabsTrigger value="inspection">{t('property.inspection')}</TabsTrigger>
-              <TabsTrigger value="comms">{t('property.comms')}</TabsTrigger>
-              {isBuilding && <TabsTrigger value="announcements">{t('property.announcements')}</TabsTrigger>}
-              <TabsTrigger value="documents">{t('property.documents')}</TabsTrigger>
-              {isBuilding && <TabsTrigger value="utilities">{t('property.utilities')}</TabsTrigger>}
-              {isBuilding && <TabsTrigger value="move-out">{t('property.moveOut')}</TabsTrigger>}
-              {isBuilding && <TabsTrigger value="bulk">{t('property.bulkOps')}</TabsTrigger>}
-              <TabsTrigger value="reports">{t('property.reports')}</TabsTrigger>
-              <TabsTrigger value="logs">{t('property.logs')}</TabsTrigger>
-              {isBuilding && <TabsTrigger value="3d-model">{t('property.3dModel')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_OVERVIEW) && <TabsTrigger value="overview">{t('property.overview')}</TabsTrigger>}
+              {isBuilding && canAccess(role, FEATURES.TAB_UNITS) && <TabsTrigger value="units">{t('property.units')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_MAINTENANCE) && <TabsTrigger value="maintenance">{t('property.maintenance')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_WORK_ORDERS) && <TabsTrigger value="work-orders">{t('property.workOrders')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_FINANCIALS) && <TabsTrigger value="financials">{t('property.financials')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_INSPECTION) && <TabsTrigger value="inspection">{t('property.inspection')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_COMMS) && <TabsTrigger value="comms">{t('property.comms')}</TabsTrigger>}
+              {isBuilding && canAccess(role, FEATURES.TAB_ANNOUNCEMENTS) && <TabsTrigger value="announcements">{t('property.announcements')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_DOCUMENTS) && <TabsTrigger value="documents">{t('property.documents')}</TabsTrigger>}
+              {isBuilding && canAccess(role, FEATURES.TAB_UTILITIES) && <TabsTrigger value="utilities">{t('property.utilities')}</TabsTrigger>}
+              {isBuilding && canAccess(role, FEATURES.TAB_MOVE_OUT) && <TabsTrigger value="move-out">{t('property.moveOut')}</TabsTrigger>}
+              {isBuilding && canAccess(role, FEATURES.TAB_BULK_OPS) && <TabsTrigger value="bulk">{t('property.bulkOps')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_REPORTS) && <TabsTrigger value="reports">{t('property.reports')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_TEAM) && <TabsTrigger value="team">{t('team.title')}</TabsTrigger>}
+              {canAccess(role, FEATURES.TAB_LOGS) && <TabsTrigger value="logs">{t('property.logs')}</TabsTrigger>}
+              {isBuilding && canAccess(role, FEATURES.TAB_3D_MODEL) && <TabsTrigger value="3d-model">{t('property.3dModel')}</TabsTrigger>}
             </TabsList>
           </div>
 
@@ -243,9 +247,11 @@ export default function PropertyDetail() {
                     <CardTitle className="text-base flex items-center gap-2">
                       <FileText className="w-4 h-4" /> {t('property.documentsPermits')}
                     </CardTitle>
-                    <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-                      <Pencil className="w-3.5 h-3.5 mr-1.5" /> {t('property.edit')}
-                    </Button>
+                    {canEdit(role, FEATURES.EDIT_PROPERTY) && (
+                      <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                        <Pencil className="w-3.5 h-3.5 mr-1.5" /> {t('property.edit')}
+                      </Button>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -288,7 +294,7 @@ export default function PropertyDetail() {
 
           {isBuilding && (
             <TabsContent value="units">
-              <UnitsTab propertyId={id} propertyType={property.type} />
+              <UnitsTab propertyId={id} propertyType={property.type} propertyName={property.name} />
             </TabsContent>
           )}
 
@@ -342,6 +348,10 @@ export default function PropertyDetail() {
 
           <TabsContent value="reports">
             <OwnerReportGenerator propertyId={id} property={property} />
+          </TabsContent>
+
+          <TabsContent value="team">
+            <TeamTab propertyId={id} property={property} />
           </TabsContent>
 
           <TabsContent value="logs">

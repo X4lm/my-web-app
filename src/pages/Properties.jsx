@@ -26,9 +26,12 @@ import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCircle } from 'lucide-react'
 
 
+import { canEdit, FEATURES } from '@/utils/permissions'
+
 export default function Properties() {
-  const { currentUser } = useAuth()
+  const { currentUser, userProfile } = useAuth()
   const { t, formatCurrency } = useLocale()
+  const role = userProfile?.role || 'owner'
   const [properties, setProperties] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -139,10 +142,12 @@ export default function Properties() {
               {t('properties.subtitle')}
             </p>
           </div>
-          <Button onClick={openAdd} size="sm">
-            <Plus className="w-4 h-4" />
-            {t('properties.addProperty')}
-          </Button>
+          {canEdit(role, FEATURES.ADD_PROPERTY) && (
+            <Button onClick={openAdd} size="sm">
+              <Plus className="w-4 h-4" />
+              {t('properties.addProperty')}
+            </Button>
+          )}
         </div>
 
         {/* Filters */}
@@ -199,7 +204,7 @@ export default function Properties() {
                     ? t('properties.addFirst')
                     : t('properties.adjustFilters')}
                 </p>
-                {properties.length === 0 && (
+                {properties.length === 0 && canEdit(role, FEATURES.ADD_PROPERTY) && (
                   <Button onClick={openAdd} size="sm" className="mt-4">
                     <Plus className="w-4 h-4" />
                     {t('properties.addProperty')}
@@ -268,18 +273,24 @@ export default function Properties() {
                               <Eye className="mr-2 h-3.5 w-3.5" />
                               {t('common.view')}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(p) }}>
-                              <Pencil className="mr-2 h-3.5 w-3.5" />
-                              {t('common.edit')}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={(e) => { e.stopPropagation(); handleDelete(p.id) }}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-3.5 w-3.5" />
-                              {t('common.delete')}
-                            </DropdownMenuItem>
+                            {canEdit(role, FEATURES.EDIT_PROPERTY) && (
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(p) }}>
+                                <Pencil className="mr-2 h-3.5 w-3.5" />
+                                {t('common.edit')}
+                              </DropdownMenuItem>
+                            )}
+                            {canEdit(role, FEATURES.DELETE_PROPERTY) && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={(e) => { e.stopPropagation(); handleDelete(p.id) }}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                  {t('common.delete')}
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
