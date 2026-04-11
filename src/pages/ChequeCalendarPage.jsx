@@ -12,7 +12,7 @@ import { FileCheck, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
 
 export default function ChequeCalendarPage() {
   const { currentUser } = useAuth()
-  const { formatCurrency, formatDate } = useLocale()
+  const { formatCurrency, formatDate, t } = useLocale()
   const { properties, loading: propsLoading } = usePropertyAlerts()
   const [allCheques, setAllCheques] = useState([])
   const [loading, setLoading] = useState(true)
@@ -88,22 +88,22 @@ export default function ChequeCalendarPage() {
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Cheque Calendar</h1>
-          <p className="text-sm text-muted-foreground mt-1">Daily cheque deposit view across all properties.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('cheques.title')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('cheques.subtitle')}</p>
         </div>
 
         {/* Today's action */}
         <div className="grid gap-4 sm:grid-cols-3">
           <Card className={todayCheques.length > 0 ? 'border-amber-300 bg-amber-50 dark:bg-amber-950/20' : ''}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Deposit Today</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t('cheques.depositToday')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-semibold">{loading ? '—' : todayCheques.length}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {todayCheques.length > 0
                   ? `${formatCurrency(todayCheques.reduce((s, c) => s + Number(c.amount || 0), 0))} total`
-                  : 'No cheques due today'}
+                  : t('cheques.noDueToday')}
               </p>
             </CardContent>
           </Card>
@@ -112,7 +112,7 @@ export default function ChequeCalendarPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                 {overdue.length > 0 && <AlertCircle className="w-3.5 h-3.5 text-destructive" />}
-                Overdue
+                {t('cheques.overdue')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -120,21 +120,21 @@ export default function ChequeCalendarPage() {
               <p className="text-xs text-muted-foreground mt-1">
                 {overdue.length > 0
                   ? `${formatCurrency(overdue.reduce((s, c) => s + Number(c.amount || 0), 0))} pending`
-                  : 'All caught up'}
+                  : t('cheques.allCaughtUp')}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Next 7 Days</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t('cheques.next7Days')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-semibold">{loading ? '—' : upcoming.length}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {upcoming.length > 0
                   ? `${formatCurrency(upcoming.reduce((s, c) => s + Number(c.amount || 0), 0))} coming`
-                  : 'No cheques upcoming'}
+                  : t('cheques.noUpcoming')}
               </p>
             </CardContent>
           </Card>
@@ -145,7 +145,7 @@ export default function ChequeCalendarPage() {
           <Card className="border-amber-300">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <FileCheck className="w-4 h-4" /> Cheques to Deposit Today
+                <FileCheck className="w-4 h-4" /> {t('cheques.todayCheques')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -153,7 +153,7 @@ export default function ChequeCalendarPage() {
                 {todayCheques.map(c => (
                   <div key={c.id} className="flex items-center justify-between p-2 rounded border bg-background">
                     <div>
-                      <p className="text-sm font-medium">{c.payerName || 'Unknown'} — #{c.chequeNumber}</p>
+                      <p className="text-sm font-medium">{c.payerName || t('cheques.unknown')} — #{c.chequeNumber}</p>
                       <p className="text-xs text-muted-foreground">{c.propertyName} · {c.bankName}</p>
                     </div>
                     <p className="text-sm font-semibold">{formatCurrency(c.amount)}</p>
@@ -169,7 +169,7 @@ export default function ChequeCalendarPage() {
           <Card className="border-destructive/50">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2 text-destructive">
-                <AlertCircle className="w-4 h-4" /> Overdue Cheques
+                <AlertCircle className="w-4 h-4" /> {t('cheques.overdueCheques')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -177,7 +177,7 @@ export default function ChequeCalendarPage() {
                 {overdue.map(c => (
                   <div key={c.id} className="flex items-center justify-between p-2 rounded border bg-destructive/5">
                     <div>
-                      <p className="text-sm font-medium">{c.payerName || 'Unknown'} — #{c.chequeNumber}</p>
+                      <p className="text-sm font-medium">{c.payerName || t('cheques.unknown')} — #{c.chequeNumber}</p>
                       <p className="text-xs text-muted-foreground">{c.propertyName} · Due: {formatDate(c.date)}</p>
                     </div>
                     <p className="text-sm font-semibold">{formatCurrency(c.amount)}</p>
@@ -200,7 +200,7 @@ export default function ChequeCalendarPage() {
                 </Button>
                 <Button variant="outline" size="sm" className="h-8"
                   onClick={() => setViewDate(new Date())}>
-                  Today
+                  {t('cheques.today')}
                 </Button>
                 <Button variant="outline" size="icon" className="h-8 w-8"
                   onClick={() => setViewDate(new Date(year, month + 1, 1))}>
@@ -211,7 +211,7 @@ export default function ChequeCalendarPage() {
           </CardHeader>
           <CardContent>
             {Object.keys(byDate).length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">No cheques this month.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('cheques.noChequesMonth')}</p>
             ) : (
               <div className="space-y-3">
                 {Object.entries(byDate).sort(([a], [b]) => a.localeCompare(b)).map(([date, cheques]) => (
@@ -221,7 +221,7 @@ export default function ChequeCalendarPage() {
                         {formatDate(date)}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {cheques.length} cheque{cheques.length > 1 ? 's' : ''} · {formatCurrency(cheques.reduce((s, c) => s + Number(c.amount || 0), 0))}
+                        {cheques.length} {cheques.length > 1 ? t('cheques.cheques') : t('cheques.cheque')} · {formatCurrency(cheques.reduce((s, c) => s + Number(c.amount || 0), 0))}
                       </span>
                     </div>
                     <div className="space-y-1 ml-2">
@@ -229,7 +229,7 @@ export default function ChequeCalendarPage() {
                         <div key={c.id} className="flex items-center justify-between text-sm py-1">
                           <div className="flex items-center gap-2">
                             <span className={`inline-block w-2 h-2 rounded-full ${c.status === 'pending' ? 'bg-amber-500' : c.status === 'cleared' ? 'bg-emerald-500' : c.status === 'bounced' ? 'bg-red-500' : 'bg-blue-500'}`} />
-                            <span>{c.payerName || 'Unknown'}</span>
+                            <span>{c.payerName || t('cheques.unknown')}</span>
                             <span className="text-muted-foreground">#{c.chequeNumber}</span>
                             <Badge variant="secondary" className="text-[9px]">{c.propertyName}</Badge>
                           </div>

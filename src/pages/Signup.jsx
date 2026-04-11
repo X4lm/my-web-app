@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,13 +16,14 @@ export default function Signup() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { signup } = useAuth()
+  const { t } = useLocale()
   const navigate = useNavigate()
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    if (password !== confirm) return setError('Passwords do not match.')
-    if (password.length < 6) return setError('Password must be at least 6 characters.')
+    if (password !== confirm) return setError(t('auth.passwordsNoMatch'))
+    if (password.length < 6) return setError(t('auth.passwordTooShort'))
     setLoading(true)
     try {
       await signup(email, password, name)
@@ -41,13 +43,13 @@ export default function Signup() {
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground">
             <Home className="w-4 h-4 text-background" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">PropManager</span>
+          <span className="text-lg font-semibold tracking-tight">{t('auth.propManager')}</span>
         </div>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Create your account</CardTitle>
-            <CardDescription>Start managing your properties today</CardDescription>
+            <CardTitle className="text-xl">{t('auth.createAccount')}</CardTitle>
+            <CardDescription>{t('auth.createAccountDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {error && (
@@ -57,61 +59,61 @@ export default function Signup() {
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
+                <Label htmlFor="name">{t('auth.fullName')}</Label>
                 <Input
                   id="name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="John Smith"
+                  placeholder={t('auth.fullNamePlaceholder')}
                   required
                   autoComplete="name"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth.email')}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={t('auth.emailPlaceholder')}
                   required
                   autoComplete="email"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('auth.password')}</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min. 6 characters"
+                  placeholder={t('auth.minChars')}
                   required
                   autoComplete="new-password"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm">Confirm password</Label>
+                <Label htmlFor="confirm">{t('auth.confirmPassword')}</Label>
                 <Input
                   id="confirm"
                   type="password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="Repeat your password"
+                  placeholder={t('auth.confirmPasswordPlaceholder')}
                   required
                   autoComplete="new-password"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating account...' : 'Create account'}
+                {loading ? t('auth.creatingAccount') : t('auth.createAccountBtn')}
               </Button>
             </form>
             <p className="mt-4 text-center text-sm text-muted-foreground">
-              Already have an account?{' '}
+              {t('auth.hasAccount')}{' '}
               <Link to="/login" className="font-medium text-foreground underline underline-offset-4 hover:text-foreground/80">
-                Sign in
+                {t('auth.signIn')}
               </Link>
             </p>
           </CardContent>

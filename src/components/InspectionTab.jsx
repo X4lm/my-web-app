@@ -68,12 +68,12 @@ const INSPECTION_SECTIONS = [
 ]
 
 const CONDITION_OPTIONS = [
-  { value: '', label: 'Not inspected' },
-  { value: 'good', label: 'Good' },
-  { value: 'fair', label: 'Fair' },
-  { value: 'poor', label: 'Poor' },
-  { value: 'critical', label: 'Critical' },
-  { value: 'na', label: 'N/A' },
+  { value: '', tKey: 'inspection.notInspected' },
+  { value: 'good', tKey: 'inspection.conditionGood' },
+  { value: 'fair', tKey: 'inspection.conditionFair' },
+  { value: 'poor', tKey: 'inspection.conditionPoor' },
+  { value: 'critical', tKey: 'inspection.conditionCritical' },
+  { value: 'na', tKey: 'inspection.conditionNA' },
 ]
 
 const CONDITION_COLORS = {
@@ -86,7 +86,7 @@ const CONDITION_COLORS = {
 
 export default function InspectionTab({ propertyId }) {
   const { currentUser } = useAuth()
-  const { formatDate, formatDateTime } = useLocale()
+  const { t, formatDate, formatDateTime } = useLocale()
   const [data, setData] = useState({})
   const [notes, setNotes] = useState({})
   const [lastInspection, setLastInspection] = useState(null)
@@ -170,7 +170,7 @@ export default function InspectionTab({ propertyId }) {
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <ClipboardCheck className="w-4 h-4" />
-                <span>Last inspection: <span className="font-medium text-foreground">{formatDateTime(lastInspection.createdAt)}</span></span>
+                <span>{t('inspection.lastInspection')}: <span className="font-medium text-foreground">{formatDateTime(lastInspection.createdAt)}</span></span>
                 <span>&middot;</span>
                 <User className="w-3 h-3" />
                 <span>{lastInspection.inspector}</span>
@@ -178,12 +178,12 @@ export default function InspectionTab({ propertyId }) {
               {lastInspection.summary && (
                 <div className="flex gap-2">
                   {lastInspection.summary.critical > 0 && (
-                    <Badge variant="destructive" className="text-xs">{lastInspection.summary.critical} critical</Badge>
+                    <Badge variant="destructive" className="text-xs">{lastInspection.summary.critical} {t('inspection.critical')}</Badge>
                   )}
                   {lastInspection.summary.poor > 0 && (
-                    <Badge variant="warning" className="text-xs">{lastInspection.summary.poor} poor</Badge>
+                    <Badge variant="warning" className="text-xs">{lastInspection.summary.poor} {t('inspection.poor')}</Badge>
                   )}
-                  <Badge variant="secondary" className="text-xs">{lastInspection.summary.total} inspected</Badge>
+                  <Badge variant="secondary" className="text-xs">{lastInspection.summary.total} {t('inspection.inspected')}</Badge>
                 </div>
               )}
             </div>
@@ -194,9 +194,9 @@ export default function InspectionTab({ propertyId }) {
       {/* Current progress */}
       {totalInspected > 0 && (
         <div className="flex items-center gap-3 flex-wrap text-sm">
-          <span className="text-muted-foreground">{totalInspected} items inspected</span>
-          {criticalCount > 0 && <Badge variant="destructive">{criticalCount} critical</Badge>}
-          {poorCount > 0 && <Badge variant="warning">{poorCount} poor</Badge>}
+          <span className="text-muted-foreground">{totalInspected} {t('inspection.itemsInspected')}</span>
+          {criticalCount > 0 && <Badge variant="destructive">{criticalCount} {t('inspection.critical')}</Badge>}
+          {poorCount > 0 && <Badge variant="warning">{poorCount} {t('inspection.poor')}</Badge>}
         </div>
       )}
 
@@ -217,7 +217,7 @@ export default function InspectionTab({ propertyId }) {
                 <div className="flex items-center gap-3">
                   <CardTitle className="text-sm font-medium">{section.label}</CardTitle>
                   <span className="text-xs text-muted-foreground">{inspectedCount}/{section.items.length}</span>
-                  {sectionCritical > 0 && <Badge variant="destructive" className="text-xs">{sectionCritical} critical</Badge>}
+                  {sectionCritical > 0 && <Badge variant="destructive" className="text-xs">{sectionCritical} {t('inspection.critical')}</Badge>}
                 </div>
                 {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
               </div>
@@ -237,7 +237,7 @@ export default function InspectionTab({ propertyId }) {
                             <Input
                               value={note}
                               onChange={e => setNote(section.key, item.key, e.target.value)}
-                              placeholder="Add note..."
+                              placeholder={t('inspection.addNote')}
                               className="mt-1 h-7 text-xs"
                             />
                           )}
@@ -248,7 +248,7 @@ export default function InspectionTab({ propertyId }) {
                           className={`h-8 rounded-md border border-input bg-transparent px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring w-28 ${CONDITION_COLORS[value] || ''}`}
                         >
                           {CONDITION_OPTIONS.map(o => (
-                            <option key={o.value} value={o.value}>{o.label}</option>
+                            <option key={o.value} value={o.value}>{t(o.tKey)}</option>
                           ))}
                         </select>
                       </div>
@@ -265,9 +265,9 @@ export default function InspectionTab({ propertyId }) {
       <div className="flex items-center gap-3 pt-2">
         <Button onClick={handleSave} disabled={saving || totalInspected === 0} size="sm">
           <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save Inspection'}
+          {saving ? t('common.saving') : t('inspection.saveInspection')}
         </Button>
-        {saved && <span className="text-sm text-emerald-600">Inspection saved!</span>}
+        {saved && <span className="text-sm text-emerald-600">{t('inspection.inspectionSaved')}</span>}
       </div>
 
       {/* Previous inspections */}
@@ -276,7 +276,7 @@ export default function InspectionTab({ propertyId }) {
           <Separator />
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Previous Inspections</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('inspection.previousInspections')}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="space-y-2">
@@ -290,9 +290,9 @@ export default function InspectionTab({ propertyId }) {
                     </div>
                     {insp.summary && (
                       <div className="flex gap-1">
-                        {insp.summary.critical > 0 && <Badge variant="destructive" className="text-[10px]">{insp.summary.critical} critical</Badge>}
-                        {insp.summary.poor > 0 && <Badge variant="warning" className="text-[10px]">{insp.summary.poor} poor</Badge>}
-                        <Badge variant="secondary" className="text-[10px]">{insp.summary.total} items</Badge>
+                        {insp.summary.critical > 0 && <Badge variant="destructive" className="text-[10px]">{insp.summary.critical} {t('inspection.critical')}</Badge>}
+                        {insp.summary.poor > 0 && <Badge variant="warning" className="text-[10px]">{insp.summary.poor} {t('inspection.poor')}</Badge>}
+                        <Badge variant="secondary" className="text-[10px]">{insp.summary.total} {t('inspection.items')}</Badge>
                       </div>
                     )}
                   </div>

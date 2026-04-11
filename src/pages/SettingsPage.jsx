@@ -40,34 +40,34 @@ export default function SettingsPage() {
     <AppLayout>
       <div className="space-y-6 max-w-2xl">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground text-sm">Manage your account preferences.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('settings.title')}</h1>
+          <p className="text-muted-foreground text-sm">{t('settings.subtitle')}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Profile</CardTitle>
-            <CardDescription>Update your personal information.</CardDescription>
+            <CardTitle className="text-base">{t('settings.profile')}</CardTitle>
+            <CardDescription>{t('settings.profileDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSave} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="display-name">Display name</Label>
+                <Label htmlFor="display-name">{t('settings.displayName')}</Label>
                 <Input
                   id="display-name"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="Your name"
+                  placeholder={t('settings.namePlaceholder')}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>{t('settings.email')}</Label>
                 <Input value={currentUser?.email || ''} disabled />
-                <p className="text-xs text-muted-foreground">Email cannot be changed.</p>
+                <p className="text-xs text-muted-foreground">{t('settings.emailNoChange')}</p>
               </div>
               <div className="flex items-center gap-3">
                 <Button type="submit" size="sm" disabled={saving}>
-                  {saving ? 'Saving...' : 'Save changes'}
+                  {saving ? t('settings.sending') : t('settings.saveChanges')}
                 </Button>
                 {saved && <span className="text-sm text-emerald-600">Saved!</span>}
               </div>
@@ -79,21 +79,21 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Account</CardTitle>
-            <CardDescription>Manage your account settings.</CardDescription>
+            <CardTitle className="text-base">{t('settings.account')}</CardTitle>
+            <CardDescription>{t('settings.accountDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Account ID</p>
+                <p className="text-sm font-medium">{t('settings.accountId')}</p>
                 <p className="text-xs text-muted-foreground font-mono">{currentUser?.uid}</p>
               </div>
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Password</p>
-                <p className="text-xs text-muted-foreground">Send a password reset link to your email.</p>
+                <p className="text-sm font-medium">{t('settings.password')}</p>
+                <p className="text-xs text-muted-foreground">{t('settings.passwordDesc')}</p>
               </div>
               <div className="flex items-center gap-3">
                 <Button
@@ -114,9 +114,9 @@ export default function SettingsPage() {
                     }
                   }}
                 >
-                  {resetSending ? 'Sending...' : 'Reset Password'}
+                  {resetSending ? t('settings.sending') : t('settings.resetPassword')}
                 </Button>
-                {resetSent && <span className="text-sm text-emerald-600">Email sent!</span>}
+                {resetSent && <span className="text-sm text-emerald-600">{t('settings.emailSent')}</span>}
               </div>
             </div>
           </CardContent>
@@ -176,7 +176,7 @@ export default function SettingsPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="calendar">Calendar System</Label>
+                <Label htmlFor="calendar">{t('settings.calendar')}</Label>
                 <select
                   id="calendar"
                   value={settings.calendar || 'gregorian'}
@@ -191,14 +191,14 @@ export default function SettingsPage() {
                 </select>
                 <p className="text-xs text-muted-foreground">
                   {settings.calendar === 'hijri'
-                    ? 'All dates will display in Hijri (Islamic) calendar.'
+                    ? t('settings.calendarHijri')
                     : settings.calendar === 'both'
-                    ? 'Dates show Gregorian with Hijri in parentheses.'
-                    : 'Standard Gregorian calendar.'}
+                    ? t('settings.calendarBoth')
+                    : t('settings.calendarGregorian')}
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="secondary-currency">Secondary Currency</Label>
+                <Label htmlFor="secondary-currency">{t('settings.secondaryCurrency')}</Label>
                 <select
                   id="secondary-currency"
                   value={settings.secondaryCurrency || ''}
@@ -213,15 +213,15 @@ export default function SettingsPage() {
                     ))}
                 </select>
                 <p className="text-xs text-muted-foreground">
-                  Show amounts in a second currency alongside the primary one.
+                  {t('settings.secondaryCurrencyDesc')}
                 </p>
               </div>
             </div>
 
             <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
               <p className="font-medium mb-1">{t('settings.preview')}</p>
-              <p>Amount: <span className="text-foreground font-medium">{formatWithConversion(350000)}</span></p>
-              <p>Date: <span className="text-foreground font-medium">{formatDate('2025-03-15')}</span></p>
+              <p>{t('settings.previewAmount')}: <span className="text-foreground font-medium">{formatWithConversion(350000)}</span></p>
+              <p>{t('settings.previewDate')}: <span className="text-foreground font-medium">{formatDate('2025-03-15')}</span></p>
             </div>
           </CardContent>
         </Card>

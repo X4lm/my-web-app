@@ -24,7 +24,7 @@ const ICON_MAP = {
 
 export default function MaintenanceTab({ propertyId, section }) {
   const { currentUser } = useAuth()
-  const { formatDate } = useLocale()
+  const { t, formatDate } = useLocale()
   const [data, setData] = useState({})
   const [originalData, setOriginalData] = useState({})
   const [meta, setMeta] = useState({})
@@ -143,7 +143,7 @@ export default function MaintenanceTab({ propertyId, section }) {
   const upcomingCount = alerts.filter(a => a.level === 'upcoming').length
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground py-12 text-center">Loading maintenance data...</p>
+    return <p className="text-sm text-muted-foreground py-12 text-center">{t('maintenance.loading')}</p>
   }
 
   return (
@@ -156,13 +156,13 @@ export default function MaintenanceTab({ propertyId, section }) {
               {overdueCount > 0 && (
                 <div className="flex items-center gap-2 text-sm">
                   <AlertCircle className="h-4 w-4 text-destructive" />
-                  <span className="font-medium text-destructive">{overdueCount} overdue</span>
+                  <span className="font-medium text-destructive">{overdueCount} {t('maintenance.overdue')}</span>
                 </div>
               )}
               {upcomingCount > 0 && (
                 <div className="flex items-center gap-2 text-sm">
                   <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  <span className="font-medium text-amber-600">{upcomingCount} due within 30 days</span>
+                  <span className="font-medium text-amber-600">{upcomingCount} {t('maintenance.dueWithin30')}</span>
                 </div>
               )}
             </div>
@@ -190,15 +190,15 @@ export default function MaintenanceTab({ propertyId, section }) {
                   <Icon className="h-4 w-4 text-muted-foreground" />
                   <CardTitle className="text-sm font-medium">{section.label}</CardTitle>
                   {isOptional && !isEnabled && (
-                    <Badge variant="secondary" className="text-xs">Optional</Badge>
+                    <Badge variant="secondary" className="text-xs">{t('maintenance.optional')}</Badge>
                   )}
                   {sectionAlerts.length > 0 && (
                     <div className="flex gap-1">
                       {sectionAlerts.some(a => a.level === 'overdue') && (
-                        <Badge variant="destructive" className="text-xs">Overdue</Badge>
+                        <Badge variant="destructive" className="text-xs">{t('maintenance.overdueLabel')}</Badge>
                       )}
                       {sectionAlerts.some(a => a.level === 'upcoming') && !sectionAlerts.some(a => a.level === 'overdue') && (
-                        <Badge variant="warning" className="text-xs">Due Soon</Badge>
+                        <Badge variant="warning" className="text-xs">{t('maintenance.dueSoonLabel')}</Badge>
                       )}
                     </div>
                   )}
@@ -218,7 +218,7 @@ export default function MaintenanceTab({ propertyId, section }) {
                       className="text-xs h-7"
                       onClick={(e) => { e.stopPropagation(); toggleOptional(section.key) }}
                     >
-                      {isEnabled ? 'Disable' : 'Enable'}
+                      {isEnabled ? t('maintenance.disable') : t('maintenance.enable')}
                     </Button>
                   )}
                   {isEnabled && (
@@ -251,7 +251,7 @@ export default function MaintenanceTab({ propertyId, section }) {
                             onChange={e => setField(section.key, field.key, e.target.value)}
                             className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                           >
-                            <option value="">Select...</option>
+                            <option value="">{t('common.select')}</option>
                             {field.options.map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
                         ) : field.type === 'textarea' ? (
@@ -285,9 +285,9 @@ export default function MaintenanceTab({ propertyId, section }) {
       <div className="flex items-center gap-3 pt-2">
         <Button onClick={handleSave} disabled={saving} size="sm">
           <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save Maintenance Data'}
+          {saving ? t('common.saving') : t('maintenance.saveMaintenance')}
         </Button>
-        {saved && <span className="text-sm text-emerald-600">Saved!</span>}
+        {saved && <span className="text-sm text-emerald-600">{t('maintenance.saved')}</span>}
       </div>
     </div>
   )

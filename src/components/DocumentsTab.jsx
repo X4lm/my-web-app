@@ -24,30 +24,32 @@ import {
   Upload, Loader2, Search, FolderOpen,
 } from 'lucide-react'
 
-const DOC_CATEGORIES = [
-  { value: 'title_deed', label: 'Title Deed' },
-  { value: 'lease_agreement', label: 'Lease Agreement' },
-  { value: 'ejari', label: 'Ejari Certificate' },
-  { value: 'insurance', label: 'Insurance' },
-  { value: 'municipality_permit', label: 'Municipality Permit' },
-  { value: 'noc', label: 'NOC Letter' },
-  { value: 'dewa', label: 'DEWA Document' },
-  { value: 'chiller', label: 'Chiller Agreement' },
-  { value: 'tenant_id', label: 'Tenant ID/Passport' },
-  { value: 'tenant_visa', label: 'Tenant Visa' },
-  { value: 'trade_license', label: 'Trade License' },
-  { value: 'salary_certificate', label: 'Salary Certificate' },
-  { value: 'maintenance_invoice', label: 'Maintenance Invoice' },
-  { value: 'inspection_report', label: 'Inspection Report' },
-  { value: 'receipt', label: 'Receipt' },
-  { value: 'other', label: 'Other' },
+const DOC_CATEGORY_KEYS = [
+  { value: 'title_deed', tKey: 'docs.catTitleDeed' },
+  { value: 'lease_agreement', tKey: 'docs.catLease' },
+  { value: 'ejari', tKey: 'docs.catEjari' },
+  { value: 'insurance', tKey: 'docs.catInsurance' },
+  { value: 'municipality_permit', tKey: 'docs.catMunicipality' },
+  { value: 'noc', tKey: 'docs.catNoc' },
+  { value: 'dewa', tKey: 'docs.catDewa' },
+  { value: 'chiller', tKey: 'docs.catChiller' },
+  { value: 'tenant_id', tKey: 'docs.catTenantId' },
+  { value: 'tenant_visa', tKey: 'docs.catTenantVisa' },
+  { value: 'trade_license', tKey: 'docs.catTradeLicense' },
+  { value: 'salary_certificate', tKey: 'docs.catSalaryCert' },
+  { value: 'maintenance_invoice', tKey: 'docs.catMaintenanceInvoice' },
+  { value: 'inspection_report', tKey: 'docs.catInspectionReport' },
+  { value: 'receipt', tKey: 'docs.catReceipt' },
+  { value: 'other', tKey: 'docs.catOther' },
 ]
-
-const CATEGORY_LABELS = Object.fromEntries(DOC_CATEGORIES.map(c => [c.value, c.label]))
 
 export default function DocumentsTab({ propertyId }) {
   const { currentUser } = useAuth()
-  const { formatDateTime } = useLocale()
+  const { t, formatDateTime } = useLocale()
+
+  const DOC_CATEGORIES = DOC_CATEGORY_KEYS.map(c => ({ value: c.value, label: t(c.tKey) }))
+  const CATEGORY_LABELS = Object.fromEntries(DOC_CATEGORIES.map(c => [c.value, c.label]))
+
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -114,7 +116,7 @@ export default function DocumentsTab({ propertyId }) {
   }
 
   async function handleDelete(docItem) {
-    if (!window.confirm(`Delete "${docItem.name}"?`)) return
+    if (!window.confirm(`${t('common.delete')} "${docItem.name}"?`)) return
     try {
       await deleteDoc(doc(db, colPath, docItem.id))
       if (docItem.storagePath) {
@@ -163,12 +165,12 @@ export default function DocumentsTab({ propertyId }) {
             <div className="flex flex-wrap gap-4 text-sm">
               {expiredDocs.length > 0 && (
                 <span className="text-destructive font-medium">
-                  {expiredDocs.length} expired document{expiredDocs.length > 1 ? 's' : ''}
+                  {expiredDocs.length} {t('docs.expired')}
                 </span>
               )}
               {soonExpiring.length > 0 && (
                 <span className="text-amber-600 font-medium">
-                  {soonExpiring.length} expiring within 30 days
+                  {soonExpiring.length} {t('docs.expiringSoon')}
                 </span>
               )}
             </div>
@@ -180,10 +182,10 @@ export default function DocumentsTab({ propertyId }) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <FolderOpen className="w-4 h-4" /> Documents ({documents.length})
+              <FolderOpen className="w-4 h-4" /> {t('docs.title')} ({documents.length})
             </CardTitle>
             <Button onClick={openAdd} size="sm">
-              <Plus className="w-4 h-4" /> Upload
+              <Plus className="w-4 h-4" /> {t('docs.upload')}
             </Button>
           </div>
         </CardHeader>
@@ -193,7 +195,7 @@ export default function DocumentsTab({ propertyId }) {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search documents..."
+                placeholder={t('docs.search')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="pl-9"
@@ -204,7 +206,7 @@ export default function DocumentsTab({ propertyId }) {
               value={filterCategory}
               onChange={e => setFilterCategory(e.target.value)}
             >
-              <option value="all">All Types</option>
+              <option value="all">{t('docs.allTypes')}</option>
               {DOC_CATEGORIES.map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
@@ -212,19 +214,19 @@ export default function DocumentsTab({ propertyId }) {
           </div>
 
           {loading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">{t('common.loading')}</p>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FolderOpen className="h-10 w-10 text-muted-foreground/40 mb-3" />
               <h3 className="text-sm font-medium">
-                {documents.length === 0 ? 'No documents uploaded' : 'No matches found'}
+                {documents.length === 0 ? t('docs.noDocuments') : t('docs.noMatches')}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Upload leases, permits, invoices, tenant IDs, and more.
+                {t('docs.uploadDesc')}
               </p>
               {documents.length === 0 && (
                 <Button onClick={openAdd} size="sm" className="mt-4">
-                  <Plus className="w-4 h-4" /> Upload Document
+                  <Plus className="w-4 h-4" /> {t('docs.uploadDocument')}
                 </Button>
               )}
             </div>
@@ -246,14 +248,14 @@ export default function DocumentsTab({ propertyId }) {
                           {CATEGORY_LABELS[docItem.category] || docItem.category}
                         </Badge>
                         {docItem.unitNumber && (
-                          <Badge variant="outline" className="text-[10px]">Unit {docItem.unitNumber}</Badge>
+                          <Badge variant="outline" className="text-[10px]">{t('common.unit')} {docItem.unitNumber}</Badge>
                         )}
-                        {isExpired && <Badge variant="destructive" className="text-[10px]">Expired</Badge>}
-                        {isSoon && <Badge variant="warning" className="text-[10px]">Expiring Soon</Badge>}
+                        {isExpired && <Badge variant="destructive" className="text-[10px]">{t('docs.expired')}</Badge>}
+                        {isSoon && <Badge variant="warning" className="text-[10px]">{t('docs.expiringSoon')}</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {docItem.fileName} {docItem.fileSize ? `(${formatFileSize(docItem.fileSize)})` : ''}
-                        {docItem.expiryDate ? ` · Expires: ${docItem.expiryDate}` : ''}
+                        {docItem.expiryDate ? ` · ${t('docs.expires')}: ${docItem.expiryDate}` : ''}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
@@ -271,7 +273,7 @@ export default function DocumentsTab({ propertyId }) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
                             <a href={docItem.url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="mr-2 h-3.5 w-3.5" /> Open
+                              <ExternalLink className="mr-2 h-3.5 w-3.5" /> {t('docs.open')}
                             </a>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -279,7 +281,7 @@ export default function DocumentsTab({ propertyId }) {
                             onClick={() => handleDelete(docItem)}
                             className="text-destructive focus:text-destructive"
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                            <Trash2 className="mr-2 h-3.5 w-3.5" /> {t('common.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -296,20 +298,20 @@ export default function DocumentsTab({ propertyId }) {
       <Dialog open={dialogOpen} onOpenChange={open => { if (!uploading) setDialogOpen(open) }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Upload Document</DialogTitle>
+            <DialogTitle>{t('docs.uploadDocument')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>Document Name *</Label>
+              <Label>{t('docs.documentName')} *</Label>
               <Input
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="e.g. Lease Agreement - Unit 101"
+                placeholder={t('docs.namePlaceholder')}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Category</Label>
+                <Label>{t('docs.category')}</Label>
                 <select
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                   value={form.category}
@@ -321,16 +323,16 @@ export default function DocumentsTab({ propertyId }) {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Unit # (optional)</Label>
+                <Label>{t('docs.unitOptional')}</Label>
                 <Input
                   value={form.unitNumber}
                   onChange={e => setForm(f => ({ ...f, unitNumber: e.target.value }))}
-                  placeholder="e.g. 101"
+                  placeholder={t('docs.unitPlaceholder')}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Expiry Date (optional)</Label>
+              <Label>{t('docs.expiryDate')}</Label>
               <Input
                 type="date"
                 value={form.expiryDate}
@@ -338,15 +340,15 @@ export default function DocumentsTab({ propertyId }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>Notes (optional)</Label>
+              <Label>{t('docs.notesOptional')}</Label>
               <Input
                 value={form.notes}
                 onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                placeholder="Additional notes"
+                placeholder={t('docs.notesPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>File *</Label>
+              <Label>{t('docs.file')} *</Label>
               <input
                 ref={fileRef}
                 type="file"
@@ -356,9 +358,9 @@ export default function DocumentsTab({ propertyId }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={uploading}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={uploading}>{t('common.cancel')}</Button>
             <Button onClick={handleUpload} disabled={uploading || !form.name.trim()}>
-              {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</> : <><Upload className="w-4 h-4" /> Upload</>}
+              {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('common.upload')}...</> : <><Upload className="w-4 h-4" /> {t('common.upload')}</>}
             </Button>
           </DialogFooter>
         </DialogContent>

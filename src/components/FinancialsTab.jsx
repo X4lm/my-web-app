@@ -38,7 +38,7 @@ const CATEGORY_LABELS = {
 
 export default function FinancialsTab({ propertyId, property }) {
   const { currentUser } = useAuth()
-  const { formatCurrency, formatDate, getCurrencyCode } = useLocale()
+  const { t, formatCurrency, formatDate, getCurrencyCode } = useLocale()
   const [expenses, setExpenses] = useState([])
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
@@ -233,26 +233,26 @@ export default function FinancialsTab({ propertyId, property }) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Expected Rent</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('financials.expectedRent')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold">{formatCurrency(expectedRent)}</div>
-            <p className="text-xs text-muted-foreground mt-1">Per month</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('financials.perMonth')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Collected Rent</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('financials.collectedRent')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold">{formatCurrency(collectedRent)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {expectedRent > 0
-                ? `${Math.round((collectedRent / expectedRent) * 100)}% collection rate`
-                : 'No rent expected'}
+                ? `${Math.round((collectedRent / expectedRent) * 100)}${t('financials.collectionRate')}`
+                : t('financials.noRentExpected')}
             </p>
           </CardContent>
         </Card>
@@ -260,7 +260,7 @@ export default function FinancialsTab({ propertyId, property }) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              {isBuilding ? 'Occupancy Rate' : 'Status'}
+              {isBuilding ? t('financials.occupancyRate') : t('financials.statusLabel')}
             </CardTitle>
             <Percent className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -274,9 +274,9 @@ export default function FinancialsTab({ propertyId, property }) {
               </>
             ) : (
               <>
-                <div className="text-2xl font-semibold">{property?.status === 'occupied' ? 'Occupied' : 'Vacant'}</div>
+                <div className="text-2xl font-semibold">{property?.status === 'occupied' ? t('common.occupied') : t('units.vacant')}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {property?.status === 'occupied' ? 'Currently rented' : 'Available for rent'}
+                  {property?.status === 'occupied' ? t('financials.currentlyRented') : t('financials.availableForRent')}
                 </p>
               </>
             )}
@@ -285,14 +285,14 @@ export default function FinancialsTab({ propertyId, property }) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Annual Net Income</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('financials.annualNetIncome')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-semibold ${annualIncome < 0 ? 'text-destructive' : ''}`}>
               {formatCurrency(annualIncome)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">{currentYear} estimate</p>
+            <p className="text-xs text-muted-foreground mt-1">{currentYear} {t('financials.estimate')}</p>
           </CardContent>
         </Card>
       </div>
@@ -300,7 +300,7 @@ export default function FinancialsTab({ propertyId, property }) {
       {/* Monthly expense breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{currentYear} Monthly Expenses</CardTitle>
+          <CardTitle className="text-base">{currentYear} {t('financials.monthlyExpenses')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-1 h-32">
@@ -333,23 +333,23 @@ export default function FinancialsTab({ propertyId, property }) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <Receipt className="w-4 h-4" /> Expense Log
+              <Receipt className="w-4 h-4" /> {t('financials.expenseLog')}
             </CardTitle>
             <Button onClick={openAdd} size="sm">
-              <Plus className="w-4 h-4" /> Add Expense
+              <Plus className="w-4 h-4" /> {t('financials.addExpense')}
             </Button>
           </div>
         </CardHeader>
         <CardContent className="p-0">
           {loading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Loading expenses...</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">{t('financials.loadingExpenses')}</p>
           ) : expenses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Receipt className="h-10 w-10 text-muted-foreground/40 mb-3" />
-              <h3 className="text-sm font-medium">No expenses recorded</h3>
-              <p className="text-sm text-muted-foreground mt-1">Track maintenance and operational costs.</p>
+              <h3 className="text-sm font-medium">{t('financials.noExpenses')}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t('financials.trackExpenses')}</p>
               <Button onClick={openAdd} size="sm" className="mt-4">
-                <Plus className="w-4 h-4" /> Add Expense
+                <Plus className="w-4 h-4" /> {t('financials.addExpense')}
               </Button>
             </div>
           ) : (
@@ -357,11 +357,11 @@ export default function FinancialsTab({ propertyId, property }) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="hidden sm:table-cell">Vendor</TableHead>
-                  <TableHead className="text-right">Cost</TableHead>
+                  <TableHead>{t('common.date')}</TableHead>
+                  <TableHead>{t('common.category')}</TableHead>
+                  <TableHead>{t('common.description')}</TableHead>
+                  <TableHead className="hidden sm:table-cell">{t('financials.vendor')}</TableHead>
+                  <TableHead className="text-right">{t('common.amount')}</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
@@ -386,14 +386,14 @@ export default function FinancialsTab({ propertyId, property }) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(exp)}>
-                            <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                            <Pencil className="mr-2 h-3.5 w-3.5" /> {t('common.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => handleDelete(exp.id)}
                             className="text-destructive focus:text-destructive"
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                            <Trash2 className="mr-2 h-3.5 w-3.5" /> {t('common.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -412,28 +412,28 @@ export default function FinancialsTab({ propertyId, property }) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <FileCheck className="w-4 h-4" /> Cheque Tracking
+              <FileCheck className="w-4 h-4" /> {t('financials.chequeTracking')}
             </CardTitle>
             <Button onClick={() => { setEditingCheque(null); setChequeDialogOpen(true) }} size="sm">
-              <Plus className="w-4 h-4" /> Add Cheque
+              <Plus className="w-4 h-4" /> {t('financials.addCheque')}
             </Button>
           </div>
           {(pendingCheques.length > 0 || bouncedCheques.length > 0) && (
             <div className="flex gap-4 mt-2 flex-wrap">
               {pendingCheques.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  <span className="font-medium text-amber-600">{pendingCheques.length}</span> pending ({formatCurrency(totalPending)})
+                  <span className="font-medium text-amber-600">{pendingCheques.length}</span> {t('financials.pendingCheques')} ({formatCurrency(totalPending)})
                 </p>
               )}
               {upcomingCheques.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  <span className="font-medium text-blue-600">{upcomingCheques.length}</span> due within 30 days
+                  <span className="font-medium text-blue-600">{upcomingCheques.length}</span> {t('financials.dueWithin30Cheques')}
                 </p>
               )}
               {bouncedCheques.length > 0 && (
                 <p className="text-xs flex items-center gap-1">
                   <AlertCircle className="w-3 h-3 text-destructive" />
-                  <span className="font-medium text-destructive">{bouncedCheques.length} bounced</span>
+                  <span className="font-medium text-destructive">{bouncedCheques.length} {t('financials.bouncedCheques')}</span>
                 </p>
               )}
             </div>
@@ -443,10 +443,10 @@ export default function FinancialsTab({ propertyId, property }) {
           {cheques.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileCheck className="h-10 w-10 text-muted-foreground/40 mb-3" />
-              <h3 className="text-sm font-medium">No cheques recorded</h3>
-              <p className="text-sm text-muted-foreground mt-1">Track post-dated and received cheques.</p>
+              <h3 className="text-sm font-medium">{t('financials.noCheques')}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t('financials.trackCheques')}</p>
               <Button onClick={() => { setEditingCheque(null); setChequeDialogOpen(true) }} size="sm" className="mt-4">
-                <Plus className="w-4 h-4" /> Add Cheque
+                <Plus className="w-4 h-4" /> {t('financials.addCheque')}
               </Button>
             </div>
           ) : (
@@ -454,13 +454,13 @@ export default function FinancialsTab({ propertyId, property }) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Cheque #</TableHead>
-                    <TableHead className="hidden sm:table-cell">Bank</TableHead>
-                    <TableHead className="hidden md:table-cell">Payer</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>{t('common.date')}</TableHead>
+                    <TableHead>{t('financials.chequeNumber')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t('financials.bank')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('financials.payer')}</TableHead>
+                    <TableHead>{t('common.type')}</TableHead>
+                    <TableHead>{t('common.status')}</TableHead>
+                    <TableHead className="text-right">{t('common.amount')}</TableHead>
                     <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
@@ -492,14 +492,14 @@ export default function FinancialsTab({ propertyId, property }) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => { setEditingCheque(ch); setChequeDialogOpen(true) }}>
-                                <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                                <Pencil className="mr-2 h-3.5 w-3.5" /> {t('common.edit')}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={() => handleChequeDelete(ch.id)}
                                 className="text-destructive focus:text-destructive"
                               >
-                                <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                                <Trash2 className="mr-2 h-3.5 w-3.5" /> {t('common.delete')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

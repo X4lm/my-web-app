@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { useLocale } from '@/contexts/LocaleContext'
 
 const RESIDENTIAL_TYPES = ['studio', '1br', '2br', '3br']
 const COMMERCIAL_TYPES = ['office', 'retail', 'warehouse', 'showroom']
@@ -26,6 +27,7 @@ const EMPTY = {
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
 export default function UnitFormDialog({ open, onOpenChange, unit, onSave, saving, propertyType }) {
+  const { t } = useLocale()
   const isCommercial = propertyType === 'commercial_building'
   const isMixed = propertyType === 'mixed_use'
   const unitTypes = isCommercial ? COMMERCIAL_TYPES : isMixed ? [...RESIDENTIAL_TYPES, ...COMMERCIAL_TYPES] : RESIDENTIAL_TYPES
@@ -47,10 +49,10 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
 
   function validate() {
     const e = {}
-    if (!form.unitNumber.toString().trim()) e.unitNumber = 'Required'
-    if (!form.floor.toString().trim()) e.floor = 'Required'
+    if (!form.unitNumber.toString().trim()) e.unitNumber = t('common.required')
+    if (!form.floor.toString().trim()) e.floor = t('common.required')
     if (!form.monthlyRent || isNaN(form.monthlyRent) || Number(form.monthlyRent) <= 0)
-      e.monthlyRent = 'Enter a valid amount'
+      e.monthlyRent = t('common.validAmount')
     return e
   }
 
@@ -70,9 +72,9 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{unit ? 'Edit Unit' : 'Add Unit'}</DialogTitle>
+          <DialogTitle>{unit ? t('unitForm.editUnit') : t('unitForm.addUnit')}</DialogTitle>
           <DialogDescription>
-            {unit ? 'Update the unit details.' : 'Add a new unit to this property.'}
+            {unit ? t('unitForm.editDesc') : t('unitForm.addDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -80,188 +82,187 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
           {/* Unit Info */}
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Unit number</Label>
+              <Label>{t('unitForm.unitNumber')}</Label>
               <Input
                 value={form.unitNumber}
                 onChange={e => set('unitNumber', e.target.value)}
-                placeholder="e.g. 101"
+                placeholder={t('unitForm.unitPlaceholder')}
               />
               {errors.unitNumber && <p className="text-xs text-destructive">{errors.unitNumber}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Floor</Label>
+              <Label>{t('unitForm.floor')}</Label>
               <Input
                 value={form.floor}
                 onChange={e => set('floor', e.target.value)}
-                placeholder="e.g. 1"
+                placeholder={t('unitForm.floorPlaceholder')}
               />
               {errors.floor && <p className="text-xs text-destructive">{errors.floor}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Size (sqm)</Label>
+              <Label>{t('unitForm.sizeSqm')}</Label>
               <Input
                 type="number"
                 min="0"
                 value={form.size}
                 onChange={e => set('size', e.target.value)}
-                placeholder="e.g. 85"
+                placeholder={t('unitForm.sizePlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Unit type</Label>
+              <Label>{t('unitForm.type')}</Label>
               <select value={form.unitType} onChange={e => set('unitType', e.target.value)} className={SELECT_CLASS}>
-                {unitTypes.map(t => (
-                  <option key={t} value={t}>
-                    {t === 'studio' ? 'Studio' : t === '1br' ? '1 BR' : t === '2br' ? '2 BR' : t === '3br' ? '3 BR'
-                      : t.charAt(0).toUpperCase() + t.slice(1)}
+                {unitTypes.map(ut => (
+                  <option key={ut} value={ut}>
+                    {t(`type.${ut}`)}
                   </option>
                 ))}
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Condition</Label>
+              <Label>{t('unitForm.condition')}</Label>
               <select value={form.condition} onChange={e => set('condition', e.target.value)} className={SELECT_CLASS}>
-                <option value="good">Good</option>
-                <option value="needs_attention">Needs Attention</option>
-                <option value="critical">Critical</option>
+                <option value="good">{t('unitForm.conditionGood')}</option>
+                <option value="needs_attention">{t('unitForm.conditionNeedsAttention')}</option>
+                <option value="critical">{t('unitForm.conditionCritical')}</option>
               </select>
             </div>
           </div>
 
           <Separator />
-          <p className="text-sm font-semibold text-muted-foreground">Tenant Profile</p>
+          <p className="text-sm font-semibold text-muted-foreground">{t('unitForm.tenantProfile')}</p>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Tenant name</Label>
+              <Label>{t('unitForm.tenantName')}</Label>
               <Input
                 value={form.tenantName}
                 onChange={e => set('tenantName', e.target.value)}
-                placeholder="Leave empty if vacant"
+                placeholder={t('unitForm.tenantNameVacantPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Phone</Label>
+              <Label>{t('unitForm.tenantPhone')}</Label>
               <Input
                 value={form.tenantContact}
                 onChange={e => set('tenantContact', e.target.value)}
-                placeholder="e.g. +971 50 123 4567"
+                placeholder={t('unitForm.tenantPhonePlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label>{t('unitForm.tenantEmail')}</Label>
               <Input
                 type="email"
                 value={form.tenantEmail}
                 onChange={e => set('tenantEmail', e.target.value)}
-                placeholder="tenant@email.com"
+                placeholder={t('unitForm.tenantEmailPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Emirates ID / Passport</Label>
+              <Label>{t('unitForm.tenantId')}</Label>
               <Input
                 value={form.tenantEmiratesId}
                 onChange={e => set('tenantEmiratesId', e.target.value)}
-                placeholder="784-XXXX-XXXXXXX-X"
+                placeholder={t('unitForm.tenantIdPlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Nationality</Label>
+              <Label>{t('unitForm.tenantNationality')}</Label>
               <Input
                 value={form.tenantNationality}
                 onChange={e => set('tenantNationality', e.target.value)}
-                placeholder="e.g. UAE"
+                placeholder={t('unitForm.nationalityPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Company</Label>
+              <Label>{t('unitForm.tenantCompany')}</Label>
               <Input
                 value={form.tenantCompany}
                 onChange={e => set('tenantCompany', e.target.value)}
-                placeholder="Employer or company name"
+                placeholder={t('unitForm.companyPlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Emergency contact name</Label>
+              <Label>{t('unitForm.emergencyContactName')}</Label>
               <Input
                 value={form.emergencyContactName}
                 onChange={e => set('emergencyContactName', e.target.value)}
-                placeholder="Full name"
+                placeholder={t('unitForm.emergencyContactNamePlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Emergency contact phone</Label>
+              <Label>{t('unitForm.emergencyContactPhone')}</Label>
               <Input
                 value={form.emergencyContactPhone}
                 onChange={e => set('emergencyContactPhone', e.target.value)}
-                placeholder="+971 ..."
+                placeholder={t('unitForm.emergencyContactPhonePlaceholder')}
               />
             </div>
           </div>
 
           <Separator />
-          <p className="text-sm font-semibold text-muted-foreground">Lease & Contract</p>
+          <p className="text-sm font-semibold text-muted-foreground">{t('unitForm.leaseContract')}</p>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Lease start</Label>
+              <Label>{t('unitForm.leaseStart')}</Label>
               <Input type="date" value={form.leaseStart} onChange={e => set('leaseStart', e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Lease end</Label>
+              <Label>{t('unitForm.leaseEnd')}</Label>
               <Input type="date" value={form.leaseEnd} onChange={e => set('leaseEnd', e.target.value)} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Ejari number</Label>
+              <Label>{t('unitForm.ejariNumber')}</Label>
               <Input
                 value={form.ejariNumber}
                 onChange={e => set('ejariNumber', e.target.value)}
-                placeholder="e.g. 1234567890"
+                placeholder={t('unitForm.ejariPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Contract number</Label>
+              <Label>{t('unitForm.contractNumber')}</Label>
               <Input
                 value={form.contractNumber}
                 onChange={e => set('contractNumber', e.target.value)}
-                placeholder="e.g. CN-2024-001"
+                placeholder={t('unitForm.contractPlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Payment frequency</Label>
+              <Label>{t('unitForm.paymentFrequency')}</Label>
               <select value={form.paymentFrequency} onChange={e => set('paymentFrequency', e.target.value)} className={SELECT_CLASS}>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly (4 cheques)</option>
-                <option value="semi_annual">Semi-Annual (2 cheques)</option>
-                <option value="annual">Annual (1 cheque)</option>
+                <option value="monthly">{t('unitForm.freqMonthly')}</option>
+                <option value="quarterly">{t('unitForm.freqQuarterly')}</option>
+                <option value="semi_annual">{t('unitForm.freqSemiAnnual')}</option>
+                <option value="annual">{t('unitForm.freqAnnual')}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Annual rent</Label>
+              <Label>{t('unitForm.annualRent')}</Label>
               <Input
                 type="number"
                 min="0"
                 value={form.annualRent}
                 onChange={e => set('annualRent', e.target.value)}
-                placeholder="Total per year"
+                placeholder={t('unitForm.annualRentPlaceholder')}
               />
             </div>
           </div>
@@ -269,22 +270,22 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
           {COMMERCIAL_TYPES.includes(form.unitType) && (
             <>
               <Separator />
-              <p className="text-sm font-semibold text-muted-foreground">Commercial Details</p>
+              <p className="text-sm font-semibold text-muted-foreground">{t('unitForm.commercialDetails')}</p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Trade license number</Label>
+                  <Label>{t('unitForm.tradeLicense')}</Label>
                   <Input
                     value={form.tradeLicenseNumber}
                     onChange={e => set('tradeLicenseNumber', e.target.value)}
-                    placeholder="e.g. TL-2024-00456"
+                    placeholder={t('unitForm.tradeLicensePlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Commercial activity</Label>
+                  <Label>{t('unitForm.commercialActivity')}</Label>
                   <Input
                     value={form.commercialActivity}
                     onChange={e => set('commercialActivity', e.target.value)}
-                    placeholder="e.g. Restaurant, Retail Shop"
+                    placeholder={t('unitForm.commercialActivityPlaceholder')}
                   />
                 </div>
               </div>
@@ -292,11 +293,11 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
           )}
 
           <Separator />
-          <p className="text-sm font-semibold text-muted-foreground">Financials</p>
+          <p className="text-sm font-semibold text-muted-foreground">{t('unitForm.financials')}</p>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Monthly rent</Label>
+              <Label>{t('unitForm.monthlyRent')}</Label>
               <Input
                 type="number"
                 min="0"
@@ -307,15 +308,15 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               {errors.monthlyRent && <p className="text-xs text-destructive">{errors.monthlyRent}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Payment status</Label>
+              <Label>{t('unitForm.paymentStatus')}</Label>
               <select value={form.paymentStatus} onChange={e => set('paymentStatus', e.target.value)} className={SELECT_CLASS}>
-                <option value="paid">Paid</option>
-                <option value="pending">Pending</option>
-                <option value="overdue">Overdue</option>
+                <option value="paid">{t('unitForm.paymentPaid')}</option>
+                <option value="pending">{t('unitForm.paymentPending')}</option>
+                <option value="overdue">{t('unitForm.paymentOverdue')}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Security deposit</Label>
+              <Label>{t('unitForm.securityDeposit')}</Label>
               <Input
                 type="number"
                 min="0"
@@ -328,10 +329,10 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
 
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? 'Saving...' : unit ? 'Save Changes' : 'Add Unit'}
+              {saving ? t('common.saving') : unit ? t('common.saveChanges') : t('unitForm.addUnit')}
             </Button>
           </div>
         </form>

@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,18 +22,21 @@ import {
   FileText, Plus, MoreHorizontal, Pencil, Trash2, Copy, Check, Loader2,
 } from 'lucide-react'
 
-const CATEGORY_OPTIONS = [
-  { value: 'rent_reminder', label: 'Rent Reminder' },
-  { value: 'lease_renewal', label: 'Lease Renewal' },
-  { value: 'maintenance_notice', label: 'Maintenance Notice' },
-  { value: 'move_in', label: 'Move-in' },
-  { value: 'move_out', label: 'Move-out' },
-  { value: 'general', label: 'General' },
-  { value: 'complaint', label: 'Complaint Response' },
-  { value: 'welcome', label: 'Welcome' },
+const CATEGORY_KEYS = [
+  'rent_reminder', 'lease_renewal', 'maintenance_notice',
+  'move_in', 'move_out', 'general', 'complaint', 'welcome',
 ]
 
-const CATEGORY_LABELS = Object.fromEntries(CATEGORY_OPTIONS.map(c => [c.value, c.label]))
+const CATEGORY_I18N = {
+  rent_reminder: 'templates.catRentCollection',
+  lease_renewal: 'templates.catLeaseManagement',
+  maintenance_notice: 'templates.catMaintenance',
+  move_in: 'templates.catWelcome',
+  move_out: 'templates.catNotice',
+  general: 'templates.catGeneral',
+  complaint: 'templates.catFeedback',
+  welcome: 'templates.catWelcome',
+}
 
 const DEFAULT_TEMPLATES = [
   {
@@ -63,6 +67,7 @@ const DEFAULT_TEMPLATES = [
 
 export default function MessageTemplates() {
   const { currentUser } = useAuth()
+  const { t } = useLocale()
   const [templates, setTemplates] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -153,7 +158,7 @@ export default function MessageTemplates() {
 
   const filtered = filterCategory === 'all'
     ? templates
-    : templates.filter(t => t.category === filterCategory)
+    : templates.filter(tmpl => tmpl.category === filterCategory)
 
   return (
     <div className="space-y-4">
@@ -161,16 +166,16 @@ export default function MessageTemplates() {
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="w-4 h-4" /> Message Templates
+              <FileText className="w-4 h-4" /> {t('templates.title')}
             </CardTitle>
             <div className="flex gap-2">
               {templates.length === 0 && (
                 <Button variant="outline" size="sm" onClick={loadDefaults}>
-                  Load Defaults
+                  {t('templates.loadDefaults')}
                 </Button>
               )}
               <Button onClick={openAdd} size="sm">
-                <Plus className="w-4 h-4" /> New Template
+                <Plus className="w-4 h-4" /> {t('templates.newTemplate')}
               </Button>
             </div>
           </div>
@@ -183,38 +188,38 @@ export default function MessageTemplates() {
               size="sm"
               onClick={() => setFilterCategory('all')}
             >
-              All
+              {t('templates.allCategories')}
             </Button>
-            {CATEGORY_OPTIONS.map(cat => (
+            {CATEGORY_KEYS.map(catValue => (
               <Button
-                key={cat.value}
-                variant={filterCategory === cat.value ? 'default' : 'outline'}
+                key={catValue}
+                variant={filterCategory === catValue ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilterCategory(cat.value)}
+                onClick={() => setFilterCategory(catValue)}
                 className="whitespace-nowrap"
               >
-                {cat.label}
+                {t(CATEGORY_I18N[catValue] || 'templates.catGeneral')}
               </Button>
             ))}
           </div>
 
           {loading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">{t('common.loading')}</p>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-10 w-10 text-muted-foreground/40 mb-3" />
               <h3 className="text-sm font-medium">
-                {templates.length === 0 ? 'No templates yet' : 'No templates in this category'}
+                {templates.length === 0 ? t('templates.noTemplates') : t('templates.noTemplatesInCategory')}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {templates.length === 0
-                  ? 'Create reusable message templates or load defaults.'
-                  : 'Try a different category.'}
+                  ? t('templates.getStarted')
+                  : t('templates.tryAdjust')}
               </p>
               {templates.length === 0 && (
                 <div className="flex gap-2 mt-4">
-                  <Button variant="outline" size="sm" onClick={loadDefaults}>Load Defaults</Button>
-                  <Button onClick={openAdd} size="sm"><Plus className="w-4 h-4" /> New Template</Button>
+                  <Button variant="outline" size="sm" onClick={loadDefaults}>{t('templates.loadDefaults')}</Button>
+                  <Button onClick={openAdd} size="sm"><Plus className="w-4 h-4" /> {t('templates.newTemplate')}</Button>
                 </div>
               )}
             </div>
@@ -226,7 +231,7 @@ export default function MessageTemplates() {
                     <div>
                       <h4 className="text-sm font-medium">{tmpl.name}</h4>
                       <Badge variant="secondary" className="text-[10px] mt-1">
-                        {CATEGORY_LABELS[tmpl.category] || tmpl.category}
+                        {CATEGORY_I18N[tmpl.category] ? t(CATEGORY_I18N[tmpl.category]) : tmpl.category}
                       </Badge>
                     </div>
                     <DropdownMenu>
@@ -238,27 +243,27 @@ export default function MessageTemplates() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => copyToClipboard(tmpl)}>
                           {copiedId === tmpl.id ? (
-                            <><Check className="mr-2 h-3.5 w-3.5" /> Copied!</>
+                            <><Check className="mr-2 h-3.5 w-3.5" /> {t('common.saved')}</>
                           ) : (
-                            <><Copy className="mr-2 h-3.5 w-3.5" /> Copy to Clipboard</>
+                            <><Copy className="mr-2 h-3.5 w-3.5" /> {t('common.export')}</>
                           )}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => openEdit(tmpl)}>
-                          <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                          <Pencil className="mr-2 h-3.5 w-3.5" /> {t('common.edit')}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleDelete(tmpl.id)}
                           className="text-destructive focus:text-destructive"
                         >
-                          <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                          <Trash2 className="mr-2 h-3.5 w-3.5" /> {t('common.delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                   {tmpl.subject && (
                     <p className="text-xs text-muted-foreground">
-                      Subject: {tmpl.subject}
+                      {t('common.subject')}: {tmpl.subject}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground line-clamp-3 whitespace-pre-line">
@@ -275,56 +280,56 @@ export default function MessageTemplates() {
       <Dialog open={dialogOpen} onOpenChange={open => { if (!saving) setDialogOpen(open) }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Template' : 'New Template'}</DialogTitle>
+            <DialogTitle>{editing ? t('templates.editTemplate') : t('templates.newTemplate')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Template Name *</Label>
+                <Label>{t('templates.templateName')} *</Label>
                 <Input
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder="e.g. Rent Reminder"
+                  placeholder={t('templates.namePlaceholder')}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Category</Label>
+                <Label>{t('common.category')}</Label>
                 <select
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                   value={form.category}
                   onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
                 >
-                  {CATEGORY_OPTIONS.map(c => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
+                  {CATEGORY_KEYS.map(catValue => (
+                    <option key={catValue} value={catValue}>{t(CATEGORY_I18N[catValue] || 'templates.catGeneral')}</option>
                   ))}
                 </select>
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Subject Line</Label>
+              <Label>{t('templates.subjectLine')}</Label>
               <Input
                 value={form.subject}
                 onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
-                placeholder="e.g. Rent Payment Reminder - {{unit}}"
+                placeholder={t('templates.subjectPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Message Body *</Label>
+              <Label>{t('templates.messageBody')} *</Label>
               <textarea
                 className="flex min-h-[160px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                 value={form.body}
                 onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
-                placeholder="Type your template message..."
+                placeholder={t('templates.messagePlaceholder')}
               />
             </div>
             <div className="text-xs text-muted-foreground">
-              Use placeholders like {'{{tenant_name}}'}, {'{{unit}}'}, {'{{rent_amount}}'}, {'{{due_date}}'}, {'{{property_name}}'}, {'{{manager_name}}'} — these are for your reference when copying.
+              {t('templates.placeholderHelp')}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>{t('common.cancel')}</Button>
             <Button onClick={handleSave} disabled={saving || !form.name.trim() || !form.body.trim()}>
-              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : editing ? 'Update' : 'Save'}
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('common.saving')}</> : editing ? t('common.update') : t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -18,7 +18,7 @@ import {
 
 export default function BulkOperations({ propertyId, property }) {
   const { currentUser } = useAuth()
-  const { formatCurrency } = useLocale()
+  const { t, formatCurrency } = useLocale()
   const [rentDialogOpen, setRentDialogOpen] = useState(false)
   const [increasePercent, setIncreasePercent] = useState('5')
   const [processing, setProcessing] = useState(false)
@@ -116,7 +116,7 @@ export default function BulkOperations({ propertyId, property }) {
       const phoneIdx = headers.findIndex(h => h.toLowerCase().includes('tenant phone'))
 
       if (unitNumIdx === -1) {
-        setResult({ success: false, message: 'CSV must have a "Unit Number" column.' })
+        setResult({ success: false, message: t('bulk.csvMustHaveUnit') })
         return
       }
 
@@ -163,28 +163,28 @@ export default function BulkOperations({ propertyId, property }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Layers className="w-4 h-4" /> Bulk Operations
+            <Layers className="w-4 h-4" /> {t('bulk.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-3">
             <Button variant="outline" className="h-auto py-4 flex-col gap-2" onClick={() => { setRentDialogOpen(true); setResult(null) }}>
               <TrendingUp className="w-5 h-5" />
-              <span className="text-sm">Bulk Rent Increase</span>
-              <span className="text-xs text-muted-foreground">Apply % increase to all units</span>
+              <span className="text-sm">{t('bulk.rentIncrease')}</span>
+              <span className="text-xs text-muted-foreground">{t('bulk.rentIncreaseDesc')}</span>
             </Button>
 
             <Button variant="outline" className="h-auto py-4 flex-col gap-2" onClick={exportCSV} disabled={exporting}>
               {exporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileDown className="w-5 h-5" />}
-              <span className="text-sm">Export CSV</span>
-              <span className="text-xs text-muted-foreground">Download all unit data</span>
+              <span className="text-sm">{t('bulk.exportCsv')}</span>
+              <span className="text-xs text-muted-foreground">{t('bulk.exportCsvDesc')}</span>
             </Button>
 
             <label className="cursor-pointer">
               <Button variant="outline" className="h-auto py-4 flex-col gap-2 w-full pointer-events-none" disabled={processing}>
                 {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileUp className="w-5 h-5" />}
-                <span className="text-sm">Import CSV</span>
-                <span className="text-xs text-muted-foreground">Update units from CSV file</span>
+                <span className="text-sm">{t('bulk.importCsv')}</span>
+                <span className="text-xs text-muted-foreground">{t('bulk.importCsvDesc')}</span>
               </Button>
               <input type="file" accept=".csv" onChange={importCSV} className="hidden" disabled={processing} />
             </label>
@@ -203,14 +203,14 @@ export default function BulkOperations({ propertyId, property }) {
       <Dialog open={rentDialogOpen} onOpenChange={open => { if (!processing) setRentDialogOpen(open) }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Bulk Rent Increase</DialogTitle>
+            <DialogTitle>{t('bulk.increaseDialogTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
-              Apply a percentage increase to the monthly rent of all units in this property.
+              {t('bulk.increaseDialogDesc')}
             </p>
             <div className="space-y-2">
-              <Label>Increase Percentage (%)</Label>
+              <Label>{t('bulk.increasePercentage')}</Label>
               <Input
                 type="number"
                 value={increasePercent}
@@ -218,14 +218,14 @@ export default function BulkOperations({ propertyId, property }) {
                 min="1" max="100" step="0.5"
               />
               <p className="text-xs text-muted-foreground">
-                RERA max: 0-5% (within 10% of market), 5-10% (11-20% below), 10-15% (21-30%), 15-20% (30%+)
+                {t('bulk.reraGuidance')}
               </p>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRentDialogOpen(false)} disabled={processing}>Cancel</Button>
+            <Button variant="outline" onClick={() => setRentDialogOpen(false)} disabled={processing}>{t('common.cancel')}</Button>
             <Button onClick={applyBulkRentIncrease} disabled={processing || !increasePercent}>
-              {processing ? <><Loader2 className="w-4 h-4 animate-spin" /> Applying...</> : `Apply ${increasePercent}% Increase`}
+              {processing ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('common.saving')}</> : t('bulk.applyIncrease').replace('{pct}', increasePercent)}
             </Button>
           </DialogFooter>
         </DialogContent>

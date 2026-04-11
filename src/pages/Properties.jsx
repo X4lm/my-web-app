@@ -28,7 +28,7 @@ import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCirc
 
 export default function Properties() {
   const { currentUser } = useAuth()
-  const { formatCurrency } = useLocale()
+  const { t, formatCurrency } = useLocale()
   const [properties, setProperties] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -110,7 +110,7 @@ export default function Properties() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this property? This cannot be undone.')) return
+    if (!window.confirm(t('properties.deleteConfirm'))) return
     try {
       console.log('[Firestore] Deleting property:', id)
       await deleteDoc(doc(db, 'users', currentUser.uid, 'properties', id))
@@ -134,14 +134,14 @@ export default function Properties() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Properties</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('properties.title')}</h1>
             <p className="text-muted-foreground text-sm">
-              Manage your property listings.
+              {t('properties.subtitle')}
             </p>
           </div>
           <Button onClick={openAdd} size="sm">
             <Plus className="w-4 h-4" />
-            Add Property
+            {t('properties.addProperty')}
           </Button>
         </div>
 
@@ -152,7 +152,7 @@ export default function Properties() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search properties..."
+                  placeholder={t('properties.search')}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="pl-9"
@@ -164,18 +164,18 @@ export default function Properties() {
                   onChange={e => setStatusFilter(e.target.value)}
                   className="h-9 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 >
-                  <option value="all">All Status</option>
-                  <option value="available">Available</option>
-                  <option value="occupied">Occupied</option>
+                  <option value="all">{t('properties.allStatus')}</option>
+                  <option value="available">{t('common.available')}</option>
+                  <option value="occupied">{t('common.occupied')}</option>
                 </select>
                 <select
                   value={typeFilter}
                   onChange={e => setTypeFilter(e.target.value)}
                   className="h-9 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 >
-                  <option value="all">All Types</option>
-                  {Object.entries(TYPE_LABELS).map(([val, label]) => (
-                    <option key={val} value={val}>{label}</option>
+                  <option value="all">{t('properties.allTypes')}</option>
+                  {Object.entries(TYPE_LABELS).map(([val]) => (
+                    <option key={val} value={val}>{t(`type.${val}`)}</option>
                   ))}
                 </select>
               </div>
@@ -187,22 +187,22 @@ export default function Properties() {
         <Card>
           <CardContent className="p-0">
             {loading ? (
-              <p className="text-sm text-muted-foreground py-12 text-center">Loading properties...</p>
+              <p className="text-sm text-muted-foreground py-12 text-center">{t('properties.loadingProperties')}</p>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Building2 className="h-10 w-10 text-muted-foreground/40 mb-3" />
                 <h3 className="text-sm font-medium">
-                  {properties.length === 0 ? 'No properties yet' : 'No results found'}
+                  {properties.length === 0 ? t('properties.noProperties') : t('properties.noResults')}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   {properties.length === 0
-                    ? 'Get started by adding your first property.'
-                    : 'Try adjusting your search or filters.'}
+                    ? t('properties.addFirst')
+                    : t('properties.adjustFilters')}
                 </p>
                 {properties.length === 0 && (
                   <Button onClick={openAdd} size="sm" className="mt-4">
                     <Plus className="w-4 h-4" />
-                    Add Property
+                    {t('properties.addProperty')}
                   </Button>
                 )}
               </div>
@@ -211,11 +211,11 @@ export default function Properties() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Property</TableHead>
-                    <TableHead className="hidden sm:table-cell">Type</TableHead>
-                    <TableHead className="hidden md:table-cell">Address</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Rent</TableHead>
+                    <TableHead>{t('properties.property')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t('common.type')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('common.address')}</TableHead>
+                    <TableHead>{t('common.status')}</TableHead>
+                    <TableHead className="text-right">{t('common.rent')}</TableHead>
                     <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
@@ -240,17 +240,17 @@ export default function Properties() {
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-muted-foreground sm:hidden">{TYPE_LABELS[p.type]}</div>
+                        <div className="text-xs text-muted-foreground sm:hidden">{t(`type.${p.type}`)}</div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        <Badge variant="secondary">{TYPE_LABELS[p.type]}</Badge>
+                        <Badge variant="secondary">{t(`type.${p.type}`)}</Badge>
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
                         {p.address}
                       </TableCell>
                       <TableCell>
                         <Badge variant={p.status === 'available' ? 'success' : 'warning'}>
-                          {p.status === 'available' ? 'Available' : 'Occupied'}
+                          {p.status === 'available' ? t('common.available') : t('common.occupied')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-medium">
@@ -266,11 +266,11 @@ export default function Properties() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => navigate(`/properties/${p.id}`)}>
                               <Eye className="mr-2 h-3.5 w-3.5" />
-                              View
+                              {t('common.view')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(p) }}>
                               <Pencil className="mr-2 h-3.5 w-3.5" />
-                              Edit
+                              {t('common.edit')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -278,7 +278,7 @@ export default function Properties() {
                               className="text-destructive focus:text-destructive"
                             >
                               <Trash2 className="mr-2 h-3.5 w-3.5" />
-                              Delete
+                              {t('common.delete')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

@@ -20,7 +20,7 @@ const COMMERCIAL_TYPES = new Set(['commercial_building', 'office', 'retail', 'wa
 
 export default function PortfolioPage() {
   const { currentUser } = useAuth()
-  const { formatCurrency, getCurrencyCode } = useLocale()
+  const { formatCurrency, getCurrencyCode, t } = useLocale()
   const [properties, setProperties] = useState([])
   const [loading, setLoading] = useState(true)
   const [propertyData, setPropertyData] = useState({})
@@ -101,10 +101,10 @@ export default function PortfolioPage() {
 
       doc.setFontSize(16)
       doc.setFont(undefined, 'bold')
-      doc.text('Portfolio P&L Report', pw / 2, 15, { align: 'center' })
+      doc.text(t('portfolio.reportTitle'), pw / 2, 15, { align: 'center' })
       doc.setFontSize(9)
       doc.setFont(undefined, 'normal')
-      doc.text(`Generated: ${new Date().toLocaleDateString()} | ${properties.length} properties | ${totals.totalUnits} units`, pw / 2, 22, { align: 'center' })
+      doc.text(`Generated: ${new Date().toLocaleDateString()} | ${properties.length} ${t('portfolio.properties')} | ${totals.totalUnits} ${t('portfolio.units')}`, pw / 2, 22, { align: 'center' })
 
       const rows = properties.map(p => {
         const d = propertyData[p.id] || {}
@@ -131,7 +131,7 @@ export default function PortfolioPage() {
 
       autoTable(doc, {
         startY: 28,
-        head: [['Property', 'Type', 'Occupancy', 'Monthly Rent', 'Annual Rent', 'Expenses (YTD)', 'VAT (5%)', 'Net Income']],
+        head: [[t('portfolio.property'), t('portfolio.type'), t('portfolio.occupancy'), t('portfolio.monthlyRent'), t('portfolio.annualIncome'), t('portfolio.expensesYtd'), t('portfolio.vat'), t('portfolio.netIncome')]],
         body: rows,
         theme: 'striped',
         margin: { left: 10, right: 10 },
@@ -141,7 +141,7 @@ export default function PortfolioPage() {
       })
 
       doc.setFontSize(7)
-      doc.text('PropManager — Confidential', 10, doc.internal.pageSize.getHeight() - 8)
+      doc.text(t('portfolio.confidential'), 10, doc.internal.pageSize.getHeight() - 8)
 
       doc.save(`Portfolio_PL_${new Date().toISOString().slice(0, 10)}.pdf`)
     } catch (err) {
@@ -156,43 +156,43 @@ export default function PortfolioPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Portfolio Overview</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('portfolio.title')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Cross-property P&L with VAT tracking for commercial properties.
+              {t('portfolio.subtitle')}
             </p>
           </div>
           <Button onClick={exportPDF} disabled={generating || loading} size="sm">
-            {generating ? <><Loader2 className="w-4 h-4 animate-spin" /> Exporting...</> : <><FileDown className="w-4 h-4" /> Export PDF</>}
+            {generating ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('portfolio.exporting')}</> : <><FileDown className="w-4 h-4" /> {t('portfolio.exportPdf')}</>}
           </Button>
         </div>
 
         {/* KPI cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Monthly Rent</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('portfolio.monthlyRent')}</CardTitle></CardHeader>
             <CardContent><div className="text-xl font-semibold">{loading ? '—' : formatCurrency(totals.monthlyRent)}</div></CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Annual Income</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('portfolio.annualIncome')}</CardTitle></CardHeader>
             <CardContent><div className="text-xl font-semibold">{loading ? '—' : formatCurrency(totals.annualRent)}</div></CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Expenses (YTD)</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('portfolio.expensesYtd')}</CardTitle></CardHeader>
             <CardContent><div className="text-xl font-semibold text-destructive">{loading ? '—' : formatCurrency(totals.totalExpenses)}</div></CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">VAT Liability</CardTitle></CardHeader>
-            <CardContent><div className="text-xl font-semibold">{loading ? '—' : formatCurrency(totals.vatLiability)}</div><p className="text-xs text-muted-foreground">5% on commercial</p></CardContent>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('portfolio.vatLiability')}</CardTitle></CardHeader>
+            <CardContent><div className="text-xl font-semibold">{loading ? '—' : formatCurrency(totals.vatLiability)}</div><p className="text-xs text-muted-foreground">{t('portfolio.vatOnCommercial')}</p></CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Net Income</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('portfolio.netIncome')}</CardTitle></CardHeader>
             <CardContent><div className={`text-xl font-semibold ${totals.netIncome < 0 ? 'text-destructive' : ''}`}>{loading ? '—' : formatCurrency(totals.netIncome)}</div></CardContent>
           </Card>
         </div>
 
         {/* Occupancy summary */}
         <Card>
-          <CardHeader><CardTitle className="text-base">Occupancy: {occupancyRate}% ({totals.occupiedUnits}/{totals.totalUnits})</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t('portfolio.occupancy')}: {occupancyRate}% ({totals.occupiedUnits}/{totals.totalUnits})</CardTitle></CardHeader>
           <CardContent>
             <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
               <div className={`h-full rounded-full ${occupancyRate > 80 ? 'bg-emerald-500' : occupancyRate > 50 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${occupancyRate}%` }} />
@@ -202,22 +202,22 @@ export default function PortfolioPage() {
 
         {/* Property P&L table */}
         <Card>
-          <CardHeader><CardTitle className="text-base">Property P&L Breakdown</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t('portfolio.plBreakdown')}</CardTitle></CardHeader>
           <CardContent className="p-0">
             {loading ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">Loading portfolio data...</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('portfolio.loading')}</p>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Property</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Occupancy</TableHead>
-                      <TableHead className="text-right">Monthly Rent</TableHead>
-                      <TableHead className="text-right">Expenses (YTD)</TableHead>
-                      <TableHead className="text-right">VAT</TableHead>
-                      <TableHead className="text-right">Net Income</TableHead>
+                      <TableHead>{t('portfolio.property')}</TableHead>
+                      <TableHead>{t('portfolio.type')}</TableHead>
+                      <TableHead>{t('portfolio.occupancy')}</TableHead>
+                      <TableHead className="text-right">{t('portfolio.monthlyRent')}</TableHead>
+                      <TableHead className="text-right">{t('portfolio.expensesYtd')}</TableHead>
+                      <TableHead className="text-right">{t('portfolio.vat')}</TableHead>
+                      <TableHead className="text-right">{t('portfolio.netIncome')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -236,7 +236,7 @@ export default function PortfolioPage() {
                       )
                     })}
                     <TableRow className="bg-muted/50 font-bold">
-                      <TableCell>Total ({properties.length} properties)</TableCell>
+                      <TableCell>{t('portfolio.total')} ({properties.length} {t('portfolio.properties')})</TableCell>
                       <TableCell />
                       <TableCell>{totals.occupiedUnits}/{totals.totalUnits}</TableCell>
                       <TableCell className="text-right">{formatCurrency(totals.monthlyRent)}</TableCell>

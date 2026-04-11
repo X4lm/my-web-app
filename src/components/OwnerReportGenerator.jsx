@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { collection, query, orderBy, getDocs } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
@@ -6,19 +6,16 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { hasUnits, TYPE_LABELS } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { FileDown, Loader2, Building2, DollarSign, Wrench, Calendar, Eye, X } from 'lucide-react'
 
 export default function OwnerReportGenerator({ propertyId, property }) {
   const { currentUser } = useAuth()
-  const { formatCurrency, formatDate, getCurrencyCode } = useLocale()
+  const { t, formatCurrency, formatDate, getCurrencyCode } = useLocale()
   const [generating, setGenerating] = useState(false)
   const [previewing, setPreviewing] = useState(false)
   const [pdfUrl, setPdfUrl] = useState(null)
-  const [hoverVisible, setHoverVisible] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const hoverTimeout = useRef(null)
   const buildingPdf = useRef(false)
 
   const basePath = `users/${currentUser.uid}/properties/${propertyId}`
@@ -100,16 +97,16 @@ export default function OwnerReportGenerator({ propertyId, property }) {
 
     doc.setFontSize(18)
     doc.setFont(undefined, 'bold')
-    doc.text('Property Owner Report', pageWidth / 2, y, { align: 'center' })
+    doc.text(t('reports.title'), pageWidth / 2, y, { align: 'center' })
     y += 8
     doc.setFontSize(10)
     doc.setFont(undefined, 'normal')
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: 'center' })
+    doc.text(`${t('reports.generated')}: ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: 'center' })
     y += 12
 
     doc.setFontSize(13)
     doc.setFont(undefined, 'bold')
-    doc.text('Property Details', 14, y)
+    doc.text(t('reports.propertyDetails'), 14, y)
     y += 7
     doc.setFontSize(10)
     doc.setFont(undefined, 'normal')
@@ -128,7 +125,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
 
     doc.setFontSize(13)
     doc.setFont(undefined, 'bold')
-    doc.text(`Financial Summary (${d.currentYear})`, 14, y)
+    doc.text(`${t('reports.financialSummary')} (${d.currentYear})`, 14, y)
     y += 7
     const annualIncome = (d.expectedRent * 12) - d.totalExpenses
     const financials = [
@@ -144,7 +141,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
     if (Object.keys(d.categoryTotals).length > 0) {
       doc.setFontSize(13)
       doc.setFont(undefined, 'bold')
-      doc.text('Expense Breakdown by Category', 14, y)
+      doc.text(t('reports.expenseBreakdown'), 14, y)
       y += 7
       const CATEGORY_LABELS = { maintenance: 'Maintenance', repair: 'Repair', utilities: 'Utilities', insurance: 'Insurance', cleaning: 'Cleaning', management: 'Management', other: 'Other' }
       const catRows = Object.entries(d.categoryTotals).sort((a, b) => b[1] - a[1]).map(([cat, total]) => [CATEGORY_LABELS[cat] || cat, `${currency} ${total.toLocaleString()}`, `${Math.round((total / d.totalExpenses) * 100)}%`])
@@ -156,7 +153,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
       if (y > 240) { doc.addPage(); y = 20 }
       doc.setFontSize(13)
       doc.setFont(undefined, 'bold')
-      doc.text('Cheque Summary', 14, y)
+      doc.text(t('reports.chequeSummary'), 14, y)
       y += 7
       const chequeStats = [
         ['Total Cheques', String(d.cheques.length)],
@@ -172,7 +169,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
       if (y > 220) { doc.addPage(); y = 20 }
       doc.setFontSize(13)
       doc.setFont(undefined, 'bold')
-      doc.text('Units Overview', 14, y)
+      doc.text(t('reports.unitsOverview'), 14, y)
       y += 7
       const unitRows = d.units.map(u => [u.unitNumber || '—', u.tenantName || 'Vacant', `${currency} ${Number(u.monthlyRent || 0).toLocaleString()}`, u.leaseEnd || '—', u.paymentStatus === 'paid' ? 'Paid' : u.paymentStatus === 'overdue' ? 'Overdue' : 'Pending'])
       autoTable(doc, { startY: y, head: [['Unit #', 'Tenant', 'Rent', 'Lease End', 'Payment']], body: unitRows, theme: 'striped', margin: { left: 14, right: 14 } })
@@ -183,7 +180,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
       if (y > 230) { doc.addPage(); y = 20 }
       doc.setFontSize(13)
       doc.setFont(undefined, 'bold')
-      doc.text('Work Orders Summary', 14, y)
+      doc.text(t('reports.workOrdersSummary'), 14, y)
       y += 7
       const woStats = [['Total Work Orders', String(d.workOrders.length)], ['Open / In Progress', String(d.openWorkOrders.length)], ['Completed', String(d.completedWorkOrders.length)]]
       autoTable(doc, { startY: y, body: woStats, theme: 'plain', columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }, margin: { left: 14, right: 14 } })
@@ -194,7 +191,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
       if (y > 240) { doc.addPage(); y = 20 }
       doc.setFontSize(13)
       doc.setFont(undefined, 'bold')
-      doc.text('Latest Inspection', 14, y)
+      doc.text(t('reports.latestInspection'), 14, y)
       y += 7
       const insp = d.latestInspection
       const inspDate = insp.createdAt?.toDate ? insp.createdAt.toDate().toLocaleDateString() : 'Unknown'
@@ -209,8 +206,8 @@ export default function OwnerReportGenerator({ propertyId, property }) {
       doc.setPage(i)
       doc.setFontSize(8)
       doc.setFont(undefined, 'normal')
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, 290, { align: 'center' })
-      doc.text('PropManager — Confidential', 14, 290)
+      doc.text(`${t('reports.page')} ${i} ${t('reports.of')} ${pageCount}`, pageWidth / 2, 290, { align: 'center' })
+      doc.text(t('reports.confidential'), 14, 290)
     }
 
     return doc
@@ -246,38 +243,13 @@ export default function OwnerReportGenerator({ propertyId, property }) {
   function closePdfPreview() {
     if (pdfUrl) URL.revokeObjectURL(pdfUrl)
     setPdfUrl(null)
-    setHoverVisible(false)
-  }
-
-  const ensurePdfUrl = useCallback(async () => {
-    if (pdfUrl || buildingPdf.current || !reportData) return
-    buildingPdf.current = true
-    try {
-      const doc = await buildPDF()
-      const blob = doc.output('blob')
-      setPdfUrl(URL.createObjectURL(blob))
-    } catch (err) {
-      console.error('[PDF] Build error:', err)
-    } finally {
-      buildingPdf.current = false
-    }
-  }, [pdfUrl, reportData])
-
-  function handleHoverEnter() {
-    ensurePdfUrl()
-    hoverTimeout.current = setTimeout(() => setHoverVisible(true), 300)
-  }
-
-  function handleHoverLeave() {
-    clearTimeout(hoverTimeout.current)
-    setHoverVisible(false)
   }
 
   if (loading) {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <p className="text-sm text-muted-foreground">Loading report data...</p>
+          <p className="text-sm text-muted-foreground">{t('reports.loadingReport')}</p>
         </CardContent>
       </Card>
     )
@@ -294,45 +266,21 @@ export default function OwnerReportGenerator({ propertyId, property }) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <FileDown className="w-4 h-4" /> Owner Report
+              <FileDown className="w-4 h-4" /> {t('reports.title')}
             </CardTitle>
             <div className="flex gap-2">
-              <div
-                className="relative"
-                onMouseEnter={handleHoverEnter}
-                onMouseLeave={handleHoverLeave}
-              >
-                <Button variant="outline" onClick={previewPDF} disabled={previewing || generating} size="sm">
-                  {previewing ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
-                  ) : (
-                    <><Eye className="w-4 h-4" /> Preview PDF</>
-                  )}
-                </Button>
-                {/* Hover PDF thumbnail */}
-                {hoverVisible && pdfUrl && (
-                  <div className="absolute top-full right-0 mt-2 z-50 shadow-2xl rounded-lg border bg-background overflow-hidden"
-                    onMouseEnter={() => clearTimeout(hoverTimeout.current)}
-                    onMouseLeave={handleHoverLeave}
-                  >
-                    <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/50">
-                      <span className="text-xs font-medium text-muted-foreground">Report Preview</span>
-                      <span className="text-[10px] text-muted-foreground">Click button to expand</span>
-                    </div>
-                    <iframe
-                      src={pdfUrl}
-                      title="Report Hover Preview"
-                      className="pointer-events-none"
-                      style={{ width: '400px', height: '520px' }}
-                    />
-                  </div>
+              <Button variant="outline" onClick={previewPDF} disabled={previewing || generating} size="sm">
+                {previewing ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> {t('common.loading')}</>
+                ) : (
+                  <><Eye className="w-4 h-4" /> {t('reports.previewPdf')}</>
                 )}
-              </div>
+              </Button>
               <Button onClick={generatePDF} disabled={generating || previewing} size="sm">
                 {generating ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> {t('common.loading')}</>
                 ) : (
-                  <><FileDown className="w-4 h-4" /> Download PDF</>
+                  <><FileDown className="w-4 h-4" /> {t('reports.downloadPdf')}</>
                 )}
               </Button>
             </div>
@@ -340,7 +288,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Generate a comprehensive PDF report for this property including financials, occupancy, expenses, cheques, work orders, and inspection results.
+            {t('reports.generateDesc')}
           </p>
 
           {/* Quick preview stats */}
@@ -348,28 +296,28 @@ export default function OwnerReportGenerator({ propertyId, property }) {
             <div className="flex items-center gap-3 p-3 rounded-lg border">
               <DollarSign className="h-8 w-8 text-muted-foreground/50" />
               <div>
-                <p className="text-xs text-muted-foreground">Monthly Rent</p>
+                <p className="text-xs text-muted-foreground">{t('property.monthlyRent')}</p>
                 <p className="font-semibold">{formatCurrency(d.expectedRent)}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg border">
               <Building2 className="h-8 w-8 text-muted-foreground/50" />
               <div>
-                <p className="text-xs text-muted-foreground">Occupancy</p>
+                <p className="text-xs text-muted-foreground">{t('dashboard.occupancy')}</p>
                 <p className="font-semibold">{d.occupancyRate}% ({d.occupiedUnits}/{d.totalUnits})</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg border">
               <Wrench className="h-8 w-8 text-muted-foreground/50" />
               <div>
-                <p className="text-xs text-muted-foreground">Open Work Orders</p>
+                <p className="text-xs text-muted-foreground">{t('workOrders.title')}</p>
                 <p className="font-semibold">{d.openWorkOrders.length}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg border">
               <Calendar className="h-8 w-8 text-muted-foreground/50" />
               <div>
-                <p className="text-xs text-muted-foreground">Net Income ({d.currentYear})</p>
+                <p className="text-xs text-muted-foreground">{t('portfolio.netIncome')} ({d.currentYear})</p>
                 <p className={`font-semibold ${annualIncome < 0 ? 'text-destructive' : ''}`}>
                   {formatCurrency(annualIncome)}
                 </p>
@@ -377,71 +325,37 @@ export default function OwnerReportGenerator({ propertyId, property }) {
             </div>
           </div>
 
-          {/* Report contents list */}
-          <div className="mt-4 text-sm text-muted-foreground">
-            <p className="font-medium text-foreground mb-2">Report includes:</p>
-            <ul className="grid gap-1 sm:grid-cols-2">
-              <li className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-[10px]">✓</Badge> Property details & overview
-              </li>
-              <li className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-[10px]">✓</Badge> Financial summary & net income
-              </li>
-              <li className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-[10px]">✓</Badge> Expense breakdown by category
-              </li>
-              {d.cheques.length > 0 && (
-                <li className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-[10px]">✓</Badge> Cheque tracking ({d.cheques.length} cheques)
-                </li>
-              )}
-              {d.isBuilding && d.units.length > 0 && (
-                <li className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-[10px]">✓</Badge> Units overview ({d.units.length} units)
-                </li>
-              )}
-              {d.workOrders.length > 0 && (
-                <li className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-[10px]">✓</Badge> Work orders ({d.workOrders.length} total)
-                </li>
-              )}
-              {d.latestInspection && (
-                <li className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-[10px]">✓</Badge> Latest inspection results
-                </li>
-              )}
-            </ul>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Inline PDF Viewer */}
+      {/* Floating PDF Modal */}
       {pdfUrl && (
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Eye className="w-4 h-4" /> Report Preview
-              </CardTitle>
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={closePdfPreview}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="relative z-10 w-[95vw] max-w-4xl h-[90vh] bg-background rounded-xl shadow-2xl border flex flex-col overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                <Eye className="w-4 h-4" /> {t('reports.reportPreview')}
+              </h3>
               <div className="flex gap-2">
                 <Button onClick={generatePDF} disabled={generating} size="sm" variant="outline">
-                  <FileDown className="w-4 h-4" /> Download
+                  <FileDown className="w-4 h-4" /> {t('common.download')}
                 </Button>
                 <Button variant="ghost" size="icon" onClick={closePdfPreview} className="h-8 w-8">
                   <X className="w-4 h-4" />
                 </Button>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
             <iframe
               src={pdfUrl}
-              title="Report Preview"
-              className="w-full border-t rounded-b-lg"
-              style={{ height: '80vh', minHeight: '500px' }}
+              title={t('reports.reportPreview')}
+              className="flex-1 w-full"
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   )

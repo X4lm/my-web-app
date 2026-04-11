@@ -23,16 +23,16 @@ import {
 } from 'lucide-react'
 
 const PRIORITY_OPTIONS = [
-  { value: 'info', label: 'Info', icon: Info, color: 'text-blue-600', variant: 'secondary' },
-  { value: 'notice', label: 'Notice', icon: Bell, color: 'text-amber-600', variant: 'warning' },
-  { value: 'urgent', label: 'Urgent', icon: AlertTriangle, color: 'text-destructive', variant: 'destructive' },
+  { value: 'info', tKey: 'announce.priorityInfo', icon: Info, color: 'text-blue-600', variant: 'secondary' },
+  { value: 'notice', tKey: 'announce.priorityNotice', icon: Bell, color: 'text-amber-600', variant: 'warning' },
+  { value: 'urgent', tKey: 'announce.priorityUrgent', icon: AlertTriangle, color: 'text-destructive', variant: 'destructive' },
 ]
 
 const PRIORITY_MAP = Object.fromEntries(PRIORITY_OPTIONS.map(p => [p.value, p]))
 
 export default function AnnouncementsTab({ propertyId }) {
   const { currentUser } = useAuth()
-  const { formatDateTime } = useLocale()
+  const { t, formatDateTime } = useLocale()
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -102,7 +102,7 @@ export default function AnnouncementsTab({ propertyId }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this announcement?')) return
+    if (!window.confirm(t('announce.deleteConfirm') || 'Delete this announcement?')) return
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
@@ -124,25 +124,25 @@ export default function AnnouncementsTab({ propertyId }) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <Megaphone className="w-4 h-4" /> Building Announcements
+              <Megaphone className="w-4 h-4" /> {t('announce.title')}
             </CardTitle>
             <Button onClick={openAdd} size="sm">
-              <Plus className="w-4 h-4" /> New Announcement
+              <Plus className="w-4 h-4" /> {t('announce.newAnnouncement')}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">{t('common.loading')}</p>
           ) : announcements.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Megaphone className="h-10 w-10 text-muted-foreground/40 mb-3" />
-              <h3 className="text-sm font-medium">No announcements</h3>
+              <h3 className="text-sm font-medium">{t('announce.noAnnouncements')}</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Post announcements for building tenants — maintenance notices, rules, events, etc.
+                {t('announce.postDesc')}
               </p>
               <Button onClick={openAdd} size="sm" className="mt-4">
-                <Plus className="w-4 h-4" /> New Announcement
+                <Plus className="w-4 h-4" /> {t('announce.newAnnouncement')}
               </Button>
             </div>
           ) : (
@@ -161,10 +161,10 @@ export default function AnnouncementsTab({ propertyId }) {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h4 className="text-sm font-medium">{ann.title}</h4>
-                            <Badge variant={pri.variant} className="text-[10px]">{pri.label}</Badge>
+                            <Badge variant={pri.variant} className="text-[10px]">{t(pri.tKey)}</Badge>
                             {ann.pinned && (
                               <Badge variant="outline" className="text-[10px]">
-                                <Pin className="w-2.5 h-2.5 mr-0.5" /> Pinned
+                                <Pin className="w-2.5 h-2.5 mr-0.5" /> {t('announce.pinned')}
                               </Badge>
                             )}
                           </div>
@@ -172,7 +172,7 @@ export default function AnnouncementsTab({ propertyId }) {
                             {ann.body}
                           </p>
                           <p className="text-xs text-muted-foreground mt-2">
-                            Posted by {ann.author} · {formatDateTime(ann.createdAt)}
+                            {t('announce.postedBy')} {ann.author} · {formatDateTime(ann.createdAt)}
                           </p>
                         </div>
                       </div>
@@ -185,17 +185,17 @@ export default function AnnouncementsTab({ propertyId }) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => togglePin(ann)}>
                             <Pin className="mr-2 h-3.5 w-3.5" />
-                            {ann.pinned ? 'Unpin' : 'Pin to Top'}
+                            {ann.pinned ? t('announce.unpin') : t('announce.pinToTop')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEdit(ann)}>
-                            <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                            <Pencil className="mr-2 h-3.5 w-3.5" /> {t('common.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => handleDelete(ann.id)}
                             className="text-destructive focus:text-destructive"
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                            <Trash2 className="mr-2 h-3.5 w-3.5" /> {t('common.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -212,36 +212,36 @@ export default function AnnouncementsTab({ propertyId }) {
       <Dialog open={dialogOpen} onOpenChange={open => { if (!saving) setDialogOpen(open) }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Announcement' : 'New Announcement'}</DialogTitle>
+            <DialogTitle>{editing ? t('announce.editAnnouncement') : t('announce.newAnnouncement')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>Title *</Label>
+              <Label>{t('announce.titleLabel')} *</Label>
               <Input
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                placeholder="Announcement title"
+                placeholder={t('announce.titlePlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Priority</Label>
+              <Label>{t('announce.priority')}</Label>
               <select
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                 value={form.priority}
                 onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
               >
                 {PRIORITY_OPTIONS.map(p => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
+                  <option key={p.value} value={p.value}>{t(p.tKey)}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Message *</Label>
+              <Label>{t('announce.messageLabel')} *</Label>
               <textarea
                 className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                 value={form.body}
                 onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
-                placeholder="Type the announcement message..."
+                placeholder={t('announce.messagePlaceholder')}
               />
             </div>
             <label className="flex items-center gap-2 text-sm">
@@ -251,13 +251,13 @@ export default function AnnouncementsTab({ propertyId }) {
                 onChange={e => setForm(f => ({ ...f, pinned: e.target.checked }))}
                 className="rounded border-input"
               />
-              Pin this announcement to the top
+              {t('announce.pinCheckbox')}
             </label>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>{t('common.cancel')}</Button>
             <Button onClick={handleSave} disabled={saving || !form.title.trim() || !form.body.trim()}>
-              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : editing ? 'Update' : 'Post'}
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('common.saving')}</> : editing ? t('common.update') : t('announce.post')}
             </Button>
           </DialogFooter>
         </DialogContent>

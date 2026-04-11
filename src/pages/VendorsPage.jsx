@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,18 +27,18 @@ import { Plus, Search, MoreHorizontal, Pencil, Trash2, Wrench, Phone, Mail, Star
 
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
-const CATEGORIES = {
-  plumbing: 'Plumbing',
-  electrical: 'Electrical',
-  hvac: 'HVAC',
-  cleaning: 'Cleaning',
-  painting: 'Painting',
-  carpentry: 'Carpentry',
-  pest_control: 'Pest Control',
-  landscaping: 'Landscaping',
-  security: 'Security',
-  general: 'General Maintenance',
-  other: 'Other',
+const CATEGORY_KEYS = {
+  plumbing: 'vendors.catPlumbing',
+  electrical: 'vendors.catElectrical',
+  hvac: 'vendors.catHvac',
+  cleaning: 'vendors.catCleaning',
+  painting: 'vendors.catPainting',
+  carpentry: 'vendors.catCarpentry',
+  pest_control: 'vendors.catPestControl',
+  landscaping: 'vendors.catLandscaping',
+  security: 'vendors.catSecurity',
+  general: 'vendors.catGeneralMaintenance',
+  other: 'vendors.catOther',
 }
 
 const EMPTY = {
@@ -47,6 +48,7 @@ const EMPTY = {
 
 export default function VendorsPage() {
   const { currentUser } = useAuth()
+  const { t } = useLocale()
   const [vendors, setVendors] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -118,7 +120,7 @@ export default function VendorsPage() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this vendor?')) return
+    if (!window.confirm(t('vendors.deleteConfirm'))) return
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
@@ -131,11 +133,11 @@ export default function VendorsPage() {
       <div className="space-y-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Vendors</h1>
-            <p className="text-muted-foreground text-sm">Manage your contractors and service providers.</p>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('vendors.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('vendors.subtitle')}</p>
           </div>
           <Button onClick={openAdd}>
-            <Plus className="w-4 h-4" /> Add Vendor
+            <Plus className="w-4 h-4" /> {t('vendors.addVendor')}
           </Button>
         </div>
 
@@ -145,7 +147,7 @@ export default function VendorsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search vendors..."
+                  placeholder={t('vendors.search')}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="pl-9"
@@ -156,9 +158,9 @@ export default function VendorsPage() {
                 onChange={e => setCategoryFilter(e.target.value)}
                 className="h-9 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               >
-                <option value="all">All Categories</option>
-                {Object.entries(CATEGORIES).map(([val, label]) => (
-                  <option key={val} value={val}>{label}</option>
+                <option value="all">{t('vendors.allCategories')}</option>
+                {Object.entries(CATEGORY_KEYS).map(([val, key]) => (
+                  <option key={val} value={val}>{t(key)}</option>
                 ))}
               </select>
             </div>
@@ -168,14 +170,14 @@ export default function VendorsPage() {
         <Card>
           <CardContent className="p-0">
             {loading ? (
-              <p className="text-sm text-muted-foreground py-12 text-center">Loading vendors...</p>
+              <p className="text-sm text-muted-foreground py-12 text-center">{t('vendors.loading')}</p>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Wrench className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                <h3 className="text-sm font-medium">No vendors found</h3>
-                <p className="text-sm text-muted-foreground mt-1">Add your contractors and service providers.</p>
+                <h3 className="text-sm font-medium">{t('vendors.noVendors')}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{t('vendors.addDesc')}</p>
                 <Button onClick={openAdd} size="sm" className="mt-4">
-                  <Plus className="w-4 h-4" /> Add Vendor
+                  <Plus className="w-4 h-4" /> {t('vendors.addVendor')}
                 </Button>
               </div>
             ) : (
@@ -183,11 +185,11 @@ export default function VendorsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead className="hidden sm:table-cell">Phone</TableHead>
-                      <TableHead className="hidden md:table-cell">Email</TableHead>
-                      <TableHead className="hidden lg:table-cell">Rating</TableHead>
+                      <TableHead>{t('common.name')}</TableHead>
+                      <TableHead>{t('common.category')}</TableHead>
+                      <TableHead className="hidden sm:table-cell">{t('common.phone')}</TableHead>
+                      <TableHead className="hidden md:table-cell">{t('common.email')}</TableHead>
+                      <TableHead className="hidden lg:table-cell">{t('vendors.rating')}</TableHead>
                       <TableHead className="w-10" />
                     </TableRow>
                   </TableHeader>
@@ -203,7 +205,7 @@ export default function VendorsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary">{CATEGORIES[v.category] || v.category}</Badge>
+                          <Badge variant="secondary">{CATEGORY_KEYS[v.category] ? t(CATEGORY_KEYS[v.category]) : v.category}</Badge>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
                           <a href={`tel:${v.phone}`} className="text-sm flex items-center gap-1 text-muted-foreground hover:text-foreground">
@@ -233,14 +235,14 @@ export default function VendorsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => openEdit(v)}>
-                                <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                                <Pencil className="mr-2 h-3.5 w-3.5" /> {t('common.edit')}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={() => handleDelete(v.id)}
                                 className="text-destructive focus:text-destructive"
                               >
-                                <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                                <Trash2 className="mr-2 h-3.5 w-3.5" /> {t('common.delete')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -258,52 +260,52 @@ export default function VendorsPage() {
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!saving) setDialogOpen(open) }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Vendor' : 'Add Vendor'}</DialogTitle>
-            <DialogDescription>Manage contractor and service provider details.</DialogDescription>
+            <DialogTitle>{editing ? t('vendors.editVendor') : t('vendors.addVendor')}</DialogTitle>
+            <DialogDescription>{t('vendors.vendorDesc')}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4 mt-2">
             <div className="space-y-2">
-              <Label>Company / Vendor name</Label>
-              <Input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. ABC Maintenance LLC" />
-              {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+              <Label>{t('vendors.companyName')}</Label>
+              <Input value={form.name} onChange={e => set('name', e.target.value)} placeholder={t('vendors.companyPlaceholder')} />
+              {errors.name && <p className="text-xs text-destructive">{t('common.required')}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Phone</Label>
-                <Input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+971 ..." />
-                {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
+                <Label>{t('common.phone')}</Label>
+                <Input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder={t('vendors.phonePlaceholder')} />
+                {errors.phone && <p className="text-xs text-destructive">{t('common.required')}</p>}
               </div>
               <div className="space-y-2">
-                <Label>Email</Label>
-                <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="vendor@email.com" />
+                <Label>{t('common.email')}</Label>
+                <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder={t('vendors.emailPlaceholder')} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Category</Label>
+                <Label>{t('common.category')}</Label>
                 <select value={form.category} onChange={e => set('category', e.target.value)} className={SELECT_CLASS}>
-                  {Object.entries(CATEGORIES).map(([val, label]) => (
-                    <option key={val} value={val}>{label}</option>
+                  {Object.entries(CATEGORY_KEYS).map(([val, key]) => (
+                    <option key={val} value={val}>{t(key)}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Rating (1-5)</Label>
-                <Input type="number" min="1" max="5" value={form.rating} onChange={e => set('rating', e.target.value)} placeholder="e.g. 4" />
+                <Label>{t('vendors.rating')}</Label>
+                <Input type="number" min="1" max="5" value={form.rating} onChange={e => set('rating', e.target.value)} placeholder={t('vendors.ratingPlaceholder')} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Trade license number</Label>
-              <Input value={form.tradeLicense} onChange={e => set('tradeLicense', e.target.value)} placeholder="Optional" />
+              <Label>{t('vendors.tradeLicense')}</Label>
+              <Input value={form.tradeLicense} onChange={e => set('tradeLicense', e.target.value)} placeholder={t('common.optional')} />
             </div>
             <div className="space-y-2">
-              <Label>Notes</Label>
-              <Input value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Optional notes" />
+              <Label>{t('common.notes')}</Label>
+              <Input value={form.notes} onChange={e => set('notes', e.target.value)} placeholder={t('vendors.notesPlaceholder')} />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>{t('common.cancel')}</Button>
               <Button type="submit" disabled={saving}>
-                {saving ? 'Saving...' : editing ? 'Save Changes' : 'Add Vendor'}
+                {saving ? t('common.saving') : editing ? t('common.saveChanges') : t('vendors.addVendor')}
               </Button>
             </div>
           </form>

@@ -24,20 +24,21 @@ function getAlertUrl(alert) {
   return `/properties/${alert.propertyId}?tab=maintenance${alert.sectionKey ? `&section=${alert.sectionKey}` : ''}`
 }
 
-export default function AlertsPanel({ alerts, title = 'Active Alerts', maxItems = 10 }) {
+export default function AlertsPanel({ alerts, title, maxItems = 10 }) {
   const navigate = useNavigate()
-  const { formatDate } = useLocale()
+  const { t, formatDate } = useLocale()
+  const displayTitle = title || t('alerts.allAlerts')
 
   if (!alerts || alerts.length === 0) {
     return (
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Bell className="h-4 w-4" /> {title}
+            <Bell className="h-4 w-4" /> {displayTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-4">No active alerts.</p>
+          <p className="text-sm text-muted-foreground text-center py-4">{t('alerts.noAlerts')}</p>
         </CardContent>
       </Card>
     )
@@ -52,14 +53,14 @@ export default function AlertsPanel({ alerts, title = 'Active Alerts', maxItems 
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Bell className="h-4 w-4" /> {title}
+            <Bell className="h-4 w-4" /> {displayTitle}
           </CardTitle>
           <div className="flex gap-2">
             {overdue.length > 0 && (
-              <Badge variant="destructive" className="text-xs">{overdue.length} overdue</Badge>
+              <Badge variant="destructive" className="text-xs">{overdue.length} {t('common.overdue').toLowerCase()}</Badge>
             )}
             {upcoming.length > 0 && (
-              <Badge variant="warning" className="text-xs">{upcoming.length} upcoming</Badge>
+              <Badge variant="warning" className="text-xs">{upcoming.length} {t('common.dueSoon').toLowerCase()}</Badge>
             )}
           </div>
         </div>
@@ -91,7 +92,7 @@ export default function AlertsPanel({ alerts, title = 'Active Alerts', maxItems 
                   variant={alert.level === 'overdue' ? 'destructive' : 'warning'}
                   className="text-xs"
                 >
-                  {alert.level === 'overdue' ? 'Overdue' : 'Due Soon'}
+                  {alert.level === 'overdue' ? t('common.overdue') : t('common.dueSoon')}
                 </Badge>
                 <p className="text-xs text-muted-foreground mt-1">{formatDate(alert.date)}</p>
               </div>
@@ -100,7 +101,7 @@ export default function AlertsPanel({ alerts, title = 'Active Alerts', maxItems 
         </div>
         {alerts.length > maxItems && (
           <p className="text-xs text-muted-foreground text-center mt-3">
-            + {alerts.length - maxItems} more alerts
+            + {alerts.length - maxItems} {t('alerts.moreAlerts')}
           </p>
         )}
       </CardContent>

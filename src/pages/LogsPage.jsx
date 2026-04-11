@@ -10,18 +10,18 @@ import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
 import { ScrollText, User, Pencil, Plus, Wrench, DollarSign, Building2, ArrowRight } from 'lucide-react'
 
-const ACTION_CONFIG = {
-  property_created: { label: 'Property Created', icon: Plus, variant: 'default' },
-  property_updated: { label: 'Property Updated', icon: Pencil, variant: 'secondary' },
-  maintenance_updated: { label: 'Maintenance Updated', icon: Wrench, variant: 'secondary' },
-  expense_added: { label: 'Expense Added', icon: DollarSign, variant: 'default' },
-  expense_updated: { label: 'Expense Updated', icon: Pencil, variant: 'secondary' },
-  expense_deleted: { label: 'Expense Deleted', icon: Pencil, variant: 'destructive' },
+const ACTION_KEYS = {
+  property_created: { key: 'logs.propertyCreated', icon: Plus, variant: 'default' },
+  property_updated: { key: 'logs.propertyUpdated', icon: Pencil, variant: 'secondary' },
+  maintenance_updated: { key: 'logs.maintenanceUpdated', icon: Wrench, variant: 'secondary' },
+  expense_added: { key: 'logs.expenseAdded', icon: DollarSign, variant: 'default' },
+  expense_updated: { key: 'logs.expenseUpdated', icon: Pencil, variant: 'secondary' },
+  expense_deleted: { key: 'logs.expenseDeleted', icon: Pencil, variant: 'destructive' },
 }
 
 export default function LogsPage() {
   const { currentUser } = useAuth()
-  const { formatDateTime } = useLocale()
+  const { t, formatDateTime } = useLocale()
   const { properties, loading: propsLoading } = usePropertyAlerts()
   const navigate = useNavigate()
   const [allLogs, setAllLogs] = useState([])
@@ -65,33 +65,34 @@ export default function LogsPage() {
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Activity Logs</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('logs.title')}</h1>
           <p className="text-muted-foreground text-sm">
-            Recent changes across all your properties.
+            {t('logs.subtitle')}
           </p>
         </div>
 
         {loading || propsLoading ? (
-          <p className="text-sm text-muted-foreground py-12 text-center">Loading logs...</p>
+          <p className="text-sm text-muted-foreground py-12 text-center">{t('logs.loading')}</p>
         ) : allLogs.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <ScrollText className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">No activity logs yet.</p>
-              <p className="text-xs text-muted-foreground mt-1">Logs will appear here when changes are made to your properties.</p>
+              <p className="text-sm text-muted-foreground">{t('logs.noLogs')}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('logs.noLogsDesc')}</p>
             </CardContent>
           </Card>
         ) : (
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <ScrollText className="h-4 w-4" /> All Activity
+                <ScrollText className="h-4 w-4" /> {t('logs.allActivity')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="space-y-1">
                 {allLogs.map((log) => {
-                  const config = ACTION_CONFIG[log.action] || { label: log.action, icon: Pencil, variant: 'secondary' }
+                  const actionCfg = ACTION_KEYS[log.action] || { key: null, icon: Pencil, variant: 'secondary' }
+                  const config = { label: actionCfg.key ? t(actionCfg.key) : log.action, icon: actionCfg.icon, variant: actionCfg.variant }
                   const Icon = config.icon
 
                   return (

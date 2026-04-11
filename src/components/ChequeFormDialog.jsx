@@ -16,7 +16,7 @@ const EMPTY = {
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
 export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, saving }) {
-  const { getCurrencyCode } = useLocale()
+  const { t, getCurrencyCode } = useLocale()
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState({})
 
@@ -34,11 +34,11 @@ export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, s
 
   function validate() {
     const e = {}
-    if (!form.chequeNumber.trim()) e.chequeNumber = 'Required'
-    if (!form.bankName.trim()) e.bankName = 'Required'
-    if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) e.amount = 'Enter a valid amount'
-    if (!form.date) e.date = 'Required'
-    if (!form.payerName.trim()) e.payerName = 'Required'
+    if (!form.chequeNumber.trim()) e.chequeNumber = t('common.required')
+    if (!form.bankName.trim()) e.bankName = t('common.required')
+    if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) e.amount = t('common.validAmount')
+    if (!form.date) e.date = t('common.required')
+    if (!form.payerName.trim()) e.payerName = t('common.required')
     return e
   }
 
@@ -53,27 +53,27 @@ export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, s
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{cheque ? 'Edit Cheque' : 'Add Cheque'}</DialogTitle>
-          <DialogDescription>Track a post-dated or received cheque.</DialogDescription>
+          <DialogTitle>{cheque ? t('chequeForm.editCheque') : t('chequeForm.addCheque')}</DialogTitle>
+          <DialogDescription>{t('chequeForm.desc')}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Cheque number</Label>
+              <Label>{t('chequeForm.chequeNumber')}</Label>
               <Input
                 value={form.chequeNumber}
                 onChange={e => set('chequeNumber', e.target.value)}
-                placeholder="e.g. 000123"
+                placeholder={t('chequeForm.chequePlaceholder')}
               />
               {errors.chequeNumber && <p className="text-xs text-destructive">{errors.chequeNumber}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Bank name</Label>
+              <Label>{t('chequeForm.bank')}</Label>
               <Input
                 value={form.bankName}
                 onChange={e => set('bankName', e.target.value)}
-                placeholder="e.g. Emirates NBD"
+                placeholder={t('chequeForm.bankPlaceholder')}
               />
               {errors.bankName && <p className="text-xs text-destructive">{errors.bankName}</p>}
             </div>
@@ -81,7 +81,7 @@ export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, s
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Amount ({getCurrencyCode()})</Label>
+              <Label>{t('chequeForm.amount')} ({getCurrencyCode()})</Label>
               <Input
                 type="number"
                 min="0"
@@ -93,7 +93,7 @@ export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, s
               {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Date</Label>
+              <Label>{t('chequeForm.dueDate')}</Label>
               <Input type="date" value={form.date} onChange={e => set('date', e.target.value)} />
               {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
             </div>
@@ -101,51 +101,51 @@ export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, s
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Payer name</Label>
+              <Label>{t('chequeForm.payer')}</Label>
               <Input
                 value={form.payerName}
                 onChange={e => set('payerName', e.target.value)}
-                placeholder="Tenant or company name"
+                placeholder={t('chequeForm.payerPlaceholder')}
               />
               {errors.payerName && <p className="text-xs text-destructive">{errors.payerName}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Payment type</Label>
+              <Label>{t('chequeForm.paymentType')}</Label>
               <select value={form.paymentType} onChange={e => set('paymentType', e.target.value)} className={SELECT_CLASS}>
-                <option value="rent">Rent</option>
-                <option value="security_deposit">Security Deposit</option>
-                <option value="advance">Advance Payment</option>
-                <option value="other">Other</option>
+                <option value="rent">{t('chequeForm.typeRent')}</option>
+                <option value="security_deposit">{t('chequeForm.typeSecurityDeposit')}</option>
+                <option value="advance">{t('chequeForm.typeAdvance')}</option>
+                <option value="other">{t('chequeForm.typeOther')}</option>
               </select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Status</Label>
+            <Label>{t('chequeForm.status')}</Label>
             <select value={form.status} onChange={e => set('status', e.target.value)} className={SELECT_CLASS}>
-              <option value="pending">Pending (not yet deposited)</option>
-              <option value="deposited">Deposited (awaiting clearance)</option>
-              <option value="cleared">Cleared</option>
-              <option value="bounced">Bounced</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="pending">{t('chequeForm.statusPendingDesc')}</option>
+              <option value="deposited">{t('chequeForm.statusDepositedDesc')}</option>
+              <option value="cleared">{t('chequeForm.statusCleared')}</option>
+              <option value="bounced">{t('chequeForm.statusBounced')}</option>
+              <option value="cancelled">{t('chequeForm.statusCancelled')}</option>
             </select>
           </div>
 
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t('chequeForm.notes')}</Label>
             <Input
               value={form.notes}
               onChange={e => set('notes', e.target.value)}
-              placeholder="Optional notes"
+              placeholder={t('chequeForm.notesPlaceholder')}
             />
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? 'Saving...' : cheque ? 'Save Changes' : 'Add Cheque'}
+              {saving ? t('common.saving') : cheque ? t('common.saveChanges') : t('chequeForm.addCheque')}
             </Button>
           </div>
         </form>

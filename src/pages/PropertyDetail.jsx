@@ -26,14 +26,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText, MessageSquare, Megaphone, FileDown, FolderOpen, LogOut, Zap, Layers } from 'lucide-react'
-import { diffFields, TYPE_LABELS, hasUnits } from '@/lib/utils'
+import { diffFields, hasUnits } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 
 export default function PropertyDetail() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const { currentUser } = useAuth()
-  const { formatCurrency, formatDate } = useLocale()
+  const { t, formatCurrency, formatDate } = useLocale()
   const navigate = useNavigate()
   const [property, setProperty] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -103,7 +103,7 @@ export default function PropertyDetail() {
   if (loading) {
     return (
       <AppLayout>
-        <p className="text-sm text-muted-foreground py-12 text-center">Loading property...</p>
+        <p className="text-sm text-muted-foreground py-12 text-center">{t('property.loading')}</p>
       </AppLayout>
     )
   }
@@ -112,9 +112,9 @@ export default function PropertyDetail() {
     return (
       <AppLayout>
         <div className="text-center py-16">
-          <h2 className="text-lg font-semibold">Property not found</h2>
+          <h2 className="text-lg font-semibold">{t('property.notFound')}</h2>
           <Button variant="outline" className="mt-4" onClick={() => navigate('/properties')}>
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Properties
+            <ArrowLeft className="w-4 h-4 mr-2" /> {t('property.backToProperties')}
           </Button>
         </div>
       </AppLayout>
@@ -135,9 +135,9 @@ export default function PropertyDetail() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-2xl font-semibold tracking-tight">{property.name}</h1>
-              <Badge variant="secondary">{TYPE_LABELS[property.type] || property.type}</Badge>
+              <Badge variant="secondary">{t(`type.${property.type}`) || property.type}</Badge>
               <Badge variant={property.status === 'available' ? 'success' : 'warning'}>
-                {property.status === 'available' ? 'Available' : 'Occupied'}
+                {property.status === 'available' ? t('common.available') : t('common.occupied')}
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
@@ -146,7 +146,7 @@ export default function PropertyDetail() {
             {(property.updatedBy || property.createdBy) && (
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <User className="w-3 h-3" />
-                Last edited by {property.updatedBy || property.createdBy}
+                {t('property.lastEditedBy')} {property.updatedBy || property.createdBy}
                 {property.updatedAt && (() => {
                   const d = property.updatedAt?.toDate ? property.updatedAt.toDate() : new Date(property.updatedAt)
                   return ` · ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
@@ -167,21 +167,21 @@ export default function PropertyDetail() {
         <Tabs defaultValue={defaultTab}>
           <div className="overflow-x-auto">
             <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              {isBuilding && <TabsTrigger value="units">Units</TabsTrigger>}
-              <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-              <TabsTrigger value="work-orders">Work Orders</TabsTrigger>
-              <TabsTrigger value="financials">Financials</TabsTrigger>
-              <TabsTrigger value="inspection">Inspection</TabsTrigger>
-              <TabsTrigger value="comms">Comms</TabsTrigger>
-              {isBuilding && <TabsTrigger value="announcements">Announcements</TabsTrigger>}
-              <TabsTrigger value="documents">Documents</TabsTrigger>
-              {isBuilding && <TabsTrigger value="utilities">Utilities</TabsTrigger>}
-              {isBuilding && <TabsTrigger value="move-out">Move-Out</TabsTrigger>}
-              {isBuilding && <TabsTrigger value="bulk">Bulk Ops</TabsTrigger>}
-              <TabsTrigger value="reports">Reports</TabsTrigger>
-              <TabsTrigger value="logs">Logs</TabsTrigger>
-              {isBuilding && <TabsTrigger value="3d-model">3D Model</TabsTrigger>}
+              <TabsTrigger value="overview">{t('property.overview')}</TabsTrigger>
+              {isBuilding && <TabsTrigger value="units">{t('property.units')}</TabsTrigger>}
+              <TabsTrigger value="maintenance">{t('property.maintenance')}</TabsTrigger>
+              <TabsTrigger value="work-orders">{t('property.workOrders')}</TabsTrigger>
+              <TabsTrigger value="financials">{t('property.financials')}</TabsTrigger>
+              <TabsTrigger value="inspection">{t('property.inspection')}</TabsTrigger>
+              <TabsTrigger value="comms">{t('property.comms')}</TabsTrigger>
+              {isBuilding && <TabsTrigger value="announcements">{t('property.announcements')}</TabsTrigger>}
+              <TabsTrigger value="documents">{t('property.documents')}</TabsTrigger>
+              {isBuilding && <TabsTrigger value="utilities">{t('property.utilities')}</TabsTrigger>}
+              {isBuilding && <TabsTrigger value="move-out">{t('property.moveOut')}</TabsTrigger>}
+              {isBuilding && <TabsTrigger value="bulk">{t('property.bulkOps')}</TabsTrigger>}
+              <TabsTrigger value="reports">{t('property.reports')}</TabsTrigger>
+              <TabsTrigger value="logs">{t('property.logs')}</TabsTrigger>
+              {isBuilding && <TabsTrigger value="3d-model">{t('property.3dModel')}</TabsTrigger>}
             </TabsList>
           </div>
 
@@ -190,7 +190,7 @@ export default function PropertyDetail() {
               {/* Quick stats */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Monthly Rent</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{t('property.monthlyRent')}</CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -201,11 +201,11 @@ export default function PropertyDetail() {
               {property.totalArea && (
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Area</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{t('property.totalArea')}</CardTitle>
                     <Ruler className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-semibold">{Number(property.totalArea).toLocaleString()} sqm</div>
+                    <div className="text-2xl font-semibold">{Number(property.totalArea).toLocaleString()} {t('property.sqm')}</div>
                   </CardContent>
                 </Card>
               )}
@@ -213,7 +213,7 @@ export default function PropertyDetail() {
               {property.marketValue && (
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Market Value</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{t('property.marketValue')}</CardTitle>
                     <Landmark className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -225,7 +225,7 @@ export default function PropertyDetail() {
               {property.yearBuilt && (
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Year Built</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{t('property.yearBuilt')}</CardTitle>
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -241,10 +241,10 @@ export default function PropertyDetail() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <FileText className="w-4 h-4" /> Documents & Permits
+                      <FileText className="w-4 h-4" /> {t('property.documentsPermits')}
                     </CardTitle>
                     <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-                      <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
+                      <Pencil className="w-3.5 h-3.5 mr-1.5" /> {t('property.edit')}
                     </Button>
                   </div>
                 </CardHeader>
@@ -252,19 +252,19 @@ export default function PropertyDetail() {
                   <div className="grid gap-3 sm:grid-cols-3 text-sm">
                     {property.titleDeedNumber && (
                       <div>
-                        <p className="text-muted-foreground">Title Deed</p>
+                        <p className="text-muted-foreground">{t('property.titleDeed')}</p>
                         <p className="font-medium">{property.titleDeedNumber}</p>
                       </div>
                     )}
                     {property.insuranceExpiry && (
                       <div>
-                        <p className="text-muted-foreground">Insurance Expiry</p>
+                        <p className="text-muted-foreground">{t('property.insuranceExpiry')}</p>
                         <p className={`font-medium ${new Date(property.insuranceExpiry) < new Date() ? 'text-destructive' : ''}`}>{formatDate(property.insuranceExpiry)}</p>
                       </div>
                     )}
                     {property.municipalityPermitExpiry && (
                       <div>
-                        <p className="text-muted-foreground">Municipality Permit Expiry</p>
+                        <p className="text-muted-foreground">{t('property.municipalityPermitExpiry')}</p>
                         <p className={`font-medium ${new Date(property.municipalityPermitExpiry) < new Date() ? 'text-destructive' : ''}`}>{formatDate(property.municipalityPermitExpiry)}</p>
                       </div>
                     )}
@@ -277,10 +277,10 @@ export default function PropertyDetail() {
             {property.floorPlan && (
               <Card className="mt-4">
                 <CardHeader>
-                  <CardTitle className="text-base">2D Floor Plan</CardTitle>
+                  <CardTitle className="text-base">{t('property.floorPlan')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <img src={property.floorPlan} alt="Floor Plan" className="rounded-md max-h-96 object-contain" />
+                  <img src={property.floorPlan} alt={t('property.floorPlan')} className="rounded-md max-h-96 object-contain" />
                 </CardContent>
               </Card>
             )}
@@ -350,7 +350,7 @@ export default function PropertyDetail() {
 
           {isBuilding && (
             <TabsContent value="3d-model">
-              <Suspense fallback={<p className="text-sm text-muted-foreground py-12 text-center">Loading 3D viewer...</p>}>
+              <Suspense fallback={<p className="text-sm text-muted-foreground py-12 text-center">{t('property.loading3d')}</p>}>
                 <Building3DViewer propertyId={id} property={property} />
               </Suspense>
             </TabsContent>

@@ -8,17 +8,17 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollText, User, Pencil, Plus, Wrench, DollarSign, ArrowRight } from 'lucide-react'
 
 const ACTION_CONFIG = {
-  property_created: { label: 'Property Created', icon: Plus, variant: 'default' },
-  property_updated: { label: 'Property Updated', icon: Pencil, variant: 'secondary' },
-  maintenance_updated: { label: 'Maintenance Updated', icon: Wrench, variant: 'secondary' },
-  expense_added: { label: 'Expense Added', icon: DollarSign, variant: 'default' },
-  expense_updated: { label: 'Expense Updated', icon: Pencil, variant: 'secondary' },
-  expense_deleted: { label: 'Expense Deleted', icon: Pencil, variant: 'destructive' },
+  property_created: { labelKey: 'logs.propertyCreated', icon: Plus, variant: 'default' },
+  property_updated: { labelKey: 'logs.propertyUpdated', icon: Pencil, variant: 'secondary' },
+  maintenance_updated: { labelKey: 'logs.maintenanceUpdated', icon: Wrench, variant: 'secondary' },
+  expense_added: { labelKey: 'logs.expenseAdded', icon: DollarSign, variant: 'default' },
+  expense_updated: { labelKey: 'logs.expenseUpdated', icon: Pencil, variant: 'secondary' },
+  expense_deleted: { labelKey: 'logs.expenseDeleted', icon: Pencil, variant: 'destructive' },
 }
 
 export default function LogsTab({ propertyId }) {
   const { currentUser } = useAuth()
-  const { formatDateTime } = useLocale()
+  const { t, formatDateTime } = useLocale()
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -43,7 +43,7 @@ export default function LogsTab({ propertyId }) {
   }, [currentUser, propertyId])
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground py-12 text-center">Loading logs...</p>
+    return <p className="text-sm text-muted-foreground py-12 text-center">{t('logs.loading')}</p>
   }
 
   if (logs.length === 0) {
@@ -51,8 +51,8 @@ export default function LogsTab({ propertyId }) {
       <Card>
         <CardContent className="py-12 text-center">
           <ScrollText className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No activity logs yet.</p>
-          <p className="text-xs text-muted-foreground mt-1">Logs will appear here when changes are made.</p>
+          <p className="text-sm text-muted-foreground">{t('logs.noLogs')}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('logs.noLogsDesc')}</p>
         </CardContent>
       </Card>
     )
@@ -62,13 +62,13 @@ export default function LogsTab({ propertyId }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <ScrollText className="h-4 w-4" /> Activity Log
+          <ScrollText className="h-4 w-4" /> {t('logs.activityLog')}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-1">
           {logs.map((log) => {
-            const config = ACTION_CONFIG[log.action] || { label: log.action, icon: Pencil, variant: 'secondary' }
+            const config = ACTION_CONFIG[log.action] || { labelKey: null, icon: Pencil, variant: 'secondary' }
             const Icon = config.icon
 
             return (
@@ -78,7 +78,7 @@ export default function LogsTab({ propertyId }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant={config.variant} className="text-[10px]">{config.label}</Badge>
+                    <Badge variant={config.variant} className="text-[10px]">{config.labelKey ? t(config.labelKey) : log.action}</Badge>
                     {log.details && (
                       <span className="text-xs text-muted-foreground">{log.details}</span>
                     )}

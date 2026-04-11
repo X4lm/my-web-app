@@ -28,24 +28,24 @@ import {
 } from 'lucide-react'
 
 const CHANNEL_OPTIONS = [
-  { value: 'phone', label: 'Phone Call', icon: Phone },
-  { value: 'email', label: 'Email', icon: Mail },
-  { value: 'sms', label: 'SMS', icon: MessageSquare },
-  { value: 'in_person', label: 'In Person', icon: FileText },
-  { value: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-  { value: 'other', label: 'Other', icon: FileText },
+  { value: 'phone', tKey: 'comms.channelPhone', icon: Phone },
+  { value: 'email', tKey: 'comms.channelEmail', icon: Mail },
+  { value: 'sms', tKey: 'comms.channelSms', icon: MessageSquare },
+  { value: 'in_person', tKey: 'comms.channelInPerson', icon: FileText },
+  { value: 'whatsapp', tKey: 'comms.channelWhatsapp', icon: MessageSquare },
+  { value: 'other', tKey: 'comms.channelOther', icon: FileText },
 ]
 
-const CHANNEL_LABELS = Object.fromEntries(CHANNEL_OPTIONS.map(c => [c.value, c.label]))
+const CHANNEL_MAP = Object.fromEntries(CHANNEL_OPTIONS.map(c => [c.value, c.tKey]))
 
 const DIRECTION_OPTIONS = [
-  { value: 'outgoing', label: 'Outgoing' },
-  { value: 'incoming', label: 'Incoming' },
+  { value: 'outgoing', tKey: 'comms.outgoing' },
+  { value: 'incoming', tKey: 'comms.incoming' },
 ]
 
 export default function CommunicationLog({ propertyId }) {
   const { currentUser } = useAuth()
-  const { formatDateTime } = useLocale()
+  const { t, formatDateTime } = useLocale()
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -111,7 +111,7 @@ export default function CommunicationLog({ propertyId }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this communication log?')) return
+    if (!window.confirm(t('comms.deleteConfirm') || 'Delete this communication log?')) return
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
@@ -135,10 +135,10 @@ export default function CommunicationLog({ propertyId }) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" /> Communication Log
+              <MessageSquare className="w-4 h-4" /> {t('comms.title')}
             </CardTitle>
             <Button onClick={openAdd} size="sm">
-              <Plus className="w-4 h-4" /> Log Communication
+              <Plus className="w-4 h-4" /> {t('comms.logComm')}
             </Button>
           </div>
         </CardHeader>
@@ -147,7 +147,7 @@ export default function CommunicationLog({ propertyId }) {
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search communications..."
+              placeholder={t('comms.search')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-9"
@@ -155,21 +155,21 @@ export default function CommunicationLog({ propertyId }) {
           </div>
 
           {loading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">{t('common.loading')}</p>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <MessageSquare className="h-10 w-10 text-muted-foreground/40 mb-3" />
               <h3 className="text-sm font-medium">
-                {messages.length === 0 ? 'No communications logged' : 'No matches found'}
+                {messages.length === 0 ? t('comms.noComms') : t('comms.noMatches')}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {messages.length === 0
-                  ? 'Track calls, emails, and messages with tenants and vendors.'
-                  : 'Try a different search term.'}
+                  ? t('comms.startLogging')
+                  : t('comms.adjustSearch')}
               </p>
               {messages.length === 0 && (
                 <Button onClick={openAdd} size="sm" className="mt-4">
-                  <Plus className="w-4 h-4" /> Log Communication
+                  <Plus className="w-4 h-4" /> {t('comms.logComm')}
                 </Button>
               )}
             </div>
@@ -178,11 +178,11 @@ export default function CommunicationLog({ propertyId }) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Channel</TableHead>
-                    <TableHead className="hidden sm:table-cell">Direction</TableHead>
-                    <TableHead>Subject</TableHead>
+                    <TableHead>{t('common.date')}</TableHead>
+                    <TableHead>{t('comms.contactName')}</TableHead>
+                    <TableHead>{t('comms.channel')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t('comms.direction')}</TableHead>
+                    <TableHead>{t('comms.subject')}</TableHead>
                     <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
@@ -195,12 +195,12 @@ export default function CommunicationLog({ propertyId }) {
                       <TableCell className="text-sm font-medium">{msg.contactName}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-[10px]">
-                          {CHANNEL_LABELS[msg.channel] || msg.channel}
+                          {CHANNEL_MAP[msg.channel] ? t(CHANNEL_MAP[msg.channel]) : msg.channel}
                         </Badge>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <Badge variant={msg.direction === 'incoming' ? 'outline' : 'default'} className="text-[10px]">
-                          {msg.direction === 'incoming' ? 'Incoming' : 'Outgoing'}
+                          {msg.direction === 'incoming' ? t('comms.incoming') : t('comms.outgoing')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm max-w-[200px] truncate">{msg.subject}</TableCell>
@@ -213,14 +213,14 @@ export default function CommunicationLog({ propertyId }) {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openEdit(msg)}>
-                              <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                              <Pencil className="mr-2 h-3.5 w-3.5" /> {t('common.edit')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDelete(msg.id)}
                               className="text-destructive focus:text-destructive"
                             >
-                              <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                              <Trash2 className="mr-2 h-3.5 w-3.5" /> {t('common.delete')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -238,65 +238,65 @@ export default function CommunicationLog({ propertyId }) {
       <Dialog open={dialogOpen} onOpenChange={open => { if (!saving) setDialogOpen(open) }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Communication' : 'Log Communication'}</DialogTitle>
+            <DialogTitle>{editing ? t('comms.editComm') : t('comms.logComm')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>Contact Name *</Label>
+              <Label>{t('comms.contactName')} *</Label>
               <Input
                 value={form.contactName}
                 onChange={e => setForm(f => ({ ...f, contactName: e.target.value }))}
-                placeholder="Tenant or vendor name"
+                placeholder={t('comms.contactPlaceholder')}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Channel</Label>
+                <Label>{t('comms.channel')}</Label>
                 <select
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                   value={form.channel}
                   onChange={e => setForm(f => ({ ...f, channel: e.target.value }))}
                 >
                   {CHANNEL_OPTIONS.map(ch => (
-                    <option key={ch.value} value={ch.value}>{ch.label}</option>
+                    <option key={ch.value} value={ch.value}>{t(ch.tKey)}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Direction</Label>
+                <Label>{t('comms.direction')}</Label>
                 <select
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                   value={form.direction}
                   onChange={e => setForm(f => ({ ...f, direction: e.target.value }))}
                 >
                   {DIRECTION_OPTIONS.map(d => (
-                    <option key={d.value} value={d.value}>{d.label}</option>
+                    <option key={d.value} value={d.value}>{t(d.tKey)}</option>
                   ))}
                 </select>
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Subject *</Label>
+              <Label>{t('comms.subject')} *</Label>
               <Input
                 value={form.subject}
                 onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
-                placeholder="Brief description"
+                placeholder={t('comms.subjectPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Notes</Label>
+              <Label>{t('comms.notes')}</Label>
               <textarea
                 className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                 value={form.notes}
                 onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                placeholder="Detailed notes about the communication..."
+                placeholder={t('comms.notesPlaceholder')}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>{t('common.cancel')}</Button>
             <Button onClick={handleSave} disabled={saving || !form.contactName.trim() || !form.subject.trim()}>
-              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : editing ? 'Update' : 'Save'}
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('common.saving')}</> : editing ? t('common.update') : t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

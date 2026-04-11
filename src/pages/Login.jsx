@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +14,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
+  const { t } = useLocale()
   const navigate = useNavigate()
 
   async function handleSubmit(e) {
@@ -35,11 +37,11 @@ export default function Login() {
       case 'auth/user-not-found':
       case 'auth/wrong-password':
       case 'auth/invalid-credential':
-        return 'Invalid email or password.'
+        return t('auth.invalidCredentials')
       case 'auth/too-many-requests':
-        return 'Too many attempts. Please try again later.'
+        return t('auth.tooManyAttempts')
       default:
-        return `Sign in failed (${code})`
+        return `${t('auth.signInFailed')} (${code})`
     }
   }
 
@@ -50,13 +52,13 @@ export default function Login() {
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground">
             <Home className="w-4 h-4 text-background" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">PropManager</span>
+          <span className="text-lg font-semibold tracking-tight">{t('auth.propManager')}</span>
         </div>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Welcome back</CardTitle>
-            <CardDescription>Sign in to your account to continue</CardDescription>
+            <CardTitle className="text-xl">{t('auth.welcome')}</CardTitle>
+            <CardDescription>{t('auth.signInDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {error && (
@@ -66,37 +68,37 @@ export default function Login() {
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth.email')}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={t('auth.emailPlaceholder')}
                   required
                   autoComplete="email"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('auth.password')}</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder={t('auth.passwordPlaceholder')}
                   required
                   autoComplete="current-password"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? t('auth.signingIn') : t('auth.signIn')}
               </Button>
             </form>
             <p className="mt-4 text-center text-sm text-muted-foreground">
-              Don't have an account?{' '}
+              {t('auth.noAccount')}{' '}
               <Link to="/signup" className="font-medium text-foreground underline underline-offset-4 hover:text-foreground/80">
-                Create one
+                {t('auth.createOne')}
               </Link>
             </p>
           </CardContent>

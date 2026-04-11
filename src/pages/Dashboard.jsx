@@ -19,7 +19,7 @@ import { hasUnits } from '@/lib/utils'
 export default function Dashboard() {
   const { currentUser } = useAuth()
   const navigate = useNavigate()
-  const { formatCurrency, formatDate } = useLocale()
+  const { t, formatCurrency, formatDate } = useLocale()
   const { properties, allAlerts, loading } = usePropertyAlerts()
   const [allUnits, setAllUnits] = useState([])
   const [recentExpenses, setRecentExpenses] = useState([])
@@ -106,17 +106,17 @@ export default function Dashboard() {
     allUnits.reduce((s, u) => s + Number(u.monthlyRent || 0), 0)
 
   const statCards = [
-    { label: 'Total Properties', value: totalProps, icon: Building2, description: 'All listed properties' },
-    { label: 'Available', value: available, icon: CheckCircle, description: 'Ready to rent' },
-    { label: 'Occupied', value: occupied, icon: Users, description: 'Currently rented' },
-    { label: 'Monthly Income', value: formatCurrency(monthlyIncome), icon: DollarSign, description: 'From occupied units & properties' },
+    { label: t('dashboard.totalProperties'), value: totalProps, icon: Building2, description: t('dashboard.allProperties') },
+    { label: t('dashboard.available'), value: available, icon: CheckCircle, description: t('dashboard.readyToRent') },
+    { label: t('dashboard.occupied'), value: occupied, icon: Users, description: t('dashboard.currentlyRented') },
+    { label: t('dashboard.monthlyIncome'), value: formatCurrency(monthlyIncome), icon: DollarSign, description: t('dashboard.currentlyRented') },
   ]
 
   const unitStatCards = [
-    { label: 'Total Units', value: totalUnits, icon: Home, description: 'Across all buildings' },
-    { label: 'Occupied Units', value: occupiedUnits, icon: Users, description: `${totalUnits - occupiedUnits} vacant` },
-    { label: 'Occupancy Rate', value: `${occupancyRate}%`, icon: Percent, description: totalUnits > 0 ? `${occupiedUnits} of ${totalUnits}` : 'No units' },
-    { label: 'Expected Rent', value: formatCurrency(totalExpectedRent), icon: DollarSign, description: 'From all units & properties' },
+    { label: t('dashboard.totalUnits'), value: totalUnits, icon: Home, description: t('dashboard.allProperties') },
+    { label: t('dashboard.occupied'), value: occupiedUnits, icon: Users, description: `${totalUnits - occupiedUnits} vacant` },
+    { label: t('dashboard.occupancy'), value: `${occupancyRate}%`, icon: Percent, description: totalUnits > 0 ? `${occupiedUnits} / ${totalUnits}` : t('dashboard.totalUnits') },
+    { label: t('common.rent'), value: formatCurrency(totalExpectedRent), icon: DollarSign, description: t('dashboard.allProperties') },
   ]
 
   const recent = properties.slice(0, 5)
@@ -125,9 +125,9 @@ export default function Dashboard() {
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground text-sm">
-            Welcome back, {currentUser?.displayName || 'there'}.
+            {t('dashboard.welcomeBack')}, {currentUser?.displayName || 'there'}.
           </p>
         </div>
 
@@ -150,7 +150,7 @@ export default function Dashboard() {
         {/* Unit stats (only if there are buildings with units) */}
         {!loading && !unitsLoading && totalUnits > 0 && (
           <div>
-            <h2 className="text-sm font-medium text-muted-foreground mb-3">Unit Overview</h2>
+            <h2 className="text-sm font-medium text-muted-foreground mb-3">{t('dashboard.unitOverview')}</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {unitStatCards.map(({ label, value, icon: Icon, description }) => (
                 <Card key={label}>
@@ -170,7 +170,7 @@ export default function Dashboard() {
 
         {/* Global alerts panel */}
         {!loading && allAlerts.length > 0 && (
-          <AlertsPanel alerts={allAlerts} title="Active Alerts Across All Properties" maxItems={8} />
+          <AlertsPanel alerts={allAlerts} title={t('dashboard.activeAlerts')} maxItems={8} />
         )}
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -178,20 +178,20 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Recent Properties</CardTitle>
+                <CardTitle className="text-base">{t('dashboard.recentProperties')}</CardTitle>
                 {properties.length > 5 && (
                   <Button variant="ghost" size="sm" onClick={() => navigate('/properties')}>
-                    View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                    {t('dashboard.viewAll')} <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </Button>
                 )}
               </div>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+                <p className="text-sm text-muted-foreground py-8 text-center">{t('common.loading')}</p>
               ) : recent.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-8 text-center">
-                  No properties yet. Go to Properties to add one.
+                  {t('dashboard.noProperties')}
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -213,7 +213,7 @@ export default function Dashboard() {
                       <div className="text-right">
                         <p className="text-sm font-medium">{formatCurrency(p.rentAmount)}</p>
                         <p className={`text-xs ${p.status === 'available' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                          {p.status === 'available' ? 'Available' : 'Occupied'}
+                          {p.status === 'available' ? t('common.available') : t('common.occupied')}
                         </p>
                       </div>
                     </div>
@@ -227,15 +227,15 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Receipt className="w-4 h-4" /> Recent Expenses
+                <Receipt className="w-4 h-4" /> {t('dashboard.recentExpenses')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+                <p className="text-sm text-muted-foreground py-8 text-center">{t('common.loading')}</p>
               ) : recentExpenses.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-8 text-center">
-                  No expenses recorded yet.
+                  {t('dashboard.noExpenses')}
                 </p>
               ) : (
                 <div className="space-y-3">

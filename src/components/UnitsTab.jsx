@@ -27,7 +27,7 @@ const CONDITION_VARIANT = { good: 'success', needs_attention: 'warning', critica
 
 export default function UnitsTab({ propertyId, propertyType }) {
   const { currentUser } = useAuth()
-  const { formatCurrency } = useLocale()
+  const { t, formatCurrency } = useLocale()
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -66,7 +66,7 @@ export default function UnitsTab({ propertyId, propertyType }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this unit? This cannot be undone.')) return
+    if (!window.confirm(t('units.deleteConfirm'))) return
     try {
       await deleteDoc(doc(db, basePath, id))
     } catch (err) {
@@ -82,26 +82,26 @@ export default function UnitsTab({ propertyId, propertyType }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">
-            {units.length} {units.length === 1 ? 'unit' : 'units'} &middot; {occupied} occupied &middot; {formatCurrency(totalRent)}/mo total rent
+            {units.length} {units.length === 1 ? t('units.unit') : t('units.title')} &middot; {occupied} {t('units.occupied')} &middot; {formatCurrency(totalRent)}{t('units.moTotalRent')}
           </p>
         </div>
         <Button size="sm" onClick={() => { setEditing(null); setDialogOpen(true) }}>
           <Plus className="w-4 h-4" />
-          Add Unit
+          {t('units.addUnit')}
         </Button>
       </div>
 
       <Card>
         <CardContent className="p-0">
           {loading ? (
-            <p className="text-sm text-muted-foreground py-12 text-center">Loading units...</p>
+            <p className="text-sm text-muted-foreground py-12 text-center">{t('units.loading')}</p>
           ) : units.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <DoorOpen className="h-10 w-10 text-muted-foreground/40 mb-3" />
-              <h3 className="text-sm font-medium">No units yet</h3>
-              <p className="text-sm text-muted-foreground mt-1">Add units to this residential building.</p>
+              <h3 className="text-sm font-medium">{t('units.noUnits')}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t('units.addUnitsDesc')}</p>
               <Button size="sm" className="mt-4" onClick={() => { setEditing(null); setDialogOpen(true) }}>
-                <Plus className="w-4 h-4" /> Add Unit
+                <Plus className="w-4 h-4" /> {t('units.addUnit')}
               </Button>
             </div>
           ) : (
@@ -109,13 +109,13 @@ export default function UnitsTab({ propertyId, propertyType }) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Unit</TableHead>
-                  <TableHead>Floor</TableHead>
-                  <TableHead className="hidden sm:table-cell">Type</TableHead>
-                  <TableHead className="hidden md:table-cell">Tenant</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Condition</TableHead>
-                  <TableHead className="text-right">Rent</TableHead>
+                  <TableHead>{t('units.unit')}</TableHead>
+                  <TableHead>{t('units.floor')}</TableHead>
+                  <TableHead className="hidden sm:table-cell">{t('units.type')}</TableHead>
+                  <TableHead className="hidden md:table-cell">{t('units.tenant')}</TableHead>
+                  <TableHead>{t('units.payment')}</TableHead>
+                  <TableHead>{t('units.condition')}</TableHead>
+                  <TableHead className="text-right">{t('units.rent')}</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
@@ -134,7 +134,7 @@ export default function UnitsTab({ propertyId, propertyType }) {
                           <p className="text-xs text-muted-foreground">{u.tenantContact}</p>
                         </div>
                       ) : (
-                        <span className="text-sm text-muted-foreground">Vacant</span>
+                        <span className="text-sm text-muted-foreground">{t('units.vacant')}</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -159,14 +159,14 @@ export default function UnitsTab({ propertyId, propertyType }) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setEditing(u); setDialogOpen(true) }}>
-                            <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                            <Pencil className="mr-2 h-3.5 w-3.5" /> {t('common.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => handleDelete(u.id)}
                             className="text-destructive focus:text-destructive"
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                            <Trash2 className="mr-2 h-3.5 w-3.5" /> {t('common.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
