@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { diffFields, hasUnits } from '@/lib/utils'
 import ExpenseFormDialog from '@/components/ExpenseFormDialog'
+import ChequeFormDialog from '@/components/ChequeFormDialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   DollarSign, TrendingUp, Percent, MoreHorizontal,
-  Pencil, Trash2, Plus, Receipt,
+  Pencil, Trash2, Plus, Receipt, FileCheck, AlertCircle,
 } from 'lucide-react'
 
 const CATEGORY_LABELS = {
@@ -40,12 +41,17 @@ export default function FinancialsTab({ propertyId, property }) {
   const [expenses, setExpenses] = useState([])
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
+  const [cheques, setCheques] = useState([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [chequeDialogOpen, setChequeDialogOpen] = useState(false)
+  const [editingCheque, setEditingCheque] = useState(null)
+  const [chequeSaving, setChequeSaving] = useState(false)
 
   const colPath = `users/${currentUser.uid}/properties/${propertyId}/expenses`
   const unitsPath = `users/${currentUser.uid}/properties/${propertyId}/units`
+  const chequePath = `users/${currentUser.uid}/properties/${propertyId}/cheques`
 
   // Listen to expenses
   useEffect(() => {
@@ -68,6 +74,15 @@ export default function FinancialsTab({ propertyId, property }) {
     })
     return unsub
   }, [unitsPath])
+
+  // Listen to cheques
+  useEffect(() => {
+    const q = query(collection(db, chequePath), orderBy('date', 'asc'))
+    const unsub = onSnapshot(q, (snap) => {
+      setCheques(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    })
+    return unsub
+  }, [chequePath])
 
   // ── Calculations ──
   const isBuilding = hasUnits(property?.type)
@@ -159,6 +174,57 @@ export default function FinancialsTab({ propertyId, property }) {
 
   function openAdd() { setEditing(null); setDialogOpen(true) }
   function openEdit(exp) { setEditing(exp); setDialogOpen(true) }
+
+  // ── Cheque CRUD ──
+  async function handleChequeSave(data) {
+    setChequeSaving(true)
+    try {
+      if (editingCheque) {
+        await updateDoc(doc(db, chequePath, editingCheque.id), { ...data, updatedAt: serverTimestamp() })
+      } else {
+        await addDoc(collection(db, chequePath), { ...data, createdAt: serverTimestamp() })
+      }
+      setChequeDialogOpen(false)
+      setEditingCheque(null)
+    } catch (err) {
+      console.error('[Firestore] Cheque save error:', err)
+    } finally {
+      setChequeSaving(false)
+    }
+  }
+
+  async function handleChequeDelete(id) {
+    if (!window.confirm('Delete this cheque?')) return
+    try {
+      await deleteDoc(doc(db, chequePath, id))
+    } catch (err) {
+      console.error('[Firestore] Cheque delete error:', err)
+    }
+  }
+
+  // Cheque stats
+  const pendingCheques = cheques.filter(c => c.status === 'pending')
+  const bouncedCheques = cheques.filter(c => c.status === 'bounced')
+  const totalPending = pendingCheques.reduce((s, c) => s + Number(c.amount || 0), 0)
+  const upcomingCheques = pendingCheques.filter(c => {
+    if (!c.date) return false
+    const d = new Date(c.date)
+    const now = new Date()
+    const diff = (d - now) / (1000 * 60 * 60 * 24)
+    return diff >= 0 && diff <= 30
+  })
+
+  const CHEQUE_STATUS = {
+    pending: { label: 'Pending', variant: 'warning' },
+    deposited: { label: 'Deposited', variant: 'secondary' },
+    cleared: { label: 'Cleared', variant: 'success' },
+    bounced: { label: 'Bounced', variant: 'destructive' },
+    cancelled: { label: 'Cancelled', variant: 'secondary' },
+  }
+
+  const PAYMENT_TYPE_LABELS = {
+    rent: 'Rent', security_deposit: 'Security Deposit', advance: 'Advance', other: 'Other',
+  }
 
   return (
     <div className="space-y-6">
@@ -339,6 +405,121 @@ export default function FinancialsTab({ propertyId, property }) {
           )}
         </CardContent>
       </Card>
+
+      {/* Cheque Tracking */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileCheck className="w-4 h-4" /> Cheque Tracking
+            </CardTitle>
+            <Button onClick={() => { setEditingCheque(null); setChequeDialogOpen(true) }} size="sm">
+              <Plus className="w-4 h-4" /> Add Cheque
+            </Button>
+          </div>
+          {(pendingCheques.length > 0 || bouncedCheques.length > 0) && (
+            <div className="flex gap-4 mt-2 flex-wrap">
+              {pendingCheques.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-amber-600">{pendingCheques.length}</span> pending ({formatCurrency(totalPending)})
+                </p>
+              )}
+              {upcomingCheques.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-blue-600">{upcomingCheques.length}</span> due within 30 days
+                </p>
+              )}
+              {bouncedCheques.length > 0 && (
+                <p className="text-xs flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 text-destructive" />
+                  <span className="font-medium text-destructive">{bouncedCheques.length} bounced</span>
+                </p>
+              )}
+            </div>
+          )}
+        </CardHeader>
+        <CardContent className="p-0">
+          {cheques.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileCheck className="h-10 w-10 text-muted-foreground/40 mb-3" />
+              <h3 className="text-sm font-medium">No cheques recorded</h3>
+              <p className="text-sm text-muted-foreground mt-1">Track post-dated and received cheques.</p>
+              <Button onClick={() => { setEditingCheque(null); setChequeDialogOpen(true) }} size="sm" className="mt-4">
+                <Plus className="w-4 h-4" /> Add Cheque
+              </Button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Cheque #</TableHead>
+                    <TableHead className="hidden sm:table-cell">Bank</TableHead>
+                    <TableHead className="hidden md:table-cell">Payer</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="w-10" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cheques.map(ch => {
+                    const st = CHEQUE_STATUS[ch.status] || CHEQUE_STATUS.pending
+                    const isOverdue = ch.status === 'pending' && ch.date && new Date(ch.date) < new Date()
+                    return (
+                      <TableRow key={ch.id} className={isOverdue ? 'bg-amber-50 dark:bg-amber-950/20' : ''}>
+                        <TableCell className="text-sm">{formatDate(ch.date)}</TableCell>
+                        <TableCell className="font-mono text-sm">{ch.chequeNumber}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm">{ch.bankName}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{ch.payerName}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="text-[10px]">
+                            {PAYMENT_TYPE_LABELS[ch.paymentType] || ch.paymentType}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={st.variant}>{st.label}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">{formatCurrency(ch.amount)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => { setEditingCheque(ch); setChequeDialogOpen(true) }}>
+                                <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleChequeDelete(ch.id)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <ChequeFormDialog
+        open={chequeDialogOpen}
+        onOpenChange={(open) => { if (!chequeSaving) { setChequeDialogOpen(open); if (!open) setEditingCheque(null) } }}
+        cheque={editingCheque}
+        onSave={handleChequeSave}
+        saving={chequeSaving}
+      />
 
       <ExpenseFormDialog
         open={dialogOpen}
