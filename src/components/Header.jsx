@@ -8,13 +8,14 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle } from 'lucide-react'
+import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const mobileLinks = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/properties', label: 'Properties', icon: Building2 },
   { to: '/alerts', label: 'Alerts', icon: AlertCircle },
+  { to: '/logs', label: 'Logs', icon: ScrollText },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 

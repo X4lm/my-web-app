@@ -9,6 +9,7 @@ const Properties = lazy(() => import('@/pages/Properties'))
 const PropertyDetail = lazy(() => import('@/pages/PropertyDetail'))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
 const AlertsPage = lazy(() => import('@/pages/AlertsPage'))
+const LogsPage = lazy(() => import('@/pages/LogsPage'))
 
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth()
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/properties" element={<PrivateRoute><Properties /></PrivateRoute>} />
         <Route path="/properties/:id" element={<PrivateRoute><PropertyDetail /></PrivateRoute>} />
         <Route path="/alerts" element={<PrivateRoute><AlertsPage /></PrivateRoute>} />
+        <Route path="/logs" element={<PrivateRoute><LogsPage /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

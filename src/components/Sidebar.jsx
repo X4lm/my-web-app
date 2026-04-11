@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Building2, Settings, Home, AlertCircle } from 'lucide-react'
+import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/properties', label: 'Properties', icon: Building2 },
   { to: '/alerts', label: 'Alerts', icon: AlertCircle },
+  { to: '/logs', label: 'Logs', icon: ScrollText },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
