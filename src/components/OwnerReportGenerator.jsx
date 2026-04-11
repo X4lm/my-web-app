@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { collection, query, orderBy, getDocs } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,8 +15,11 @@ export default function OwnerReportGenerator({ propertyId, property }) {
   const [generating, setGenerating] = useState(false)
   const [previewing, setPreviewing] = useState(false)
   const [pdfUrl, setPdfUrl] = useState(null)
+  const [hoverVisible, setHoverVisible] = useState(false)
   const [reportData, setReportData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const hoverTimeout = useRef(null)
+  const buildingPdf = useRef(false)
 
   const basePath = `users/${currentUser.uid}/properties/${propertyId}`
 
@@ -243,6 +246,31 @@ export default function OwnerReportGenerator({ propertyId, property }) {
   function closePdfPreview() {
     if (pdfUrl) URL.revokeObjectURL(pdfUrl)
     setPdfUrl(null)
+    setHoverVisible(false)
+  }
+
+  const ensurePdfUrl = useCallback(async () => {
+    if (pdfUrl || buildingPdf.current || !reportData) return
+    buildingPdf.current = true
+    try {
+      const doc = await buildPDF()
+      const blob = doc.output('blob')
+      setPdfUrl(URL.createObjectURL(blob))
+    } catch (err) {
+      console.error('[PDF] Build error:', err)
+    } finally {
+      buildingPdf.current = false
+    }
+  }, [pdfUrl, reportData])
+
+  function handleHoverEnter() {
+    ensurePdfUrl()
+    hoverTimeout.current = setTimeout(() => setHoverVisible(true), 300)
+  }
+
+  function handleHoverLeave() {
+    clearTimeout(hoverTimeout.current)
+    setHoverVisible(false)
   }
 
   if (loading) {
@@ -269,13 +297,37 @@ export default function OwnerReportGenerator({ propertyId, property }) {
               <FileDown className="w-4 h-4" /> Owner Report
             </CardTitle>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={previewPDF} disabled={previewing || generating} size="sm">
-                {previewing ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
-                ) : (
-                  <><Eye className="w-4 h-4" /> Preview PDF</>
+              <div
+                className="relative"
+                onMouseEnter={handleHoverEnter}
+                onMouseLeave={handleHoverLeave}
+              >
+                <Button variant="outline" onClick={previewPDF} disabled={previewing || generating} size="sm">
+                  {previewing ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
+                  ) : (
+                    <><Eye className="w-4 h-4" /> Preview PDF</>
+                  )}
+                </Button>
+                {/* Hover PDF thumbnail */}
+                {hoverVisible && pdfUrl && (
+                  <div className="absolute top-full right-0 mt-2 z-50 shadow-2xl rounded-lg border bg-background overflow-hidden"
+                    onMouseEnter={() => clearTimeout(hoverTimeout.current)}
+                    onMouseLeave={handleHoverLeave}
+                  >
+                    <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/50">
+                      <span className="text-xs font-medium text-muted-foreground">Report Preview</span>
+                      <span className="text-[10px] text-muted-foreground">Click button to expand</span>
+                    </div>
+                    <iframe
+                      src={pdfUrl}
+                      title="Report Hover Preview"
+                      className="pointer-events-none"
+                      style={{ width: '400px', height: '520px' }}
+                    />
+                  </div>
                 )}
-              </Button>
+              </div>
               <Button onClick={generatePDF} disabled={generating || previewing} size="sm">
                 {generating ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
