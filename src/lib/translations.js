@@ -65,6 +65,8 @@ const translations = {
     'settings.currency': 'Currency',
     'settings.dateFormat': 'Date format',
     'settings.language': 'Language',
+    'settings.calendar': 'Calendar System',
+    'settings.secondaryCurrency': 'Secondary Currency',
     'settings.preview': 'Preview',
 
     // Common
@@ -147,6 +149,8 @@ const translations = {
     'settings.currency': 'العملة',
     'settings.dateFormat': 'تنسيق التاريخ',
     'settings.language': 'اللغة',
+    'settings.calendar': 'نظام التقويم',
+    'settings.secondaryCurrency': 'العملة الثانوية',
     'settings.preview': 'معاينة',
 
     // Common

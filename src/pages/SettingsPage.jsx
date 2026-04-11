@@ -14,7 +14,7 @@ const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transpar
 
 export default function SettingsPage() {
   const { currentUser } = useAuth()
-  const { settings, updateSettings, formatCurrency, formatDate, t, CURRENCIES, DATE_FORMATS, LANGUAGES } = useLocale()
+  const { settings, updateSettings, formatCurrency, formatDate, formatWithConversion, t, CURRENCIES, DATE_FORMATS, LANGUAGES, CALENDAR_SYSTEMS } = useLocale()
   const [name, setName] = useState(currentUser?.displayName || '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -171,9 +171,56 @@ export default function SettingsPage() {
                 </select>
               </div>
             </div>
+
+            <Separator />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="calendar">Calendar System</Label>
+                <select
+                  id="calendar"
+                  value={settings.calendar || 'gregorian'}
+                  onChange={e => updateSettings({ calendar: e.target.value })}
+                  className={SELECT_CLASS}
+                >
+                  {Object.entries(CALENDAR_SYSTEMS).map(([key, { label, labelAr }]) => (
+                    <option key={key} value={key}>
+                      {(settings.language === 'ar' ? labelAr : label)}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  {settings.calendar === 'hijri'
+                    ? 'All dates will display in Hijri (Islamic) calendar.'
+                    : settings.calendar === 'both'
+                    ? 'Dates show Gregorian with Hijri in parentheses.'
+                    : 'Standard Gregorian calendar.'}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="secondary-currency">Secondary Currency</Label>
+                <select
+                  id="secondary-currency"
+                  value={settings.secondaryCurrency || ''}
+                  onChange={e => updateSettings({ secondaryCurrency: e.target.value })}
+                  className={SELECT_CLASS}
+                >
+                  <option value="">None</option>
+                  {Object.entries(CURRENCIES)
+                    .filter(([code]) => code !== settings.currency)
+                    .map(([code, { symbol, name }]) => (
+                      <option key={code} value={code}>{symbol} — {name} ({code})</option>
+                    ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  Show amounts in a second currency alongside the primary one.
+                </p>
+              </div>
+            </div>
+
             <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
               <p className="font-medium mb-1">{t('settings.preview')}</p>
-              <p>Amount: <span className="text-foreground font-medium">{formatCurrency(350000)}</span></p>
+              <p>Amount: <span className="text-foreground font-medium">{formatWithConversion(350000)}</span></p>
               <p>Date: <span className="text-foreground font-medium">{formatDate('2025-03-15')}</span></p>
             </div>
           </CardContent>

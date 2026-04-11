@@ -36,11 +36,35 @@ const DATE_FORMATS = {
   'YYYY-MM-DD': { label: 'YYYY-MM-DD (2025-03-15)', locale: 'en-CA' },
 }
 
+const CALENDAR_SYSTEMS = {
+  gregorian: { label: 'Gregorian', labelAr: 'ميلادي' },
+  hijri: { label: 'Hijri (Islamic)', labelAr: 'هجري' },
+  both: { label: 'Both (Gregorian + Hijri)', labelAr: 'كلاهما' },
+}
+
+// Static exchange rates (base: USD) — updated manually or via API
+const EXCHANGE_RATES = {
+  USD: 1,
+  AED: 3.6725,
+  EUR: 0.92,
+  GBP: 0.79,
+  SAR: 3.75,
+  QAR: 3.64,
+  BHD: 0.376,
+  KWD: 0.307,
+  OMR: 0.385,
+  INR: 83.5,
+  PKR: 278.5,
+  EGP: 48.5,
+}
+
 const DEFAULTS = {
   currency: 'USD',
   dateFormat: 'MM/DD/YYYY',
   financialYearStart: '1', // January
   language: 'en',
+  calendar: 'gregorian',
+  secondaryCurrency: '',
 }
 
 export function LocaleProvider({ children }) {
@@ -106,27 +130,81 @@ export function LocaleProvider({ children }) {
     return `${curr.symbol} ${formatted}`
   }
 
+  function convertCurrency(amount, fromCurrency, toCurrency) {
+    const num = Number(amount || 0)
+    const fromRate = EXCHANGE_RATES[fromCurrency] || 1
+    const toRate = EXCHANGE_RATES[toCurrency] || 1
+    return num / fromRate * toRate
+  }
+
+  function formatWithConversion(amount) {
+    const primary = formatCurrency(amount)
+    const sec = settings.secondaryCurrency
+    if (!sec || sec === settings.currency) return primary
+    const converted = convertCurrency(amount, settings.currency, sec)
+    const secCurr = CURRENCIES[sec] || CURRENCIES.USD
+    const formatted = converted.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    return `${primary} (${secCurr.symbol} ${formatted})`
+  }
+
+  function formatHijriDate(date) {
+    try {
+      return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      }).format(date)
+    } catch {
+      return ''
+    }
+  }
+
   function formatDate(dateStr) {
     if (!dateStr) return '\u2014'
     const d = new Date(dateStr + 'T00:00:00')
     const fmt = DATE_FORMATS[settings.dateFormat] || DATE_FORMATS['MM/DD/YYYY']
+    let gregorian
     if (settings.dateFormat === 'YYYY-MM-DD') {
       const y = d.getFullYear()
       const m = String(d.getMonth() + 1).padStart(2, '0')
       const day = String(d.getDate()).padStart(2, '0')
-      return `${y}-${m}-${day}`
+      gregorian = `${y}-${m}-${day}`
+    } else {
+      gregorian = d.toLocaleDateString(fmt.locale, { day: '2-digit', month: '2-digit', year: 'numeric' })
     }
-    return d.toLocaleDateString(fmt.locale, { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+    const cal = settings.calendar || 'gregorian'
+    if (cal === 'hijri') return formatHijriDate(d)
+    if (cal === 'both') {
+      const hijri = formatHijriDate(d)
+      return hijri ? `${gregorian} (${hijri})` : gregorian
+    }
+    return gregorian
   }
 
   function formatDateTime(ts) {
     if (!ts) return '\u2014'
     const d = ts.toDate ? ts.toDate() : new Date(ts)
     const fmt = DATE_FORMATS[settings.dateFormat] || DATE_FORMATS['MM/DD/YYYY']
-    return d.toLocaleDateString(fmt.locale, {
+    const gregorian = d.toLocaleDateString(fmt.locale, {
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: 'numeric', minute: '2-digit',
     })
+
+    const cal = settings.calendar || 'gregorian'
+    if (cal === 'hijri') {
+      try {
+        return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+          day: 'numeric', month: 'long', year: 'numeric',
+          hour: 'numeric', minute: '2-digit',
+        }).format(d)
+      } catch {
+        return gregorian
+      }
+    }
+    if (cal === 'both') {
+      const hijri = formatHijriDate(d)
+      return hijri ? `${gregorian} (${hijri})` : gregorian
+    }
+    return gregorian
   }
 
   function getCurrencyCode() {
@@ -141,9 +219,11 @@ export function LocaleProvider({ children }) {
     <LocaleContext.Provider value={{
       settings, updateSettings,
       formatCurrency, formatDate, formatDateTime,
+      formatWithConversion, convertCurrency,
       getCurrencyCode, getCurrencyLabel,
       t, isRTL,
       CURRENCIES, DATE_FORMATS, LANGUAGES,
+      CALENDAR_SYSTEMS, EXCHANGE_RATES,
     }}>
       {children}
     </LocaleContext.Provider>
