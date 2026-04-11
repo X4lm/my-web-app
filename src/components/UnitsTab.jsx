@@ -19,13 +19,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Plus, MoreHorizontal, Pencil, Trash2, DoorOpen } from 'lucide-react'
 
-const UNIT_TYPE_LABELS = { studio: 'Studio', '1br': '1 BR', '2br': '2 BR', '3br': '3 BR' }
+import { UNIT_TYPE_LABELS } from '@/lib/utils'
 const CONDITION_LABELS = { good: 'Good', needs_attention: 'Needs Attention', critical: 'Critical' }
 const PAYMENT_VARIANT = { paid: 'success', pending: 'warning', overdue: 'destructive' }
 const PAYMENT_LABELS = { paid: 'Paid', pending: 'Pending', overdue: 'Overdue' }
 const CONDITION_VARIANT = { good: 'success', needs_attention: 'warning', critical: 'destructive' }
 
-export default function UnitsTab({ propertyId }) {
+export default function UnitsTab({ propertyId, propertyType }) {
   const { currentUser } = useAuth()
   const { formatCurrency } = useLocale()
   const [units, setUnits] = useState([])
@@ -186,6 +186,7 @@ export default function UnitsTab({ propertyId }) {
         unit={editing}
         onSave={handleSave}
         saving={saving}
+        propertyType={propertyType}
       />
     </div>
   )

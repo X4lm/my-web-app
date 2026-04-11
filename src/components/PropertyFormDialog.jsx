@@ -107,6 +107,11 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
                 <option value="townhouse">Townhouse</option>
                 <option value="apartment">Apartment</option>
                 <option value="residential_building">Residential Building</option>
+                <option value="commercial_building">Commercial Building</option>
+                <option value="mixed_use">Mixed Use</option>
+                <option value="office">Office</option>
+                <option value="retail">Retail</option>
+                <option value="warehouse">Warehouse</option>
               </select>
             </div>
             <div className="space-y-2">

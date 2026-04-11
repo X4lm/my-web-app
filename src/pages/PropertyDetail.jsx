@@ -17,13 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText } from 'lucide-react'
-import { diffFields } from '@/lib/utils'
+import { diffFields, TYPE_LABELS, hasUnits } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
-
-const TYPE_LABELS = {
-  villa: 'Villa', townhouse: 'Townhouse', apartment: 'Apartment',
-  residential_building: 'Residential Building', commercial: 'Commercial',
-}
 
 export default function PropertyDetail() {
   const { id } = useParams()
@@ -117,7 +112,7 @@ export default function PropertyDetail() {
     )
   }
 
-  const isBuilding = property.type === 'residential_building'
+  const isBuilding = hasUnits(property.type)
   const defaultTab = tabFromUrl || 'overview'
 
   return (
@@ -275,7 +270,7 @@ export default function PropertyDetail() {
 
           {isBuilding && (
             <TabsContent value="units">
-              <UnitsTab propertyId={id} />
+              <UnitsTab propertyId={id} propertyType={property.type} />
             </TabsContent>
           )}
 

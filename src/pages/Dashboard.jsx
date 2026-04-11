@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
+import { hasUnits } from '@/lib/utils'
 
 export default function Dashboard() {
   const { currentUser } = useAuth()
@@ -27,7 +28,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!currentUser || loading) return
 
-    const buildings = properties.filter(p => p.type === 'residential_building')
+    const buildings = properties.filter(p => hasUnits(p.type))
     if (buildings.length === 0) {
       setAllUnits([])
       setUnitsLoading(false)
@@ -90,7 +91,7 @@ export default function Dashboard() {
 
   // Monthly income: property-level rent for non-buildings + unit rent for buildings
   const nonBuildingRent = properties
-    .filter(p => p.type !== 'residential_building' && p.status === 'occupied')
+    .filter(p => !hasUnits(p.type) && p.status === 'occupied')
     .reduce((s, p) => s + Number(p.rentAmount || 0), 0)
   const unitRent = allUnits
     .filter(u => u.tenantName && u.tenantName.trim())
@@ -99,7 +100,7 @@ export default function Dashboard() {
 
   // Total revenue (expected from all sources)
   const totalExpectedRent = properties
-    .filter(p => p.type !== 'residential_building')
+    .filter(p => !hasUnits(p.type))
     .reduce((s, p) => s + Number(p.rentAmount || 0), 0) +
     allUnits.reduce((s, u) => s + Number(u.monthlyRent || 0), 0)
 

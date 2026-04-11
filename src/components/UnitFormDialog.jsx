@@ -7,22 +7,30 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 
+const RESIDENTIAL_TYPES = ['studio', '1br', '2br', '3br']
+const COMMERCIAL_TYPES = ['office', 'retail', 'warehouse', 'showroom']
+
 const EMPTY = {
   unitNumber: '', floor: '', unitType: 'studio', size: '',
   tenantName: '', tenantContact: '', leaseStart: '', leaseEnd: '',
   monthlyRent: '', paymentStatus: 'pending', securityDeposit: '',
   condition: 'good',
+  tradeLicenseNumber: '', commercialActivity: '',
 }
 
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
-export default function UnitFormDialog({ open, onOpenChange, unit, onSave, saving }) {
+export default function UnitFormDialog({ open, onOpenChange, unit, onSave, saving, propertyType }) {
+  const isCommercial = propertyType === 'commercial_building'
+  const isMixed = propertyType === 'mixed_use'
+  const unitTypes = isCommercial ? COMMERCIAL_TYPES : isMixed ? [...RESIDENTIAL_TYPES, ...COMMERCIAL_TYPES] : RESIDENTIAL_TYPES
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
     if (open) {
-      setForm(unit ? { ...EMPTY, ...unit } : EMPTY)
+      const defaultType = isCommercial ? 'office' : 'studio'
+      setForm(unit ? { ...EMPTY, ...unit } : { ...EMPTY, unitType: defaultType })
       setErrors({})
     }
   }, [open, unit])
@@ -100,10 +108,12 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
             <div className="space-y-2">
               <Label>Unit type</Label>
               <select value={form.unitType} onChange={e => set('unitType', e.target.value)} className={SELECT_CLASS}>
-                <option value="studio">Studio</option>
-                <option value="1br">1 BR</option>
-                <option value="2br">2 BR</option>
-                <option value="3br">3 BR</option>
+                {unitTypes.map(t => (
+                  <option key={t} value={t}>
+                    {t === 'studio' ? 'Studio' : t === '1br' ? '1 BR' : t === '2br' ? '2 BR' : t === '3br' ? '3 BR'
+                      : t.charAt(0).toUpperCase() + t.slice(1)}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="space-y-2">
@@ -148,6 +158,31 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input type="date" value={form.leaseEnd} onChange={e => set('leaseEnd', e.target.value)} />
             </div>
           </div>
+
+          {COMMERCIAL_TYPES.includes(form.unitType) && (
+            <>
+              <Separator />
+              <p className="text-sm font-semibold text-muted-foreground">Commercial Details</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Trade license number</Label>
+                  <Input
+                    value={form.tradeLicenseNumber}
+                    onChange={e => set('tradeLicenseNumber', e.target.value)}
+                    placeholder="e.g. TL-2024-00456"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Commercial activity</Label>
+                  <Input
+                    value={form.commercialActivity}
+                    onChange={e => set('commercialActivity', e.target.value)}
+                    placeholder="e.g. Restaurant, Retail Shop"
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <Separator />
           <p className="text-sm font-semibold text-muted-foreground">Financials</p>

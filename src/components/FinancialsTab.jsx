@@ -6,7 +6,7 @@ import {
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { diffFields } from '@/lib/utils'
+import { diffFields, hasUnits } from '@/lib/utils'
 import ExpenseFormDialog from '@/components/ExpenseFormDialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -70,7 +70,7 @@ export default function FinancialsTab({ propertyId, property }) {
   }, [unitsPath])
 
   // ── Calculations ──
-  const isBuilding = property?.type === 'residential_building'
+  const isBuilding = hasUnits(property?.type)
 
   // Expected rent: for buildings use sum of unit rents, else property rent
   const expectedRent = isBuilding

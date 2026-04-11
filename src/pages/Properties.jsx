@@ -6,7 +6,7 @@ import {
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { diffFields } from '@/lib/utils'
+import { diffFields, TYPE_LABELS } from '@/lib/utils'
 import AppLayout from '@/components/AppLayout'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
 import { Button } from '@/components/ui/button'
@@ -25,13 +25,6 @@ import { useNavigate } from 'react-router-dom'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCircle } from 'lucide-react'
 
-const TYPE_LABELS = {
-  villa: 'Villa',
-  townhouse: 'Townhouse',
-  apartment: 'Apartment',
-  residential_building: 'Residential Building',
-  commercial: 'Commercial',
-}
 
 export default function Properties() {
   const { currentUser } = useAuth()
@@ -181,10 +174,9 @@ export default function Properties() {
                   className="h-9 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 >
                   <option value="all">All Types</option>
-                  <option value="villa">Villa</option>
-                  <option value="townhouse">Townhouse</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="residential_building">Residential Building</option>
+                  {Object.entries(TYPE_LABELS).map(([val, label]) => (
+                    <option key={val} value={val}>{label}</option>
+                  ))}
                 </select>
               </div>
             </div>
