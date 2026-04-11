@@ -6,6 +6,7 @@ const translations = {
     'nav.alerts': 'Alerts',
     'nav.logs': 'Activity Logs',
     'nav.vendors': 'Vendors',
+    'nav.messages': 'Templates',
     'nav.settings': 'Settings',
     'nav.signOut': 'Sign Out',
 
@@ -87,6 +88,7 @@ const translations = {
     'nav.alerts': 'التنبيهات',
     'nav.logs': 'سجل النشاط',
     'nav.vendors': 'المقاولون',
+    'nav.messages': 'القوالب',
     'nav.settings': 'الإعدادات',
     'nav.signOut': 'تسجيل الخروج',
 

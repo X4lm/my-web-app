@@ -10,6 +10,9 @@ import FinancialsTab from '@/components/FinancialsTab'
 import LogsTab from '@/components/LogsTab'
 import WorkOrdersTab from '@/components/WorkOrdersTab'
 import InspectionTab from '@/components/InspectionTab'
+import CommunicationLog from '@/components/CommunicationLog'
+import AnnouncementsTab from '@/components/AnnouncementsTab'
+import OwnerReportGenerator from '@/components/OwnerReportGenerator'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
 import { lazy, Suspense } from 'react'
 
@@ -18,7 +21,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText, MessageSquare, Megaphone, FileDown } from 'lucide-react'
 import { diffFields, TYPE_LABELS, hasUnits } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 
@@ -166,6 +169,9 @@ export default function PropertyDetail() {
               <TabsTrigger value="work-orders">Work Orders</TabsTrigger>
               <TabsTrigger value="financials">Financials</TabsTrigger>
               <TabsTrigger value="inspection">Inspection</TabsTrigger>
+              <TabsTrigger value="comms">Comms</TabsTrigger>
+              {isBuilding && <TabsTrigger value="announcements">Announcements</TabsTrigger>}
+              <TabsTrigger value="reports">Reports</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
               {isBuilding && <TabsTrigger value="3d-model">3D Model</TabsTrigger>}
             </TabsList>
@@ -292,6 +298,20 @@ export default function PropertyDetail() {
 
           <TabsContent value="inspection">
             <InspectionTab propertyId={id} />
+          </TabsContent>
+
+          <TabsContent value="comms">
+            <CommunicationLog propertyId={id} />
+          </TabsContent>
+
+          {isBuilding && (
+            <TabsContent value="announcements">
+              <AnnouncementsTab propertyId={id} />
+            </TabsContent>
+          )}
+
+          <TabsContent value="reports">
+            <OwnerReportGenerator propertyId={id} property={property} />
           </TabsContent>
 
           <TabsContent value="logs">
