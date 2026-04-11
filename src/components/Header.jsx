@@ -10,18 +10,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLocale } from '@/contexts/LocaleContext'
 
-const mobileLinks = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/properties', label: 'Properties', icon: Building2 },
-  { to: '/alerts', label: 'Alerts', icon: AlertCircle },
-  { to: '/logs', label: 'Logs', icon: ScrollText },
-  { to: '/settings', label: 'Settings', icon: Settings },
+const NAV_ITEMS = [
+  { to: '/', key: 'nav.dashboard', icon: LayoutDashboard },
+  { to: '/properties', key: 'nav.properties', icon: Building2 },
+  { to: '/alerts', key: 'nav.alerts', icon: AlertCircle },
+  { to: '/logs', key: 'nav.logs', icon: ScrollText },
+  { to: '/settings', key: 'nav.settings', icon: Settings },
 ]
 
 export default function Header() {
   const { currentUser, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const { t } = useLocale()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -92,12 +94,12 @@ export default function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/settings')}>
                   <User className="mr-2 h-4 w-4" />
-                  Settings
+                  {t('nav.settings')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
+                  {t('nav.signOut')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -110,10 +112,10 @@ export default function Header() {
         <div className="fixed inset-0 z-30 md:hidden" onClick={() => setMobileOpen(false)}>
           <div className="absolute inset-0 bg-black/40" />
           <nav
-            className="absolute left-0 top-14 bottom-0 w-60 bg-sidebar border-r border-sidebar-border p-3 space-y-1"
+            className="absolute start-0 top-14 bottom-0 w-60 bg-sidebar border-e border-sidebar-border p-3 space-y-1"
             onClick={e => e.stopPropagation()}
           >
-            {mobileLinks.map(({ to, label, icon: Icon }) => (
+            {NAV_ITEMS.map(({ to, key, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -129,7 +131,7 @@ export default function Header() {
                 }
               >
                 <Icon className="w-4 h-4" />
-                {label}
+                {t(key)}
               </NavLink>
             ))}
           </nav>

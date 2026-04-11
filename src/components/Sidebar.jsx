@@ -1,18 +1,21 @@
 import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLocale } from '@/contexts/LocaleContext'
 
-const links = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/properties', label: 'Properties', icon: Building2 },
-  { to: '/alerts', label: 'Alerts', icon: AlertCircle },
-  { to: '/logs', label: 'Logs', icon: ScrollText },
-  { to: '/settings', label: 'Settings', icon: Settings },
+const NAV_ITEMS = [
+  { to: '/', key: 'nav.dashboard', icon: LayoutDashboard },
+  { to: '/properties', key: 'nav.properties', icon: Building2 },
+  { to: '/alerts', key: 'nav.alerts', icon: AlertCircle },
+  { to: '/logs', key: 'nav.logs', icon: ScrollText },
+  { to: '/settings', key: 'nav.settings', icon: Settings },
 ]
 
 export default function Sidebar() {
+  const { t } = useLocale()
+
   return (
-    <aside className="hidden md:flex md:w-60 md:flex-col md:fixed md:inset-y-0 border-r border-sidebar-border bg-sidebar">
+    <aside className="hidden md:flex md:w-60 md:flex-col md:fixed md:inset-y-0 border-e border-sidebar-border bg-sidebar">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-6 h-14 border-b border-sidebar-border">
         <div className="flex items-center justify-center w-7 h-7 rounded-md bg-foreground">
@@ -23,7 +26,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {links.map(({ to, label, icon: Icon }) => (
+        {NAV_ITEMS.map(({ to, key, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
@@ -38,7 +41,7 @@ export default function Sidebar() {
             }
           >
             <Icon className="w-4 h-4" />
-            {label}
+            {t(key)}
           </NavLink>
         ))}
       </nav>

@@ -1,12 +1,18 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import translations from '@/lib/translations'
 
 const LocaleContext = createContext()
 
 export function useLocale() {
   return useContext(LocaleContext)
+}
+
+const LANGUAGES = {
+  en: { label: 'English', dir: 'ltr' },
+  ar: { label: 'العربية', dir: 'rtl' },
 }
 
 const CURRENCIES = {
@@ -34,6 +40,7 @@ const DEFAULTS = {
   currency: 'USD',
   dateFormat: 'MM/DD/YYYY',
   financialYearStart: '1', // January
+  language: 'en',
 }
 
 export function LocaleProvider({ children }) {
@@ -63,6 +70,21 @@ export function LocaleProvider({ children }) {
     }
     load()
   }, [currentUser])
+
+  // Apply language direction to <html>
+  useEffect(() => {
+    const lang = settings.language || 'en'
+    const dir = LANGUAGES[lang]?.dir || 'ltr'
+    document.documentElement.setAttribute('lang', lang)
+    document.documentElement.setAttribute('dir', dir)
+  }, [settings.language])
+
+  const t = useCallback((key) => {
+    const lang = settings.language || 'en'
+    return translations[lang]?.[key] || translations.en?.[key] || key
+  }, [settings.language])
+
+  const isRTL = (LANGUAGES[settings.language]?.dir || 'ltr') === 'rtl'
 
   async function updateSettings(newSettings) {
     const merged = { ...settings, ...newSettings }
@@ -120,7 +142,8 @@ export function LocaleProvider({ children }) {
       settings, updateSettings,
       formatCurrency, formatDate, formatDateTime,
       getCurrencyCode, getCurrencyLabel,
-      CURRENCIES, DATE_FORMATS,
+      t, isRTL,
+      CURRENCIES, DATE_FORMATS, LANGUAGES,
     }}>
       {children}
     </LocaleContext.Provider>

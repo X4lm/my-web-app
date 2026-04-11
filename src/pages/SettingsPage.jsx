@@ -14,7 +14,7 @@ const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transpar
 
 export default function SettingsPage() {
   const { currentUser } = useAuth()
-  const { settings, updateSettings, formatCurrency, formatDate, CURRENCIES, DATE_FORMATS } = useLocale()
+  const { settings, updateSettings, formatCurrency, formatDate, t, CURRENCIES, DATE_FORMATS, LANGUAGES } = useLocale()
   const [name, setName] = useState(currentUser?.displayName || '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -126,13 +126,13 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Currency & Locale</CardTitle>
-            <CardDescription>Set your preferred currency and date format.</CardDescription>
+            <CardTitle className="text-base">{t('settings.currencyLocale')}</CardTitle>
+            <CardDescription>{t('settings.currencyLocaleDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
+                <Label htmlFor="currency">{t('settings.currency')}</Label>
                 <select
                   id="currency"
                   value={settings.currency}
@@ -145,7 +145,7 @@ export default function SettingsPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="date-format">Date format</Label>
+                <Label htmlFor="date-format">{t('settings.dateFormat')}</Label>
                 <select
                   id="date-format"
                   value={settings.dateFormat}
@@ -157,9 +157,22 @@ export default function SettingsPage() {
                   ))}
                 </select>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="language">{t('settings.language')}</Label>
+                <select
+                  id="language"
+                  value={settings.language || 'en'}
+                  onChange={e => updateSettings({ language: e.target.value })}
+                  className={SELECT_CLASS}
+                >
+                  {Object.entries(LANGUAGES).map(([code, { label }]) => (
+                    <option key={code} value={code}>{label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-              <p className="font-medium mb-1">Preview</p>
+              <p className="font-medium mb-1">{t('settings.preview')}</p>
               <p>Amount: <span className="text-foreground font-medium">{formatCurrency(350000)}</span></p>
               <p>Date: <span className="text-foreground font-medium">{formatDate('2025-03-15')}</span></p>
             </div>
