@@ -4,6 +4,7 @@ import { OrbitControls, Text, Html } from '@react-three/drei'
 import { collection, query, onSnapshot } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Box, RotateCcw } from 'lucide-react'
@@ -31,7 +32,7 @@ function getUnitLabel(unit) {
 }
 
 // ── 3D Unit Box ──
-function UnitBox({ position, size, unit, onClick, isSelected }) {
+function UnitBox({ position, size, unit, onClick, isSelected, formatCurrency }) {
   const [hovered, setHovered] = useState(false)
   const color = getUnitColor(unit)
 
@@ -78,7 +79,7 @@ function UnitBox({ position, size, unit, onClick, isSelected }) {
             {unit.floor && <p className="text-xs text-muted-foreground">Floor {unit.floor}</p>}
             <div className="mt-1.5 space-y-0.5 text-xs">
               {unit.tenantName && <p>Tenant: {unit.tenantName}</p>}
-              {unit.monthlyRent && <p>Rent: ${Number(unit.monthlyRent).toLocaleString()}</p>}
+              {unit.monthlyRent && <p>Rent: {formatCurrency(unit.monthlyRent)}</p>}
               <p>Status: {getUnitLabel(unit)}</p>
               {unit.condition && <p>Condition: {unit.condition.replace('_', ' ')}</p>}
             </div>
@@ -157,6 +158,7 @@ function BuildingModel({ units, selectedUnit, onSelectUnit }) {
                   unit={unit}
                   isSelected={selectedUnit?.id === unit.id}
                   onClick={onSelectUnit}
+                  formatCurrency={formatCurrency}
                 />
               )
             })}
@@ -202,6 +204,7 @@ function CameraController({ controlsRef }) {
 // ── Main component ──
 export default function Building3DViewer({ propertyId, property }) {
   const { currentUser } = useAuth()
+  const { formatCurrency } = useLocale()
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedUnit, setSelectedUnit] = useState(null)
@@ -343,7 +346,7 @@ export default function Building3DViewer({ propertyId, property }) {
               </div>
               <div>
                 <p className="text-muted-foreground">Monthly Rent</p>
-                <p className="font-medium">${Number(selectedUnit.monthlyRent || 0).toLocaleString()}</p>
+                <p className="font-medium">{formatCurrency(selectedUnit.monthlyRent)}</p>
               </div>
               {selectedUnit.tenantContact && (
                 <div>

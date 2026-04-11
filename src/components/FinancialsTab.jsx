@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { diffFields } from '@/lib/utils'
 import ExpenseFormDialog from '@/components/ExpenseFormDialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,7 +23,6 @@ import {
   DollarSign, TrendingUp, Percent, MoreHorizontal,
   Pencil, Trash2, Plus, Receipt,
 } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
 
 const CATEGORY_LABELS = {
   maintenance: 'Maintenance',
@@ -36,6 +36,7 @@ const CATEGORY_LABELS = {
 
 export default function FinancialsTab({ propertyId, property }) {
   const { currentUser } = useAuth()
+  const { formatCurrency, formatDate, getCurrencyCode } = useLocale()
   const [expenses, setExpenses] = useState([])
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
@@ -128,7 +129,7 @@ export default function FinancialsTab({ propertyId, property }) {
         await addDoc(collection(db, colPath), { ...data, createdAt: serverTimestamp() })
         await addDoc(collection(db, logPath), {
           action: 'expense_added', author: authorName,
-          details: `Added expense: ${data.description} ($${data.cost})`,
+          details: `Added expense: ${data.description} (${getCurrencyCode()} ${data.cost})`,
           timestamp: serverTimestamp(),
         })
       }
@@ -169,7 +170,7 @@ export default function FinancialsTab({ propertyId, property }) {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">${expectedRent.toLocaleString()}</div>
+            <div className="text-2xl font-semibold">{formatCurrency(expectedRent)}</div>
             <p className="text-xs text-muted-foreground mt-1">Per month</p>
           </CardContent>
         </Card>
@@ -180,7 +181,7 @@ export default function FinancialsTab({ propertyId, property }) {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">${collectedRent.toLocaleString()}</div>
+            <div className="text-2xl font-semibold">{formatCurrency(collectedRent)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {expectedRent > 0
                 ? `${Math.round((collectedRent / expectedRent) * 100)}% collection rate`
@@ -222,7 +223,7 @@ export default function FinancialsTab({ propertyId, property }) {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-semibold ${annualIncome < 0 ? 'text-destructive' : ''}`}>
-              ${annualIncome.toLocaleString()}
+              {formatCurrency(annualIncome)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">{currentYear} estimate</p>
           </CardContent>
@@ -245,7 +246,7 @@ export default function FinancialsTab({ propertyId, property }) {
                     <div
                       className="w-full max-w-[28px] bg-primary/80 rounded-t"
                       style={{ height: `${h}%` }}
-                      title={`$${m.expenses.toLocaleString()}`}
+                      title={formatCurrency(m.expenses)}
                     />
                   </div>
                   <span className="text-[10px] text-muted-foreground">{m.label}</span>
@@ -255,7 +256,7 @@ export default function FinancialsTab({ propertyId, property }) {
           </div>
           <div className="flex justify-between mt-3 text-sm">
             <span className="text-muted-foreground">Total {currentYear} expenses:</span>
-            <span className="font-semibold">${totalExpenses.toLocaleString()}</span>
+            <span className="font-semibold">{formatCurrency(totalExpenses)}</span>
           </div>
         </CardContent>
       </Card>
@@ -308,7 +309,7 @@ export default function FinancialsTab({ propertyId, property }) {
                     <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
                       {exp.vendor || '—'}
                     </TableCell>
-                    <TableCell className="text-right font-medium">${Number(exp.cost || 0).toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-medium">{formatCurrency(exp.cost)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

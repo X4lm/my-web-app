@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { formatDate } from '@/lib/utils'
+import { useLocale } from '@/contexts/LocaleContext'
 import {
   Droplets, Snowflake, Zap, Wrench, ArrowUpDown, Power, Flame,
   Home, Bug, Users, Dumbbell, Car, Save, ChevronDown, ChevronRight,
@@ -24,6 +24,7 @@ const ICON_MAP = {
 
 export default function MaintenanceTab({ propertyId, section }) {
   const { currentUser } = useAuth()
+  const { formatDate } = useLocale()
   const [data, setData] = useState({})
   const [originalData, setOriginalData] = useState({})
   const [meta, setMeta] = useState({})

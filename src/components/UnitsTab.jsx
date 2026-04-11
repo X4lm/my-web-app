@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import UnitFormDialog from '@/components/UnitFormDialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -26,6 +27,7 @@ const CONDITION_VARIANT = { good: 'success', needs_attention: 'warning', critica
 
 export default function UnitsTab({ propertyId }) {
   const { currentUser } = useAuth()
+  const { formatCurrency } = useLocale()
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -80,7 +82,7 @@ export default function UnitsTab({ propertyId }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">
-            {units.length} {units.length === 1 ? 'unit' : 'units'} &middot; {occupied} occupied &middot; ${totalRent.toLocaleString()}/mo total rent
+            {units.length} {units.length === 1 ? 'unit' : 'units'} &middot; {occupied} occupied &middot; {formatCurrency(totalRent)}/mo total rent
           </p>
         </div>
         <Button size="sm" onClick={() => { setEditing(null); setDialogOpen(true) }}>
@@ -146,7 +148,7 @@ export default function UnitsTab({ propertyId }) {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      ${Number(u.monthlyRent || 0).toLocaleString()}
+                      {formatCurrency(u.monthlyRent)}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

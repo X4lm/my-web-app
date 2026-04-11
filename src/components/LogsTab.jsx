@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollText, User, Pencil, Plus, Wrench, DollarSign, ArrowRight } from 'lucide-react'
@@ -15,17 +16,9 @@ const ACTION_CONFIG = {
   expense_deleted: { label: 'Expense Deleted', icon: Pencil, variant: 'destructive' },
 }
 
-function formatTimestamp(ts) {
-  if (!ts) return '—'
-  const d = ts.toDate ? ts.toDate() : new Date(ts)
-  return d.toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: 'numeric', minute: '2-digit',
-  })
-}
-
 export default function LogsTab({ propertyId }) {
   const { currentUser } = useAuth()
+  const { formatDateTime } = useLocale()
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -106,7 +99,7 @@ export default function LogsTab({ propertyId }) {
                     <User className="w-3 h-3" />
                     <span>{log.author}</span>
                     <span>&middot;</span>
-                    <span>{formatTimestamp(log.timestamp)}</span>
+                    <span>{formatDateTime(log.timestamp)}</span>
                   </div>
                 </div>
               </div>

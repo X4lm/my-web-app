@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, AlertTriangle, Bell } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { useLocale } from '@/contexts/LocaleContext'
 
 function getRelativeTime(alert) {
   const now = Date.now()
@@ -26,6 +26,7 @@ function getAlertUrl(alert) {
 
 export default function AlertsPanel({ alerts, title = 'Active Alerts', maxItems = 10 }) {
   const navigate = useNavigate()
+  const { formatDate } = useLocale()
 
   if (!alerts || alerts.length === 0) {
     return (

@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { diffFields } from '@/lib/utils'
 import AppLayout from '@/components/AppLayout'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
@@ -34,6 +35,7 @@ const TYPE_LABELS = {
 
 export default function Properties() {
   const { currentUser } = useAuth()
+  const { formatCurrency } = useLocale()
   const [properties, setProperties] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -260,7 +262,7 @@ export default function Properties() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        ${Number(p.rentAmount || 0).toLocaleString()}
+                        {formatCurrency(p.rentAmount)}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

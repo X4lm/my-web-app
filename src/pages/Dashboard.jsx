@@ -12,11 +12,12 @@ import {
   Home, ArrowRight, Receipt, UserPlus, Pencil, Trash2, Plus,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { formatDate } from '@/lib/utils'
+import { useLocale } from '@/contexts/LocaleContext'
 
 export default function Dashboard() {
   const { currentUser } = useAuth()
   const navigate = useNavigate()
+  const { formatCurrency, formatDate } = useLocale()
   const { properties, allAlerts, loading } = usePropertyAlerts()
   const [allUnits, setAllUnits] = useState([])
   const [recentExpenses, setRecentExpenses] = useState([])
@@ -106,14 +107,14 @@ export default function Dashboard() {
     { label: 'Total Properties', value: totalProps, icon: Building2, description: 'All listed properties' },
     { label: 'Available', value: available, icon: CheckCircle, description: 'Ready to rent' },
     { label: 'Occupied', value: occupied, icon: Users, description: 'Currently rented' },
-    { label: 'Monthly Income', value: `$${monthlyIncome.toLocaleString()}`, icon: DollarSign, description: 'From occupied units & properties' },
+    { label: 'Monthly Income', value: formatCurrency(monthlyIncome), icon: DollarSign, description: 'From occupied units & properties' },
   ]
 
   const unitStatCards = [
     { label: 'Total Units', value: totalUnits, icon: Home, description: 'Across all buildings' },
     { label: 'Occupied Units', value: occupiedUnits, icon: Users, description: `${totalUnits - occupiedUnits} vacant` },
     { label: 'Occupancy Rate', value: `${occupancyRate}%`, icon: Percent, description: totalUnits > 0 ? `${occupiedUnits} of ${totalUnits}` : 'No units' },
-    { label: 'Expected Rent', value: `$${totalExpectedRent.toLocaleString()}`, icon: DollarSign, description: 'From all units & properties' },
+    { label: 'Expected Rent', value: formatCurrency(totalExpectedRent), icon: DollarSign, description: 'From all units & properties' },
   ]
 
   const recent = properties.slice(0, 5)
@@ -208,7 +209,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium">${Number(p.rentAmount || 0).toLocaleString()}</p>
+                        <p className="text-sm font-medium">{formatCurrency(p.rentAmount)}</p>
                         <p className={`text-xs ${p.status === 'available' ? 'text-emerald-600' : 'text-amber-600'}`}>
                           {p.status === 'available' ? 'Available' : 'Occupied'}
                         </p>
@@ -252,7 +253,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="text-right shrink-0 ml-3">
-                        <p className="text-sm font-medium text-destructive">-${Number(exp.cost || 0).toLocaleString()}</p>
+                        <p className="text-sm font-medium text-destructive">-{formatCurrency(exp.cost)}</p>
                         <Badge variant="secondary" className="text-[10px]">{exp.category}</Badge>
                       </div>
                     </div>

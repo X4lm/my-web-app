@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import ImageUpload from '@/components/ImageUpload'
 import DocumentUpload from '@/components/DocumentUpload'
+import { useLocale } from '@/contexts/LocaleContext'
 
 const EMPTY = {
   name: '', address: '', type: 'villa', rentAmount: '', status: 'available',
@@ -20,6 +21,7 @@ const EMPTY = {
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
 export default function PropertyFormDialog({ open, onOpenChange, property, onSave, saving }) {
+  const { getCurrencyCode } = useLocale()
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState({})
 
@@ -123,7 +125,7 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="prop-rent">Monthly rent (USD)</Label>
+              <Label htmlFor="prop-rent">Monthly rent ({getCurrencyCode()})</Label>
               <Input
                 id="prop-rent"
                 type="number"
@@ -162,7 +164,7 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prop-market">Market value (USD)</Label>
+              <Label htmlFor="prop-market">Market value ({getCurrencyCode()})</Label>
               <Input
                 id="prop-market"
                 type="number"

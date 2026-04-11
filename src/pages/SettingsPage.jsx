@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,8 +10,11 @@ import { Separator } from '@/components/ui/separator'
 import { updateProfile, sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '@/firebase/config'
 
+const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
+
 export default function SettingsPage() {
   const { currentUser } = useAuth()
+  const { settings, updateSettings, formatCurrency, formatDate, CURRENCIES, DATE_FORMATS } = useLocale()
   const [name, setName] = useState(currentUser?.displayName || '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -114,6 +118,50 @@ export default function SettingsPage() {
                 </Button>
                 {resetSent && <span className="text-sm text-emerald-600">Email sent!</span>}
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Separator />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Currency & Locale</CardTitle>
+            <CardDescription>Set your preferred currency and date format.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="currency">Currency</Label>
+                <select
+                  id="currency"
+                  value={settings.currency}
+                  onChange={e => updateSettings({ currency: e.target.value })}
+                  className={SELECT_CLASS}
+                >
+                  {Object.entries(CURRENCIES).map(([code, { symbol, name }]) => (
+                    <option key={code} value={code}>{symbol} — {name} ({code})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="date-format">Date format</Label>
+                <select
+                  id="date-format"
+                  value={settings.dateFormat}
+                  onChange={e => updateSettings({ dateFormat: e.target.value })}
+                  className={SELECT_CLASS}
+                >
+                  {Object.entries(DATE_FORMATS).map(([key, { label }]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+              <p className="font-medium mb-1">Preview</p>
+              <p>Amount: <span className="text-foreground font-medium">{formatCurrency(350000)}</span></p>
+              <p>Date: <span className="text-foreground font-medium">{formatDate('2025-03-15')}</span></p>
             </div>
           </CardContent>
         </Card>

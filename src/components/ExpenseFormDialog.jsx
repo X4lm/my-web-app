@@ -5,12 +5,14 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useLocale } from '@/contexts/LocaleContext'
 
 const EMPTY = { date: '', category: 'maintenance', cost: '', vendor: '', description: '' }
 
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
 export default function ExpenseFormDialog({ open, onOpenChange, expense, onSave, saving }) {
+  const { getCurrencyCode } = useLocale()
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState({})
 
@@ -82,7 +84,7 @@ export default function ExpenseFormDialog({ open, onOpenChange, expense, onSave,
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Cost (USD)</Label>
+              <Label>Cost ({getCurrencyCode()})</Label>
               <Input
                 type="number"
                 min="0"

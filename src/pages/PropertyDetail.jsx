@@ -17,7 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText } from 'lucide-react'
-import { formatDate, diffFields } from '@/lib/utils'
+import { diffFields } from '@/lib/utils'
+import { useLocale } from '@/contexts/LocaleContext'
 
 const TYPE_LABELS = {
   villa: 'Villa', townhouse: 'Townhouse', apartment: 'Apartment',
@@ -28,6 +29,7 @@ export default function PropertyDetail() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const { currentUser } = useAuth()
+  const { formatCurrency, formatDate } = useLocale()
   const navigate = useNavigate()
   const [property, setProperty] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -179,7 +181,7 @@ export default function PropertyDetail() {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-semibold">${Number(property.rentAmount || 0).toLocaleString()}</div>
+                  <div className="text-2xl font-semibold">{formatCurrency(property.rentAmount)}</div>
                 </CardContent>
               </Card>
 
@@ -202,7 +204,7 @@ export default function PropertyDetail() {
                     <Landmark className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-semibold">${Number(property.marketValue).toLocaleString()}</div>
+                    <div className="text-2xl font-semibold">{formatCurrency(property.marketValue)}</div>
                   </CardContent>
                 </Card>
               )}

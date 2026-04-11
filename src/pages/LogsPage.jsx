@@ -4,6 +4,7 @@ import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import AppLayout from '@/components/AppLayout'
+import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
@@ -18,17 +19,9 @@ const ACTION_CONFIG = {
   expense_deleted: { label: 'Expense Deleted', icon: Pencil, variant: 'destructive' },
 }
 
-function formatTimestamp(ts) {
-  if (!ts) return '—'
-  const d = ts.toDate ? ts.toDate() : new Date(ts)
-  return d.toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: 'numeric', minute: '2-digit',
-  })
-}
-
 export default function LogsPage() {
   const { currentUser } = useAuth()
+  const { formatDateTime } = useLocale()
   const { properties, loading: propsLoading } = usePropertyAlerts()
   const navigate = useNavigate()
   const [allLogs, setAllLogs] = useState([])
@@ -136,7 +129,7 @@ export default function LogsPage() {
                           <User className="w-3 h-3" />
                           <span>{log.author}</span>
                           <span>&middot;</span>
-                          <span className="whitespace-nowrap">{formatTimestamp(log.timestamp)}</span>
+                          <span className="whitespace-nowrap">{formatDateTime(log.timestamp)}</span>
                         </div>
                       </div>
                     </div>
