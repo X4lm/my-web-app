@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { diffFields } from '@/lib/utils'
 import AppLayout from '@/components/AppLayout'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
 import { Button } from '@/components/ui/button'
@@ -75,15 +76,23 @@ export default function Properties() {
     try {
       const col = collection(db, 'users', currentUser.uid, 'properties')
       const authorName = currentUser.displayName || currentUser.email || 'Unknown'
+      const fieldLabels = {
+        name: 'Name', address: 'Address', type: 'Type', status: 'Status',
+        rentAmount: 'Rent Amount', yearBuilt: 'Year Built', totalArea: 'Total Area',
+        marketValue: 'Market Value', titleDeedNumber: 'Title Deed',
+        insuranceExpiry: 'Insurance Expiry', municipalityPermitExpiry: 'Municipality Permit Expiry',
+      }
       if (editing) {
         console.log('[Firestore] Updating property:', editing.id)
+        const changes = diffFields(editing, data, fieldLabels)
         await updateDoc(doc(db, 'users', currentUser.uid, 'properties', editing.id), {
           ...data, updatedAt: serverTimestamp(), updatedBy: authorName,
         })
         await addDoc(collection(db, 'users', currentUser.uid, 'properties', editing.id, 'logs'), {
           action: 'property_updated',
           author: authorName,
-          details: 'Property details updated',
+          details: changes.length > 0 ? `Changed ${changes.map(c => c.field).join(', ')}` : 'Property details updated',
+          changes,
           timestamp: serverTimestamp(),
         })
       } else {

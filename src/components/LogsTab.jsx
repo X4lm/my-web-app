@@ -4,7 +4,7 @@ import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ScrollText, User, Pencil, Plus, Wrench, DollarSign } from 'lucide-react'
+import { ScrollText, User, Pencil, Plus, Wrench, DollarSign, ArrowRight } from 'lucide-react'
 
 const ACTION_CONFIG = {
   property_created: { label: 'Property Created', icon: Plus, variant: 'default' },
@@ -90,6 +90,18 @@ export default function LogsTab({ propertyId }) {
                       <span className="text-xs text-muted-foreground">{log.details}</span>
                     )}
                   </div>
+                  {log.changes && log.changes.length > 0 && (
+                    <div className="mt-1.5 space-y-1">
+                      {log.changes.map((c, j) => (
+                        <div key={j} className="flex items-center gap-1.5 text-xs">
+                          <span className="font-medium text-muted-foreground">{c.section ? `${c.section} › ` : ''}{c.field}:</span>
+                          <span className="text-destructive line-through">{c.from}</span>
+                          <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />
+                          <span className="text-emerald-600">{c.to}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                     <User className="w-3 h-3" />
                     <span>{log.author}</span>

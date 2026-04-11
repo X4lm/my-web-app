@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { formatDate, diffFields } from '@/lib/utils'
 
 const TYPE_LABELS = {
   villa: 'Villa', townhouse: 'Townhouse', apartment: 'Apartment',
@@ -70,13 +70,20 @@ export default function PropertyDetail() {
     setEditSaving(true)
     try {
       const authorName = currentUser.displayName || currentUser.email || 'Unknown'
+      const changes = diffFields(property, data, {
+        name: 'Name', address: 'Address', type: 'Type', status: 'Status',
+        rentAmount: 'Rent Amount', yearBuilt: 'Year Built', totalArea: 'Total Area',
+        marketValue: 'Market Value', titleDeedNumber: 'Title Deed',
+        insuranceExpiry: 'Insurance Expiry', municipalityPermitExpiry: 'Municipality Permit Expiry',
+      })
       await updateDoc(doc(db, 'users', currentUser.uid, 'properties', id), {
         ...data, updatedAt: serverTimestamp(), updatedBy: authorName,
       })
       await addDoc(collection(db, 'users', currentUser.uid, 'properties', id, 'logs'), {
         action: 'property_updated',
         author: authorName,
-        details: 'Property details updated',
+        details: changes.length > 0 ? `Changed ${changes.map(c => c.field).join(', ')}` : 'Property details updated',
+        changes,
         timestamp: serverTimestamp(),
       })
       setEditOpen(false)

@@ -7,7 +7,7 @@ import AppLayout from '@/components/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
-import { ScrollText, User, Pencil, Plus, Wrench, DollarSign, Building2 } from 'lucide-react'
+import { ScrollText, User, Pencil, Plus, Wrench, DollarSign, Building2, ArrowRight } from 'lucide-react'
 
 const ACTION_CONFIG = {
   property_created: { label: 'Property Created', icon: Plus, variant: 'default' },
@@ -117,6 +117,18 @@ export default function LogsPage() {
                             <span className="text-xs text-muted-foreground truncate">{log.details}</span>
                           )}
                         </div>
+                        {log.changes && log.changes.length > 0 && (
+                          <div className="mt-1.5 space-y-1">
+                            {log.changes.map((c, j) => (
+                              <div key={j} className="flex items-center gap-1.5 text-xs">
+                                <span className="font-medium text-muted-foreground">{c.section ? `${c.section} › ` : ''}{c.field}:</span>
+                                <span className="text-destructive line-through">{c.from}</span>
+                                <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />
+                                <span className="text-emerald-600">{c.to}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                           <Building2 className="w-3 h-3" />
                           <span className="truncate">{log.propertyName}</span>

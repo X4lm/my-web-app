@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { diffFields } from '@/lib/utils'
 import ExpenseFormDialog from '@/components/ExpenseFormDialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -113,10 +114,14 @@ export default function FinancialsTab({ propertyId, property }) {
     setSaving(true)
     try {
       if (editing) {
+        const changes = diffFields(editing, data, {
+          description: 'Description', cost: 'Cost', category: 'Category', date: 'Date', vendor: 'Vendor', notes: 'Notes',
+        })
         await updateDoc(doc(db, colPath, editing.id), { ...data, updatedAt: serverTimestamp() })
         await addDoc(collection(db, logPath), {
           action: 'expense_updated', author: authorName,
           details: `Updated expense: ${data.description}`,
+          changes,
           timestamp: serverTimestamp(),
         })
       } else {

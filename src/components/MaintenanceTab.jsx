@@ -3,6 +3,7 @@ import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from 'fireba
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { MAINTENANCE_SECTIONS, getMaintenanceAlerts } from '@/lib/maintenanceConfig'
+import { diffFields } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,7 @@ const ICON_MAP = {
 export default function MaintenanceTab({ propertyId, section }) {
   const { currentUser } = useAuth()
   const [data, setData] = useState({})
+  const [originalData, setOriginalData] = useState({})
   const [meta, setMeta] = useState({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -43,6 +45,7 @@ export default function MaintenanceTab({ propertyId, section }) {
           setMeta(d._meta || {})
           const { _meta, ...rest } = d
           setData(rest)
+          setOriginalData(JSON.parse(JSON.stringify(rest)))
           // Auto-enable optional sections that have data
           const enabled = {}
           for (const s of MAINTENANCE_SECTIONS) {
@@ -95,15 +98,26 @@ export default function MaintenanceTab({ propertyId, section }) {
         _meta: updatedMeta,
         updatedAt: serverTimestamp(),
       })
-      // Write activity log for each changed section
+      // Compute field-level changes for each dirty section
+      const allChanges = []
+      for (const key of dirtyKeys) {
+        const sec = MAINTENANCE_SECTIONS.find(s => s.key === key)
+        const fieldLabels = {}
+        if (sec) sec.fields.forEach(f => { fieldLabels[f.key] = f.label })
+        const sectionChanges = diffFields(originalData[key], data[key], fieldLabels)
+        sectionChanges.forEach(c => { c.section = sec?.label || key })
+        allChanges.push(...sectionChanges)
+      }
       const sectionLabels = [...dirtyKeys].map(k => MAINTENANCE_SECTIONS.find(s => s.key === k)?.label || k)
       await addDoc(collection(db, docPath, 'logs'), {
         action: 'maintenance_updated',
         author: authorName,
         details: `Updated: ${sectionLabels.join(', ')}`,
+        changes: allChanges,
         timestamp: serverTimestamp(),
       })
       setMeta(updatedMeta)
+      setOriginalData(JSON.parse(JSON.stringify(data)))
       setDirtyKeys(new Set())
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
