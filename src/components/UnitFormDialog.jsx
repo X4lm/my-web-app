@@ -12,7 +12,10 @@ const COMMERCIAL_TYPES = ['office', 'retail', 'warehouse', 'showroom']
 
 const EMPTY = {
   unitNumber: '', floor: '', unitType: 'studio', size: '',
-  tenantName: '', tenantContact: '', leaseStart: '', leaseEnd: '',
+  tenantName: '', tenantContact: '', tenantEmail: '',
+  tenantEmiratesId: '', tenantNationality: '', tenantCompany: '',
+  emergencyContactName: '', emergencyContactPhone: '',
+  leaseStart: '', leaseEnd: '',
   monthlyRent: '', paymentStatus: 'pending', securityDeposit: '',
   condition: 'good',
   tradeLicenseNumber: '', commercialActivity: '',
@@ -127,7 +130,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
           </div>
 
           <Separator />
-          <p className="text-sm font-semibold text-muted-foreground">Tenant & Lease</p>
+          <p className="text-sm font-semibold text-muted-foreground">Tenant Profile</p>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -139,14 +142,75 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               />
             </div>
             <div className="space-y-2">
-              <Label>Tenant contact</Label>
+              <Label>Phone</Label>
               <Input
                 value={form.tenantContact}
                 onChange={e => set('tenantContact', e.target.value)}
-                placeholder="Phone or email"
+                placeholder="e.g. +971 50 123 4567"
               />
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={form.tenantEmail}
+                onChange={e => set('tenantEmail', e.target.value)}
+                placeholder="tenant@email.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Emirates ID / Passport</Label>
+              <Input
+                value={form.tenantEmiratesId}
+                onChange={e => set('tenantEmiratesId', e.target.value)}
+                placeholder="784-XXXX-XXXXXXX-X"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Nationality</Label>
+              <Input
+                value={form.tenantNationality}
+                onChange={e => set('tenantNationality', e.target.value)}
+                placeholder="e.g. UAE"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Company</Label>
+              <Input
+                value={form.tenantCompany}
+                onChange={e => set('tenantCompany', e.target.value)}
+                placeholder="Employer or company name"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Emergency contact name</Label>
+              <Input
+                value={form.emergencyContactName}
+                onChange={e => set('emergencyContactName', e.target.value)}
+                placeholder="Full name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Emergency contact phone</Label>
+              <Input
+                value={form.emergencyContactPhone}
+                onChange={e => set('emergencyContactPhone', e.target.value)}
+                placeholder="+971 ..."
+              />
+            </div>
+          </div>
+
+          <Separator />
+          <p className="text-sm font-semibold text-muted-foreground">Lease</p>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
