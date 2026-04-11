@@ -80,9 +80,21 @@ export default function Properties() {
         await updateDoc(doc(db, 'users', currentUser.uid, 'properties', editing.id), {
           ...data, updatedAt: serverTimestamp(), updatedBy: authorName,
         })
+        await addDoc(collection(db, 'users', currentUser.uid, 'properties', editing.id, 'logs'), {
+          action: 'property_updated',
+          author: authorName,
+          details: 'Property details updated',
+          timestamp: serverTimestamp(),
+        })
       } else {
         console.log('[Firestore] Adding new property')
-        await addDoc(col, { ...data, createdAt: serverTimestamp(), createdBy: authorName })
+        const newDoc = await addDoc(col, { ...data, createdAt: serverTimestamp(), createdBy: authorName })
+        await addDoc(collection(db, 'users', currentUser.uid, 'properties', newDoc.id, 'logs'), {
+          action: 'property_created',
+          author: authorName,
+          details: `Created property: ${data.name}`,
+          timestamp: serverTimestamp(),
+        })
       }
       setDialogOpen(false)
       setEditing(null)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { MAINTENANCE_SECTIONS, getMaintenanceAlerts } from '@/lib/maintenanceConfig'
@@ -94,6 +94,14 @@ export default function MaintenanceTab({ propertyId, section }) {
         ...data,
         _meta: updatedMeta,
         updatedAt: serverTimestamp(),
+      })
+      // Write activity log for each changed section
+      const sectionLabels = [...dirtyKeys].map(k => MAINTENANCE_SECTIONS.find(s => s.key === k)?.label || k)
+      await addDoc(collection(db, docPath, 'logs'), {
+        action: 'maintenance_updated',
+        author: authorName,
+        details: `Updated: ${sectionLabels.join(', ')}`,
+        timestamp: serverTimestamp(),
       })
       setMeta(updatedMeta)
       setDirtyKeys(new Set())

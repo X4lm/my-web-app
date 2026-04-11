@@ -106,13 +106,26 @@ export default function FinancialsTab({ propertyId, property }) {
   })
 
   // ── CRUD ──
+  const logPath = `users/${currentUser.uid}/properties/${propertyId}/logs`
+  const authorName = currentUser.displayName || currentUser.email || 'Unknown'
+
   async function handleSave(data) {
     setSaving(true)
     try {
       if (editing) {
         await updateDoc(doc(db, colPath, editing.id), { ...data, updatedAt: serverTimestamp() })
+        await addDoc(collection(db, logPath), {
+          action: 'expense_updated', author: authorName,
+          details: `Updated expense: ${data.description}`,
+          timestamp: serverTimestamp(),
+        })
       } else {
         await addDoc(collection(db, colPath), { ...data, createdAt: serverTimestamp() })
+        await addDoc(collection(db, logPath), {
+          action: 'expense_added', author: authorName,
+          details: `Added expense: ${data.description} ($${data.cost})`,
+          timestamp: serverTimestamp(),
+        })
       }
       setDialogOpen(false)
       setEditing(null)
@@ -126,7 +139,13 @@ export default function FinancialsTab({ propertyId, property }) {
   async function handleDelete(id) {
     if (!window.confirm('Delete this expense?')) return
     try {
+      const exp = expenses.find(e => e.id === id)
       await deleteDoc(doc(db, colPath, id))
+      await addDoc(collection(db, logPath), {
+        action: 'expense_deleted', author: authorName,
+        details: `Deleted expense: ${exp?.description || id}`,
+        timestamp: serverTimestamp(),
+      })
     } catch (err) {
       console.error('[Firestore] Expense delete error:', err)
     }

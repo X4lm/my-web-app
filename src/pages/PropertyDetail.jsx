@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, onSnapshot, updateDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import AppLayout from '@/components/AppLayout'
 import UnitsTab from '@/components/UnitsTab'
 import MaintenanceTab from '@/components/MaintenanceTab'
 import FinancialsTab from '@/components/FinancialsTab'
+import LogsTab from '@/components/LogsTab'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
 import { lazy, Suspense } from 'react'
 
@@ -15,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, ScrollText } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 
 const TYPE_LABELS = {
@@ -71,6 +72,12 @@ export default function PropertyDetail() {
       const authorName = currentUser.displayName || currentUser.email || 'Unknown'
       await updateDoc(doc(db, 'users', currentUser.uid, 'properties', id), {
         ...data, updatedAt: serverTimestamp(), updatedBy: authorName,
+      })
+      await addDoc(collection(db, 'users', currentUser.uid, 'properties', id, 'logs'), {
+        action: 'property_updated',
+        author: authorName,
+        details: 'Property details updated',
+        timestamp: serverTimestamp(),
       })
       setEditOpen(false)
     } catch (err) {
@@ -151,6 +158,7 @@ export default function PropertyDetail() {
               {isBuilding && <TabsTrigger value="units">Units</TabsTrigger>}
               <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
               <TabsTrigger value="financials">Financials</TabsTrigger>
+              <TabsTrigger value="logs">Logs</TabsTrigger>
               {isBuilding && <TabsTrigger value="3d-model">3D Model</TabsTrigger>}
             </TabsList>
           </div>
@@ -268,6 +276,10 @@ export default function PropertyDetail() {
 
           <TabsContent value="financials">
             <FinancialsTab propertyId={id} property={property} />
+          </TabsContent>
+
+          <TabsContent value="logs">
+            <LogsTab propertyId={id} />
           </TabsContent>
 
           {isBuilding && (
