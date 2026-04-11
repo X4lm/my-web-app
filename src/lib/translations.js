@@ -5,6 +5,7 @@ const translations = {
     'nav.properties': 'Properties',
     'nav.alerts': 'Alerts',
     'nav.logs': 'Activity Logs',
+    'nav.vendors': 'Vendors',
     'nav.settings': 'Settings',
     'nav.signOut': 'Sign Out',
 
@@ -85,6 +86,7 @@ const translations = {
     'nav.properties': 'العقارات',
     'nav.alerts': 'التنبيهات',
     'nav.logs': 'سجل النشاط',
+    'nav.vendors': 'المقاولون',
     'nav.settings': 'الإعدادات',
     'nav.signOut': 'تسجيل الخروج',
 

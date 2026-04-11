@@ -8,6 +8,8 @@ import UnitsTab from '@/components/UnitsTab'
 import MaintenanceTab from '@/components/MaintenanceTab'
 import FinancialsTab from '@/components/FinancialsTab'
 import LogsTab from '@/components/LogsTab'
+import WorkOrdersTab from '@/components/WorkOrdersTab'
+import InspectionTab from '@/components/InspectionTab'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
 import { lazy, Suspense } from 'react'
 
@@ -161,7 +163,9 @@ export default function PropertyDetail() {
               <TabsTrigger value="overview">Overview</TabsTrigger>
               {isBuilding && <TabsTrigger value="units">Units</TabsTrigger>}
               <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+              <TabsTrigger value="work-orders">Work Orders</TabsTrigger>
               <TabsTrigger value="financials">Financials</TabsTrigger>
+              <TabsTrigger value="inspection">Inspection</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
               {isBuilding && <TabsTrigger value="3d-model">3D Model</TabsTrigger>}
             </TabsList>
@@ -278,8 +282,16 @@ export default function PropertyDetail() {
             <MaintenanceTab propertyId={id} section={sectionFromUrl} />
           </TabsContent>
 
+          <TabsContent value="work-orders">
+            <WorkOrdersTab propertyId={id} />
+          </TabsContent>
+
           <TabsContent value="financials">
             <FinancialsTab propertyId={id} property={property} />
+          </TabsContent>
+
+          <TabsContent value="inspection">
+            <InspectionTab propertyId={id} />
           </TabsContent>
 
           <TabsContent value="logs">

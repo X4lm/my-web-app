@@ -8,7 +8,7 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText } from 'lucide-react'
+import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Wrench } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { to: '/properties', key: 'nav.properties', icon: Building2 },
   { to: '/alerts', key: 'nav.alerts', icon: AlertCircle },
   { to: '/logs', key: 'nav.logs', icon: ScrollText },
+  { to: '/vendors', key: 'nav.vendors', icon: Wrench },
   { to: '/settings', key: 'nav.settings', icon: Settings },
 ]
 

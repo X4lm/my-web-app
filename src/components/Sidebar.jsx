@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText } from 'lucide-react'
+import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText, Wrench } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 
@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/properties', key: 'nav.properties', icon: Building2 },
   { to: '/alerts', key: 'nav.alerts', icon: AlertCircle },
   { to: '/logs', key: 'nav.logs', icon: ScrollText },
+  { to: '/vendors', key: 'nav.vendors', icon: Wrench },
   { to: '/settings', key: 'nav.settings', icon: Settings },
 ]
 
