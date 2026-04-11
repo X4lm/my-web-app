@@ -16,6 +16,8 @@ const EMPTY = {
   tenantEmiratesId: '', tenantNationality: '', tenantCompany: '',
   emergencyContactName: '', emergencyContactPhone: '',
   leaseStart: '', leaseEnd: '',
+  ejariNumber: '', contractNumber: '', paymentFrequency: 'monthly',
+  annualRent: '',
   monthlyRent: '', paymentStatus: 'pending', securityDeposit: '',
   condition: 'good',
   tradeLicenseNumber: '', commercialActivity: '',
@@ -210,7 +212,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
           </div>
 
           <Separator />
-          <p className="text-sm font-semibold text-muted-foreground">Lease</p>
+          <p className="text-sm font-semibold text-muted-foreground">Lease & Contract</p>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -220,6 +222,47 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
             <div className="space-y-2">
               <Label>Lease end</Label>
               <Input type="date" value={form.leaseEnd} onChange={e => set('leaseEnd', e.target.value)} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Ejari number</Label>
+              <Input
+                value={form.ejariNumber}
+                onChange={e => set('ejariNumber', e.target.value)}
+                placeholder="e.g. 1234567890"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Contract number</Label>
+              <Input
+                value={form.contractNumber}
+                onChange={e => set('contractNumber', e.target.value)}
+                placeholder="e.g. CN-2024-001"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Payment frequency</Label>
+              <select value={form.paymentFrequency} onChange={e => set('paymentFrequency', e.target.value)} className={SELECT_CLASS}>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly (4 cheques)</option>
+                <option value="semi_annual">Semi-Annual (2 cheques)</option>
+                <option value="annual">Annual (1 cheque)</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Annual rent</Label>
+              <Input
+                type="number"
+                min="0"
+                value={form.annualRent}
+                onChange={e => set('annualRent', e.target.value)}
+                placeholder="Total per year"
+              />
             </div>
           </div>
 

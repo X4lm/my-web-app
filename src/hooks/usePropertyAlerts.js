@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore'
+import { collection, query, orderBy, onSnapshot, doc, getDoc, getDocs } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { getMaintenanceAlerts } from '@/lib/maintenanceConfig'
+import { hasUnits } from '@/lib/utils'
 
 // Loads all properties + their maintenance data and computes alerts
 export function usePropertyAlerts() {
@@ -76,6 +77,31 @@ export function usePropertyAlerts() {
           allAlertsList.push(...propAlerts)
         }
       }
+
+      // Check lease expiry for units in multi-unit properties
+      const sixtyDays = 60 * 24 * 60 * 60 * 1000
+      const now = new Date()
+      await Promise.all(props.filter(p => hasUnits(p.type)).map(async (p) => {
+        try {
+          const unitsSnap = await getDocs(collection(db, 'users', currentUser.uid, 'properties', p.id, 'units'))
+          const leaseAlerts = []
+          unitsSnap.docs.forEach(d => {
+            const u = d.data()
+            if (!u.leaseEnd || !u.tenantName) return
+            const end = new Date(u.leaseEnd)
+            const diff = end.getTime() - now.getTime()
+            if (diff < 0) {
+              leaseAlerts.push({ level: 'overdue', section: 'Lease', field: `Unit ${u.unitNumber} — ${u.tenantName}`, date: u.leaseEnd, sectionKey: 'units', propertyId: p.id, propertyName: p.name })
+            } else if (diff < sixtyDays) {
+              leaseAlerts.push({ level: 'upcoming', section: 'Lease', field: `Unit ${u.unitNumber} — ${u.tenantName}`, date: u.leaseEnd, sectionKey: 'units', propertyId: p.id, propertyName: p.name })
+            }
+          })
+          if (leaseAlerts.length) {
+            alertsMap[p.id] = [...(alertsMap[p.id] || []), ...leaseAlerts]
+            allAlertsList.push(...leaseAlerts)
+          }
+        } catch { /* ignore */ }
+      }))
 
       setAlertsByProperty(alertsMap)
       setAllAlerts(allAlertsList)

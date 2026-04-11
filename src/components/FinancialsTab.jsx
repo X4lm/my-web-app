@@ -9,6 +9,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { diffFields, hasUnits } from '@/lib/utils'
 import ExpenseFormDialog from '@/components/ExpenseFormDialog'
 import ChequeFormDialog from '@/components/ChequeFormDialog'
+import RERACalculator from '@/components/RERACalculator'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -520,6 +521,9 @@ export default function FinancialsTab({ propertyId, property }) {
         onSave={handleChequeSave}
         saving={chequeSaving}
       />
+
+      {/* RERA Calculator */}
+      <RERACalculator />
 
       <ExpenseFormDialog
         open={dialogOpen}
