@@ -10,6 +10,208 @@ const NAVY = '#0B1120'
 const NAVY_LIGHT = '#111827'
 const NAVY_CARD = '#151E2F'
 
+/* ─── LANDING PAGE TRANSLATIONS ─── */
+const L = {
+  en: {
+    dir: 'ltr',
+    badge: 'Smart Property Management',
+    heroTitle1: 'Every property.',
+    heroTitle2: ' Every detail.',
+    heroTitle3: ' Always in control.',
+    heroSub: 'The only platform built for serious property owners in the UAE. Track every unit, every maintenance record, every dirham — all in one place.',
+    getStarted: 'Get Started Free',
+    seeHow: 'See How It Works',
+    navFeatures: 'Features',
+    navHow: 'How It Works',
+    navSecurity: 'Security',
+    navContact: 'Contact',
+    // Problem
+    problemTitle1: 'Still managing properties with ',
+    problemTitle2: 'spreadsheets and WhatsApp?',
+    painTitle1: 'Missed Deadlines',
+    painDesc1: 'Missed maintenance deadlines costing thousands in emergency repairs and tenant complaints.',
+    painTitle2: 'Zero Visibility',
+    painDesc2: 'No visibility into which units are occupied, overdue, or need urgent attention.',
+    painTitle3: 'Scattered Data',
+    painDesc3: 'Tenant data scattered across your phone, email, WhatsApp, and stacks of paper.',
+    // Features
+    featLabel: 'Features',
+    featTitle1: 'One platform. ',
+    featTitle2: 'Total visibility.',
+    featSub: 'Everything you need to manage your property portfolio with confidence.',
+    feat1Title: 'Smart Property Dashboard',
+    feat1Desc: 'See your entire portfolio at a glance — occupancy, revenue, alerts, and more in real-time.',
+    feat2Title: 'Granular Maintenance Tracking',
+    feat2Desc: 'Water tanks, AC units, elevators, fire safety — track every system with smart scheduling.',
+    feat3Title: 'Unit Management',
+    feat3Desc: 'Track every tenant, lease agreement, payment status, and Ejari registration in one place.',
+    feat4Title: 'Financial Overview',
+    feat4Desc: 'Income vs expenses, occupancy rates, rent collection, and VAT tracking for commercial properties.',
+    feat5Title: '3D Building Viewer',
+    feat5Desc: 'Visualize which units are occupied, vacant, or have alerts with an interactive 3D model.',
+    feat6Title: 'Intelligent Alert System',
+    feat6Desc: 'Never miss a maintenance deadline, lease expiry, or document renewal date again.',
+    // How it works
+    howLabel: 'How It Works',
+    howTitle: 'Up and running in minutes',
+    step1Title: 'Add your properties',
+    step1Desc: 'Villas, apartments, buildings, townhouses — add them all in seconds.',
+    step2Title: 'Set up units & schedules',
+    step2Desc: 'Configure your units, tenants, and maintenance schedules with guided setup.',
+    step3Title: 'Get real-time visibility',
+    step3Desc: 'Instant alerts, live dashboard, and full portfolio oversight from day one.',
+    // Property types
+    typesLabel: 'Property Types',
+    typesTitle: 'Built for every property type',
+    type1: 'Residential Buildings',
+    type2: 'Villas',
+    type3: 'Townhouses',
+    type4: 'Apartments',
+    // Maintenance
+    maintLabel: 'Maintenance Tracking',
+    maintTitle: 'Granular tracking for every system in your property',
+    maintSub: 'From water tanks to fire safety systems — track every maintenance schedule, service history, and upcoming deadline across your entire portfolio.',
+    alertOverdue: 'Overdue: Water Tank Cleaning',
+    alertUpcoming: 'Upcoming: AC Service in 5 days',
+    maint1: 'Water Tank', maint1d: 'Capacity, last cleaned, next due date',
+    maint2: 'AC Units', maint2d: 'Per-unit service history & filter replacement',
+    maint3: 'Elevators', maint3d: 'Certification & service scheduling',
+    maint4: 'Fire Safety', maint4d: 'Extinguisher & suppression system checks',
+    maint5: 'Generator & Electrical', maint5d: 'Load testing, panel inspections',
+    maint6: 'Plumbing, Roof, Pool & More', maint6d: 'Full lifecycle tracking for every system',
+    // Security
+    secLabel: 'Security',
+    secTitle: 'Built with enterprise-grade security',
+    secSub: 'Your property data is protected by industry-leading security standards.',
+    sec1: 'Firebase Authentication', sec1d: 'Multi-factor security',
+    sec2: 'Encrypted Data', sec2d: 'End-to-end protection',
+    sec3: 'Data Isolation', sec3d: 'Per-user separation',
+    sec4: 'GDPR & UAE PDPL', sec4d: 'Fully compliant',
+    // Testimonials
+    testLabel: 'Testimonials',
+    testTitle: 'Trusted by property owners across the UAE',
+    test1Name: 'Ahmed Al Mansouri',
+    test1Role: 'Manages 10 properties in Dubai',
+    test1Quote: 'Finally I can see everything in one place. The maintenance alerts alone saved me from a AED 50,000 water tank disaster.',
+    test2Name: 'Fatima Al Hashimi',
+    test2Role: 'Manages 6 villas in Abu Dhabi',
+    test2Quote: 'I used to track everything on paper and WhatsApp. PropVault replaced five different apps and gave me back my weekends.',
+    test3Name: 'Omar Khalid Rahman',
+    test3Role: 'Manages 23 units in Sharjah',
+    test3Quote: 'The 3D building view and instant occupancy tracking transformed how I present to property owners. Incredibly professional.',
+    // CTA
+    ctaTitle: 'Ready to take control of your portfolio?',
+    ctaSub: 'Join property owners who have already made the switch. Free to start. No credit card required.',
+    // Footer
+    footerTagline: 'Smart Property Management',
+    footerPrivacy: 'Privacy Policy',
+    footerTerms: 'Terms of Service',
+    // Stats
+    statUnits: 'Units Managed',
+    statAlerts: 'Alerts Caught',
+    statTime: 'Admin Time Saved',
+  },
+  ar: {
+    dir: 'rtl',
+    badge: 'إدارة عقارات ذكية',
+    heroTitle1: 'كل عقار.',
+    heroTitle2: ' كل تفصيلة.',
+    heroTitle3: ' دائماً تحت السيطرة.',
+    heroSub: 'المنصة الوحيدة المصممة لأصحاب العقارات الجادين في الإمارات. تتبع كل وحدة، كل سجل صيانة، كل درهم — في مكان واحد.',
+    getStarted: 'ابدأ مجاناً',
+    seeHow: 'شاهد كيف يعمل',
+    navFeatures: 'المميزات',
+    navHow: 'كيف يعمل',
+    navSecurity: 'الأمان',
+    navContact: 'تواصل',
+    // Problem
+    problemTitle1: 'لا تزال تدير عقاراتك بـ',
+    problemTitle2: 'جداول البيانات والواتساب؟',
+    painTitle1: 'مواعيد فائتة',
+    painDesc1: 'مواعيد صيانة فائتة تكلفك آلاف الدراهم في إصلاحات طارئة وشكاوى المستأجرين.',
+    painTitle2: 'رؤية معدومة',
+    painDesc2: 'لا رؤية واضحة للوحدات المشغولة أو المتأخرة أو التي تحتاج اهتماماً عاجلاً.',
+    painTitle3: 'بيانات مبعثرة',
+    painDesc3: 'بيانات المستأجرين مبعثرة بين هاتفك وبريدك الإلكتروني والواتساب وأكوام الورق.',
+    // Features
+    featLabel: 'المميزات',
+    featTitle1: 'منصة واحدة. ',
+    featTitle2: 'رؤية شاملة.',
+    featSub: 'كل ما تحتاجه لإدارة محفظتك العقارية بثقة.',
+    feat1Title: 'لوحة تحكم ذكية',
+    feat1Desc: 'اطلع على محفظتك بالكامل بلمحة — الإشغال، الإيرادات، التنبيهات، والمزيد في الوقت الفعلي.',
+    feat2Title: 'تتبع صيانة دقيق',
+    feat2Desc: 'خزانات المياه، وحدات التكييف، المصاعد، السلامة من الحريق — تتبع كل نظام بجدولة ذكية.',
+    feat3Title: 'إدارة الوحدات',
+    feat3Desc: 'تتبع كل مستأجر، عقد إيجار، حالة دفع، وتسجيل إيجاري في مكان واحد.',
+    feat4Title: 'نظرة مالية شاملة',
+    feat4Desc: 'الدخل مقابل المصروفات، نسب الإشغال، تحصيل الإيجارات، وتتبع ضريبة القيمة المضافة.',
+    feat5Title: 'عارض المبنى ثلاثي الأبعاد',
+    feat5Desc: 'تصور الوحدات المشغولة والشاغرة والتنبيهات من خلال نموذج تفاعلي ثلاثي الأبعاد.',
+    feat6Title: 'نظام تنبيهات ذكي',
+    feat6Desc: 'لا تفوت أي موعد صيانة أو انتهاء عقد إيجار أو تجديد مستند مرة أخرى.',
+    // How it works
+    howLabel: 'كيف يعمل',
+    howTitle: 'جاهز للعمل في دقائق',
+    step1Title: 'أضف عقاراتك',
+    step1Desc: 'فلل، شقق، مباني، تاون هاوس — أضفها جميعاً في ثوانٍ.',
+    step2Title: 'إعداد الوحدات والجداول',
+    step2Desc: 'قم بتهيئة وحداتك ومستأجريك وجداول الصيانة مع إعداد موجه.',
+    step3Title: 'احصل على رؤية فورية',
+    step3Desc: 'تنبيهات فورية، لوحة تحكم حية، وإشراف كامل على المحفظة من اليوم الأول.',
+    // Property types
+    typesLabel: 'أنواع العقارات',
+    typesTitle: 'مصمم لكل نوع عقار',
+    type1: 'مباني سكنية',
+    type2: 'فلل',
+    type3: 'تاون هاوس',
+    type4: 'شقق',
+    // Maintenance
+    maintLabel: 'تتبع الصيانة',
+    maintTitle: 'تتبع دقيق لكل نظام في عقارك',
+    maintSub: 'من خزانات المياه إلى أنظمة السلامة — تتبع كل جدول صيانة وتاريخ خدمة وموعد قادم عبر محفظتك بالكامل.',
+    alertOverdue: 'متأخر: تنظيف خزان المياه',
+    alertUpcoming: 'قادم: خدمة التكييف خلال 5 أيام',
+    maint1: 'خزان المياه', maint1d: 'السعة، آخر تنظيف، الموعد القادم',
+    maint2: 'وحدات التكييف', maint2d: 'سجل خدمة لكل وحدة واستبدال الفلاتر',
+    maint3: 'المصاعد', maint3d: 'الشهادات وجدولة الخدمة',
+    maint4: 'السلامة من الحريق', maint4d: 'فحص طفايات الحريق وأنظمة الإطفاء',
+    maint5: 'المولدات والكهرباء', maint5d: 'اختبار الحمل وفحص اللوحات',
+    maint6: 'السباكة والسقف والمسبح والمزيد', maint6d: 'تتبع دورة حياة كاملة لكل نظام',
+    // Security
+    secLabel: 'الأمان',
+    secTitle: 'مبني بأمان على مستوى المؤسسات',
+    secSub: 'بيانات عقاراتك محمية بمعايير أمان رائدة في الصناعة.',
+    sec1: 'مصادقة Firebase', sec1d: 'أمان متعدد العوامل',
+    sec2: 'بيانات مشفرة', sec2d: 'حماية شاملة',
+    sec3: 'عزل البيانات', sec3d: 'فصل لكل مستخدم',
+    sec4: 'GDPR وقانون حماية البيانات الإماراتي', sec4d: 'متوافق بالكامل',
+    // Testimonials
+    testLabel: 'آراء العملاء',
+    testTitle: 'موثوق من أصحاب العقارات في جميع أنحاء الإمارات',
+    test1Name: 'أحمد المنصوري',
+    test1Role: 'يدير 10 عقارات في دبي',
+    test1Quote: 'أخيراً أستطيع رؤية كل شيء في مكان واحد. تنبيهات الصيانة وحدها أنقذتني من كارثة خزان مياه بقيمة 50,000 درهم.',
+    test2Name: 'فاطمة الهاشمي',
+    test2Role: 'تدير 6 فلل في أبوظبي',
+    test2Quote: 'كنت أتتبع كل شيء على الورق والواتساب. PropVault استبدل خمسة تطبيقات مختلفة وأعاد لي عطلات نهاية الأسبوع.',
+    test3Name: 'عمر خالد رحمن',
+    test3Role: 'يدير 23 وحدة في الشارقة',
+    test3Quote: 'عرض المبنى ثلاثي الأبعاد وتتبع الإشغال الفوري غيّرا طريقة عرضي لأصحاب العقارات. احترافية لا تصدق.',
+    // CTA
+    ctaTitle: 'مستعد للسيطرة على محفظتك؟',
+    ctaSub: 'انضم إلى أصحاب العقارات الذين انتقلوا بالفعل. مجاني للبدء. لا حاجة لبطاقة ائتمان.',
+    // Footer
+    footerTagline: 'إدارة عقارات ذكية',
+    footerPrivacy: 'سياسة الخصوصية',
+    footerTerms: 'شروط الخدمة',
+    // Stats
+    statUnits: 'وحدة مُدارة',
+    statAlerts: 'تنبيهات تم اكتشافها',
+    statTime: 'وقت إداري موفر',
+  },
+}
+
 /* ─── ANIMATION VARIANTS ─── */
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -274,7 +476,7 @@ function ResidentialIcon({ className = 'w-12 h-12' }) {
 }
 
 /* ─── HERO BUILDING SVG ─── */
-function HeroBuilding() {
+function HeroBuilding({ tx = (k) => k }) {
   return (
     <div className="relative w-full max-w-lg mx-auto">
       <svg viewBox="0 0 500 400" fill="none" className="w-full h-auto">
@@ -393,7 +595,7 @@ function HeroBuilding() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 1.2, duration: 0.8 }}
       >
-        <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider">Units Managed</p>
+        <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider">{tx('statUnits')}</p>
         <p className="text-xl font-bold text-white mt-0.5"><Counter end={10000} suffix="+" /></p>
       </motion.div>
 
@@ -403,7 +605,7 @@ function HeroBuilding() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 1.5, duration: 0.8 }}
       >
-        <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider">Alerts Caught</p>
+        <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider">{tx('statAlerts')}</p>
         <p className="text-xl font-bold text-white mt-0.5"><Counter end={98} suffix="%" /></p>
       </motion.div>
 
@@ -413,7 +615,7 @@ function HeroBuilding() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.8, duration: 0.8 }}
       >
-        <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider">Admin Time Saved</p>
+        <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider">{tx('statTime')}</p>
         <p className="text-xl font-bold text-white mt-0.5"><Counter end={40} suffix="%" /></p>
       </motion.div>
     </div>
@@ -477,6 +679,34 @@ export default function LandingPage() {
   const navigate = useNavigate()
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [lang, setLang] = useState(() => {
+    try {
+      const stored = localStorage.getItem('landingLang')
+      if (stored && L[stored]) return stored
+    } catch {}
+    return 'en'
+  })
+
+  const tx = (key) => L[lang]?.[key] || L.en[key] || key
+  const isRTL = lang === 'ar'
+
+  // Override document direction for landing page
+  useEffect(() => {
+    const prevDir = document.documentElement.getAttribute('dir')
+    const prevLang = document.documentElement.getAttribute('lang')
+    document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr')
+    document.documentElement.setAttribute('lang', lang)
+    return () => {
+      document.documentElement.setAttribute('dir', prevDir || 'ltr')
+      document.documentElement.setAttribute('lang', prevLang || 'en')
+    }
+  }, [lang, isRTL])
+
+  function toggleLang() {
+    const next = lang === 'en' ? 'ar' : 'en'
+    setLang(next)
+    localStorage.setItem('landingLang', next)
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -490,14 +720,14 @@ export default function LandingPage() {
   }
 
   const navLinks = [
-    { label: 'Features', id: 'features' },
-    { label: 'How It Works', id: 'how-it-works' },
-    { label: 'Security', id: 'security' },
-    { label: 'Contact', id: 'footer' },
+    { label: tx('navFeatures'), id: 'features' },
+    { label: tx('navHow'), id: 'how-it-works' },
+    { label: tx('navSecurity'), id: 'security' },
+    { label: tx('navContact'), id: 'footer' },
   ]
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-white overflow-x-hidden" style={{ fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif' }}>
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#0B1120] text-white overflow-x-hidden" style={{ fontFamily: isRTL ? '"Noto Sans Arabic", "Inter", sans-serif' : '"Plus Jakarta Sans", "Inter", sans-serif' }}>
 
       {/* ════════ NAV ════════ */}
       <motion.nav
@@ -533,23 +763,37 @@ export default function LandingPage() {
               ))}
             </div>
 
-            {/* CTA */}
-            <div className="hidden md:block">
-              <GoldButton onClick={() => navigate('/signup')}>Get Started Free</GoldButton>
+            {/* CTA + Lang */}
+            <div className="hidden md:flex items-center gap-3">
+              <button
+                onClick={toggleLang}
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-all duration-300"
+              >
+                {lang === 'en' ? 'العربية' : 'English'}
+              </button>
+              <GoldButton onClick={() => navigate('/signup')}>{tx('getStarted')}</GoldButton>
             </div>
 
-            {/* Mobile burger */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-white/70 hover:text-white"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                {mobileMenuOpen
-                  ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  : <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                }
-              </svg>
-            </button>
+            {/* Mobile burger + lang */}
+            <div className="flex items-center gap-2 md:hidden">
+              <button
+                onClick={toggleLang}
+                className="px-2.5 py-1.5 text-[10px] font-semibold rounded-md border border-white/15 text-white/70 hover:text-white transition-all"
+              >
+                {lang === 'en' ? 'AR' : 'EN'}
+              </button>
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 text-white/70 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  {mobileMenuOpen
+                    ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    : <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  }
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -573,7 +817,7 @@ export default function LandingPage() {
                   </button>
                 ))}
                 <div className="pt-2">
-                  <GoldButton onClick={() => navigate('/signup')} className="w-full">Get Started Free</GoldButton>
+                  <GoldButton onClick={() => navigate('/signup')} className="w-full">{tx('getStarted')}</GoldButton>
                 </div>
               </div>
             </motion.div>
@@ -605,7 +849,7 @@ export default function LandingPage() {
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4A853]/10 border border-[#D4A853]/20 mb-6"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#D4A853] animate-pulse" />
-                <span className="text-[#D4A853] text-xs font-semibold uppercase tracking-wider">Smart Property Management</span>
+                <span className="text-[#D4A853] text-xs font-semibold uppercase tracking-wider">{tx('badge')}</span>
               </motion.div>
 
               <motion.h1
@@ -614,11 +858,11 @@ export default function LandingPage() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="text-3xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.1] tracking-tight"
               >
-                Every property.{' '}
+                {tx('heroTitle1')}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A853] to-[#E8C97A]">
-                  Every detail.
-                </span>{' '}
-                Always in control.
+                  {tx('heroTitle2')}
+                </span>
+                {tx('heroTitle3')}
               </motion.h1>
 
               <motion.p
@@ -627,7 +871,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.7, delay: 0.4 }}
                 className="mt-5 text-base sm:text-lg text-white/50 leading-relaxed max-w-xl mx-auto lg:mx-0"
               >
-                The only platform built for serious property owners in the UAE. Track every unit, every maintenance record, every dirham — all in one place.
+                {tx('heroSub')}
               </motion.p>
 
               <motion.div
@@ -637,13 +881,13 @@ export default function LandingPage() {
                 className="mt-8 flex flex-row gap-3 sm:gap-4 justify-center lg:justify-start"
               >
                 <GoldButton onClick={() => navigate('/signup')} size="lg">
-                  Get Started Free
+                  {tx('getStarted')}
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
+                    <path d="M5 12h14" /><path d={isRTL ? 'M12 5l-7 7 7 7' : 'M12 5l7 7-7 7'} />
                   </svg>
                 </GoldButton>
                 <SecondaryButton onClick={() => scrollTo('how-it-works')}>
-                  See How It Works
+                  {tx('seeHow')}
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 5v14" /><path d="M19 12l-7 7-7-7" />
                   </svg>
@@ -658,7 +902,7 @@ export default function LandingPage() {
               transition={{ duration: 1, delay: 0.4 }}
               className="hidden lg:block"
             >
-              <HeroBuilding />
+              <HeroBuilding tx={tx} />
             </motion.div>
           </div>
         </div>
@@ -670,9 +914,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div className="text-center mb-16" variants={fadeUp} custom={0}>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-              Still managing properties with{' '}
+              {tx('problemTitle1')}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">
-                spreadsheets and WhatsApp?
+                {tx('problemTitle2')}
               </span>
             </h2>
           </motion.div>
@@ -681,20 +925,20 @@ export default function LandingPage() {
             {[
               {
                 icon: AlertIcon,
-                title: 'Missed Deadlines',
-                desc: 'Missed maintenance deadlines costing thousands in emergency repairs and tenant complaints.',
+                title: tx('painTitle1'),
+                desc: tx('painDesc1'),
                 color: 'from-red-500/20 to-red-500/5',
               },
               {
                 icon: ChartIcon,
-                title: 'Zero Visibility',
-                desc: 'No visibility into which units are occupied, overdue, or need urgent attention.',
+                title: tx('painTitle2'),
+                desc: tx('painDesc2'),
                 color: 'from-orange-500/20 to-orange-500/5',
               },
               {
                 icon: UsersIcon,
-                title: 'Scattered Data',
-                desc: 'Tenant data scattered across your phone, email, WhatsApp, and stacks of paper.',
+                title: tx('painTitle3'),
+                desc: tx('painDesc3'),
                 color: 'from-amber-500/20 to-amber-500/5',
               },
             ].map((item, i) => {
@@ -729,20 +973,20 @@ export default function LandingPage() {
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">Features</p>
+            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('featLabel')}</p>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-              One platform. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A853] to-[#E8C97A]">Total visibility.</span>
+              {tx('featTitle1')}<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A853] to-[#E8C97A]">{tx('featTitle2')}</span>
             </h2>
-            <p className="mt-4 text-white/45 max-w-2xl mx-auto">Everything you need to manage your property portfolio with confidence.</p>
+            <p className="mt-4 text-white/45 max-w-2xl mx-auto">{tx('featSub')}</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <FeatureCard index={0} icon={LayoutIcon} title="Smart Property Dashboard" description="See your entire portfolio at a glance — occupancy, revenue, alerts, and more in real-time." />
-            <FeatureCard index={1} icon={WrenchIcon} title="Granular Maintenance Tracking" description="Water tanks, AC units, elevators, fire safety — track every system with smart scheduling." />
-            <FeatureCard index={2} icon={UsersIcon} title="Unit Management" description="Track every tenant, lease agreement, payment status, and Ejari registration in one place." />
-            <FeatureCard index={3} icon={ChartIcon} title="Financial Overview" description="Income vs expenses, occupancy rates, rent collection, and VAT tracking for commercial properties." />
-            <FeatureCard index={4} icon={CubeIcon} title="3D Building Viewer" description="Visualize which units are occupied, vacant, or have alerts with an interactive 3D model." />
-            <FeatureCard index={5} icon={AlertIcon} title="Intelligent Alert System" description="Never miss a maintenance deadline, lease expiry, or document renewal date again." />
+            <FeatureCard index={0} icon={LayoutIcon} title={tx('feat1Title')} description={tx('feat1Desc')} />
+            <FeatureCard index={1} icon={WrenchIcon} title={tx('feat2Title')} description={tx('feat2Desc')} />
+            <FeatureCard index={2} icon={UsersIcon} title={tx('feat3Title')} description={tx('feat3Desc')} />
+            <FeatureCard index={3} icon={ChartIcon} title={tx('feat4Title')} description={tx('feat4Desc')} />
+            <FeatureCard index={4} icon={CubeIcon} title={tx('feat5Title')} description={tx('feat5Desc')} />
+            <FeatureCard index={5} icon={AlertIcon} title={tx('feat6Title')} description={tx('feat6Desc')} />
           </div>
         </div>
       </Section>
@@ -752,15 +996,15 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.015] to-transparent pointer-events-none" />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">How It Works</p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Up and running in minutes</h2>
+            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('howLabel')}</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{tx('howTitle')}</h2>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 md:gap-12">
             {[
-              { step: 1, title: 'Add your properties', desc: 'Villas, apartments, buildings, townhouses — add them all in seconds.', icon: BuildingIcon },
-              { step: 2, title: 'Set up units & schedules', desc: 'Configure your units, tenants, and maintenance schedules with guided setup.', icon: WrenchIcon },
-              { step: 3, title: 'Get real-time visibility', desc: 'Instant alerts, live dashboard, and full portfolio oversight from day one.', icon: ZapIcon },
+              { step: 1, title: tx('step1Title'), desc: tx('step1Desc'), icon: BuildingIcon },
+              { step: 2, title: tx('step2Title'), desc: tx('step2Desc'), icon: WrenchIcon },
+              { step: 3, title: tx('step3Title'), desc: tx('step3Desc'), icon: ZapIcon },
             ].map((item, i) => {
               const ref = useRef(null)
               const isInView = useInView(ref, { once: true, margin: '-40px' })
@@ -800,16 +1044,16 @@ export default function LandingPage() {
       <Section className="py-16 sm:py-24 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">Property Types</p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Built for every property type</h2>
+            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('typesLabel')}</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{tx('typesTitle')}</h2>
           </motion.div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { icon: ResidentialIcon, label: 'Residential Buildings' },
-              { icon: VillaIcon, label: 'Villas' },
-              { icon: TownhouseIcon, label: 'Townhouses' },
-              { icon: ApartmentIcon, label: 'Apartments' },
+              { icon: ResidentialIcon, label: tx('type1') },
+              { icon: VillaIcon, label: tx('type2') },
+              { icon: TownhouseIcon, label: tx('type3') },
+              { icon: ApartmentIcon, label: tx('type4') },
             ].map((item, i) => {
               const ref = useRef(null)
               const isInView = useInView(ref, { once: true, margin: '-40px' })
@@ -843,12 +1087,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <motion.div variants={slideInLeft}>
-              <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">Maintenance Tracking</p>
+              <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('maintLabel')}</p>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-6">
-                Granular tracking for every system in your property
+                {tx('maintTitle')}
               </h2>
               <p className="text-white/45 leading-relaxed mb-8">
-                From water tanks to fire safety systems — track every maintenance schedule, service history, and upcoming deadline across your entire portfolio.
+                {tx('maintSub')}
               </p>
 
               {/* Alert examples */}
@@ -859,7 +1103,7 @@ export default function LandingPage() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/25 text-red-400 text-xs font-semibold"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                  Overdue: Water Tank Cleaning
+                  {tx('alertOverdue')}
                 </motion.span>
                 <motion.span
                   animate={{ scale: [1, 1.03, 1] }}
@@ -867,7 +1111,7 @@ export default function LandingPage() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/25 text-amber-400 text-xs font-semibold"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  Upcoming: AC Service in 5 days
+                  {tx('alertUpcoming')}
                 </motion.span>
               </div>
             </motion.div>
@@ -875,12 +1119,12 @@ export default function LandingPage() {
             <motion.div variants={slideInRight}>
               <div className="space-y-3">
                 {[
-                  { icon: DropletIcon, label: 'Water Tank', detail: 'Capacity, last cleaned, next due date', color: 'text-blue-400' },
-                  { icon: ThermometerIcon, label: 'AC Units', detail: 'Per-unit service history & filter replacement', color: 'text-cyan-400' },
-                  { icon: ArrowUpIcon, label: 'Elevators', detail: 'Certification & service scheduling', color: 'text-violet-400' },
-                  { icon: FlameIcon, label: 'Fire Safety', detail: 'Extinguisher & suppression system checks', color: 'text-red-400' },
-                  { icon: ZapIcon, label: 'Generator & Electrical', detail: 'Load testing, panel inspections', color: 'text-yellow-400' },
-                  { icon: WrenchIcon, label: 'Plumbing, Roof, Pool & More', detail: 'Full lifecycle tracking for every system', color: 'text-emerald-400' },
+                  { icon: DropletIcon, label: tx('maint1'), detail: tx('maint1d'), color: 'text-blue-400' },
+                  { icon: ThermometerIcon, label: tx('maint2'), detail: tx('maint2d'), color: 'text-cyan-400' },
+                  { icon: ArrowUpIcon, label: tx('maint3'), detail: tx('maint3d'), color: 'text-violet-400' },
+                  { icon: FlameIcon, label: tx('maint4'), detail: tx('maint4d'), color: 'text-red-400' },
+                  { icon: ZapIcon, label: tx('maint5'), detail: tx('maint5d'), color: 'text-yellow-400' },
+                  { icon: WrenchIcon, label: tx('maint6'), detail: tx('maint6d'), color: 'text-emerald-400' },
                 ].map((item, i) => {
                   const ref = useRef(null)
                   const isInView = useInView(ref, { once: true, margin: '-20px' })
@@ -915,17 +1159,17 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent pointer-events-none" />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">Security</p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Built with enterprise-grade security</h2>
-            <p className="mt-4 text-white/45 max-w-xl mx-auto">Your property data is protected by industry-leading security standards.</p>
+            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('secLabel')}</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{tx('secTitle')}</h2>
+            <p className="mt-4 text-white/45 max-w-xl mx-auto">{tx('secSub')}</p>
           </motion.div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { icon: ShieldCheckIcon, label: 'Firebase Authentication', desc: 'Multi-factor security' },
-              { icon: LockIcon, label: 'Encrypted Data', desc: 'End-to-end protection' },
-              { icon: DatabaseIcon, label: 'Data Isolation', desc: 'Per-user separation' },
-              { icon: GlobeIcon, label: 'GDPR & UAE PDPL', desc: 'Fully compliant' },
+              { icon: ShieldCheckIcon, label: tx('sec1'), desc: tx('sec1d') },
+              { icon: LockIcon, label: tx('sec2'), desc: tx('sec2d') },
+              { icon: DatabaseIcon, label: tx('sec3'), desc: tx('sec3d') },
+              { icon: GlobeIcon, label: tx('sec4'), desc: tx('sec4d') },
             ].map((item, i) => {
               const ref = useRef(null)
               const isInView = useInView(ref, { once: true, margin: '-40px' })
@@ -955,26 +1199,26 @@ export default function LandingPage() {
       <Section className="py-16 sm:py-24 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">Testimonials</p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Trusted by property owners across the UAE</h2>
+            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('testLabel')}</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{tx('testTitle')}</h2>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                name: 'Ahmed Al Mansouri',
-                role: 'Manages 10 properties in Dubai',
-                quote: 'Finally I can see everything in one place. The maintenance alerts alone saved me from a AED 50,000 water tank disaster.',
+                name: tx('test1Name'),
+                role: tx('test1Role'),
+                quote: tx('test1Quote'),
               },
               {
-                name: 'Fatima Al Hashimi',
-                role: 'Manages 6 villas in Abu Dhabi',
-                quote: 'I used to track everything on paper and WhatsApp. PropVault replaced five different apps and gave me back my weekends.',
+                name: tx('test2Name'),
+                role: tx('test2Role'),
+                quote: tx('test2Quote'),
               },
               {
-                name: 'Omar Khalid Rahman',
-                role: 'Manages 23 units in Sharjah',
-                quote: 'The 3D building view and instant occupancy tracking transformed how I present to property owners. Incredibly professional.',
+                name: tx('test3Name'),
+                role: tx('test3Role'),
+                quote: tx('test3Quote'),
               },
             ].map((t, i) => {
               const ref = useRef(null)
@@ -1026,15 +1270,15 @@ export default function LandingPage() {
 
             <div className="relative">
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-                Ready to take control of your portfolio?
+                {tx('ctaTitle')}
               </h2>
               <p className="text-white/45 max-w-lg mx-auto mb-8 leading-relaxed">
-                Join property owners who have already made the switch. Free to start. No credit card required.
+                {tx('ctaSub')}
               </p>
               <GoldButton onClick={() => navigate('/signup')} size="lg">
-                Get Started Free
+                {tx('getStarted')}
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
+                  <path d="M5 12h14" /><path d={isRTL ? 'M12 5l-7 7 7 7' : 'M12 5l7 7-7 7'} />
                 </svg>
               </GoldButton>
             </div>
@@ -1054,21 +1298,24 @@ export default function LandingPage() {
                 </div>
                 <span className="text-base font-bold tracking-tight text-white">PropVault</span>
               </div>
-              <p className="text-white/30 text-xs mt-2">Smart Property Management</p>
+              <p className="text-white/30 text-xs mt-2">{tx('footerTagline')}</p>
             </div>
 
             {/* Links */}
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-              {['Features', 'Security', 'Privacy Policy', 'Terms of Service', 'Contact'].map(label => (
+              {[
+                { label: tx('navFeatures'), action: () => scrollTo('features') },
+                { label: tx('navSecurity'), action: () => scrollTo('security') },
+                { label: tx('footerPrivacy'), action: null },
+                { label: tx('footerTerms'), action: null },
+                { label: tx('navContact'), action: () => scrollTo('footer') },
+              ].map(item => (
                 <button
-                  key={label}
-                  onClick={() => {
-                    if (label === 'Features') scrollTo('features')
-                    else if (label === 'Security') scrollTo('security')
-                  }}
+                  key={item.label}
+                  onClick={item.action || undefined}
                   className="text-white/40 hover:text-white/70 transition-colors duration-300"
                 >
-                  {label}
+                  {item.label}
                 </button>
               ))}
             </div>
