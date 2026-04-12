@@ -1,18 +1,21 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   collection, query, where, orderBy, onSnapshot, getDocs,
+  addDoc, updateDoc, deleteDoc, doc, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
+import { canEdit, FEATURES } from '@/utils/permissions'
 import { createInvitation, revokeInvitation, INVITE_STATUS } from '@/services/invitations'
 import AppLayout from '@/components/AppLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
 import {
   Table, TableBody, TableCell, TableHead,
   TableHeader, TableRow,
@@ -23,20 +26,85 @@ import {
 import { Label } from '@/components/ui/label'
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuItem, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { Plus, Search, MoreHorizontal, Users, XCircle } from 'lucide-react'
+import {
+  Plus, Search, MoreHorizontal, Users, XCircle, Pencil, Trash2,
+  Eye, Mail, Phone, FileText, Calendar, Building2, ChevronLeft,
+} from 'lucide-react'
 
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
+const TEXTAREA_CLASS = 'flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
-const STATUS_BADGE = {
-  [INVITE_STATUS.PENDING]: { label: 'Pending', variant: 'outline', className: 'border-amber-400 text-amber-600 bg-amber-50' },
-  [INVITE_STATUS.ACCEPTED]: { label: 'Accepted', variant: 'outline', className: 'border-green-400 text-green-600 bg-green-50' },
-  [INVITE_STATUS.DECLINED]: { label: 'Declined', variant: 'outline', className: 'border-red-400 text-red-600 bg-red-50' },
-  [INVITE_STATUS.REVOKED]: { label: 'Revoked', variant: 'outline', className: 'border-gray-400 text-gray-500 bg-gray-50' },
+// ─── Document types required for tenants in UAE ─────────────────────────────
+const DOCUMENT_TYPES = [
+  { key: 'emirates_id', label: 'Emirates ID Copy' },
+  { key: 'passport', label: 'Passport Copy' },
+  { key: 'visa', label: 'Visa Copy' },
+  { key: 'tenancy_contract', label: 'Tenancy Contract (Ejari)' },
+  { key: 'security_deposit', label: 'Security Deposit Receipt' },
+  { key: 'cheque_copies', label: 'Cheque Copies' },
+  { key: 'move_in_report', label: 'Move-in Inspection Report' },
+  { key: 'move_out_report', label: 'Move-out Inspection Report' },
+  { key: 'noc', label: 'NOC (No Objection Certificate)' },
+  { key: 'other', label: 'Other' },
+]
+
+// ─── Lease status options ───────────────────────────────────────────────────
+const LEASE_STATUSES = [
+  { key: 'active', label: 'Active', color: 'border-green-400 text-green-600 bg-green-50' },
+  { key: 'expiring_soon', label: 'Expiring Soon', color: 'border-amber-400 text-amber-600 bg-amber-50' },
+  { key: 'expired', label: 'Expired', color: 'border-red-400 text-red-600 bg-red-50' },
+  { key: 'terminated', label: 'Terminated', color: 'border-gray-400 text-gray-500 bg-gray-50' },
+  { key: 'pending', label: 'Pending', color: 'border-blue-400 text-blue-500 bg-blue-50' },
+]
+
+const EMPTY_TENANT = {
+  // Personal
+  fullName: '',
+  email: '',
+  phone: '',
+  secondaryPhone: '',
+  nationality: '',
+  emiratesId: '',
+  emiratesIdExpiry: '',
+  passportNumber: '',
+  passportExpiry: '',
+  visaStatus: '',
+  visaExpiry: '',
+  // Lease
+  propertyId: '',
+  unitId: '',
+  leaseStart: '',
+  leaseEnd: '',
+  monthlyRent: '',
+  securityDeposit: '',
+  paymentFrequency: 'monthly',
+  leaseStatus: 'active',
+  ejariNumber: '',
+  // Emergency
+  emergencyName: '',
+  emergencyPhone: '',
+  emergencyRelation: '',
+  // Documents checklist
+  documents: {},
+  // Notes
+  notes: '',
 }
 
-function formatDate(ts) {
+const INVITE_STATUS_BADGE = {
+  [INVITE_STATUS.PENDING]: { label: 'Invite Pending', className: 'border-amber-400 text-amber-600 bg-amber-50' },
+  [INVITE_STATUS.ACCEPTED]: { label: 'App Access', className: 'border-green-400 text-green-600 bg-green-50' },
+  [INVITE_STATUS.DECLINED]: { label: 'Invite Declined', className: 'border-red-400 text-red-600 bg-red-50' },
+  [INVITE_STATUS.REVOKED]: { label: 'Invite Revoked', className: 'border-gray-400 text-gray-500 bg-gray-50' },
+}
+
+function fmtDate(d) {
+  if (!d) return '—'
+  return new Date(d + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+function fmtTimestamp(ts) {
   if (!ts) return '—'
   const d = ts.toDate ? ts.toDate() : new Date(ts)
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
@@ -44,142 +112,243 @@ function formatDate(ts) {
 
 export default function TenantsPage() {
   const { currentUser, userProfile } = useAuth()
-  const { t } = useLocale()
+  const { t, formatCurrency } = useLocale()
   const { properties } = usePropertyAlerts()
+  const role = userProfile?.role || 'owner'
+  const canEditTenants = canEdit(role, FEATURES.TENANTS) || canEdit(role, FEATURES.INVITE_MEMBER)
 
-  // ── Invitation list state ──────────────────────────────────────────────────
+  // ── State ─────────────────────────────────────────────────────────────────
+  const [tenants, setTenants] = useState([])
   const [invitations, setInvitations] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [filterProperty, setFilterProperty] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('all')
 
-  // ── Invite dialog state ────────────────────────────────────────────────────
+  // Dialog
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [inviteEmail, setInviteEmail] = useState('')
-  const [selectedPropertyId, setSelectedPropertyId] = useState('')
-  const [selectedUnitId, setSelectedUnitId] = useState('')
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState(EMPTY_TENANT)
+  const [formError, setFormError] = useState('')
+  const [saving, setSaving] = useState(false)
   const [units, setUnits] = useState([])
   const [unitsLoading, setUnitsLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [formError, setFormError] = useState('')
 
-  // ── Real-time listener for tenant invitations ──────────────────────────────
+  // Detail view
+  const [viewTenant, setViewTenant] = useState(null)
+
+  // Invite dialog
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [invitePropertyId, setInvitePropertyId] = useState('')
+  const [inviteUnitId, setInviteUnitId] = useState('')
+  const [inviteUnits, setInviteUnits] = useState([])
+  const [inviteUnitsLoading, setInviteUnitsLoading] = useState(false)
+  const [inviteSaving, setInviteSaving] = useState(false)
+  const [inviteError, setInviteError] = useState('')
+
+  const colPath = `users/${currentUser?.uid}/tenants`
+
+  // ── Load tenants ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!currentUser) return
+    const q = query(collection(db, colPath), orderBy('fullName'))
+    const unsub = onSnapshot(q, (snap) => {
+      setTenants(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setLoading(false)
+    }, (err) => {
+      logError('[Tenants] Load error:', err)
+      setLoading(false)
+    })
+    return unsub
+  }, [currentUser, colPath])
 
+  // ── Load invitations ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!currentUser) return
     const q = query(
       collection(db, 'invitations'),
       where('role', '==', 'tenant'),
       where('inviterUid', '==', currentUser.uid),
       orderBy('createdAt', 'desc'),
     )
-
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        setInvitations(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-        setLoading(false)
-      },
-      (err) => {
-        logError('[Tenants] Snapshot error:', err)
-        setLoading(false)
-      },
-    )
-
+    const unsub = onSnapshot(q, (snap) => {
+      setInvitations(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    }, (err) => {
+      logError('[Tenants] Invitation listener error:', err)
+    })
     return unsub
   }, [currentUser])
 
-  // ── Load units when property changes in invite dialog ──────────────────────
-  const loadUnits = useCallback(async (propertyId) => {
+  // ── Load units for a property ─────────────────────────────────────────────
+  const loadUnits = useCallback(async (propertyId, target = 'form') => {
     if (!propertyId || !currentUser) {
-      setUnits([])
+      if (target === 'form') setUnits([])
+      else setInviteUnits([])
       return
     }
-    setUnitsLoading(true)
+    if (target === 'form') setUnitsLoading(true)
+    else setInviteUnitsLoading(true)
     try {
-      const unitsSnap = await getDocs(
-        query(
-          collection(db, `users/${currentUser.uid}/properties/${propertyId}/units`),
-          orderBy('unitNumber'),
-        ),
+      const snap = await getDocs(
+        query(collection(db, `users/${currentUser.uid}/properties/${propertyId}/units`), orderBy('unitNumber'))
       )
-      setUnits(unitsSnap.docs.map(d => ({ id: d.id, ...d.data() })))
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      if (target === 'form') setUnits(data)
+      else setInviteUnits(data)
     } catch (err) {
       logError('[Tenants] Load units error:', err)
-      setUnits([])
     } finally {
-      setUnitsLoading(false)
+      if (target === 'form') setUnitsLoading(false)
+      else setInviteUnitsLoading(false)
     }
   }, [currentUser])
 
-  // ── Filtering ──────────────────────────────────────────────────────────────
-  const filtered = invitations.filter((inv) => {
-    if (!search) return true
-    const q = search.toLowerCase()
-    return (
-      (inv.inviteeEmail && inv.inviteeEmail.toLowerCase().includes(q)) ||
-      (inv.inviteeName && inv.inviteeName.toLowerCase().includes(q)) ||
-      (inv.propertyName && inv.propertyName.toLowerCase().includes(q))
-    )
+  // ── Filtering ─────────────────────────────────────────────────────────────
+  const filtered = tenants.filter(t => {
+    if (filterProperty !== 'all' && t.propertyId !== filterProperty) return false
+    if (filterStatus !== 'all' && t.leaseStatus !== filterStatus) return false
+    if (search) {
+      const q = search.toLowerCase()
+      return (
+        t.fullName?.toLowerCase().includes(q) ||
+        t.email?.toLowerCase().includes(q) ||
+        t.phone?.includes(q) ||
+        t.emiratesId?.includes(q)
+      )
+    }
+    return true
   })
 
-  // ── Dialog helpers ─────────────────────────────────────────────────────────
-  function openInviteDialog() {
-    setInviteEmail('')
-    setSelectedPropertyId('')
-    setSelectedUnitId('')
+  // ── Form helpers ──────────────────────────────────────────────────────────
+  function set(field, value) {
+    setForm(f => ({ ...f, [field]: value }))
+    if (formError) setFormError('')
+  }
+
+  function setDocCheck(docKey, checked) {
+    setForm(f => ({
+      ...f,
+      documents: { ...f.documents, [docKey]: checked },
+    }))
+  }
+
+  function openAdd() {
+    setEditing(null)
+    setForm(EMPTY_TENANT)
     setUnits([])
     setFormError('')
     setDialogOpen(true)
   }
 
-  function handlePropertyChange(propertyId) {
-    setSelectedPropertyId(propertyId)
-    setSelectedUnitId('')
-    loadUnits(propertyId)
+  function openEdit(tenant) {
+    setEditing(tenant)
+    setForm({ ...EMPTY_TENANT, ...tenant, documents: tenant.documents || {} })
+    setFormError('')
+    if (tenant.propertyId) loadUnits(tenant.propertyId, 'form')
+    setDialogOpen(true)
   }
 
-  async function handleInvite(e) {
-    e.preventDefault()
-    setFormError('')
+  function handlePropertyChange(propertyId) {
+    set('propertyId', propertyId)
+    set('unitId', '')
+    loadUnits(propertyId, 'form')
+  }
 
-    const email = inviteEmail.trim()
-    if (!email) {
-      setFormError(t('tenants.emailRequired') || 'Email is required')
-      return
-    }
-    if (!selectedPropertyId) {
-      setFormError(t('tenants.propertyRequired') || 'Please select a property')
-      return
-    }
+  async function handleSave(e) {
+    e.preventDefault()
+    if (!form.fullName.trim()) return setFormError('Full name is required')
+    if (!form.propertyId) return setFormError('Please select a property')
 
     setSaving(true)
     try {
-      await createInvitation({
-        inviterUid: currentUser.uid,
-        inviterName: currentUser.displayName || currentUser.email,
-        inviteeEmail: email,
-        propertyId: selectedPropertyId,
-        propertyName: properties.find(p => p.id === selectedPropertyId)?.name || '',
-        unitId: selectedUnitId || undefined,
-        unitNumber: units.find(u => u.id === selectedUnitId)?.unitNumber || '',
-        role: 'tenant',
-        inviterRole: userProfile?.role || 'owner',
-      })
+      const propName = properties.find(p => p.id === form.propertyId)?.name || ''
+      const unitNum = units.find(u => u.id === form.unitId)?.unitNumber || ''
+      const data = {
+        ...form,
+        fullName: form.fullName.trim(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        monthlyRent: form.monthlyRent ? Number(form.monthlyRent) : 0,
+        securityDeposit: form.securityDeposit ? Number(form.securityDeposit) : 0,
+        propertyName: propName,
+        unitNumber: unitNum,
+      }
+
+      if (editing) {
+        await updateDoc(doc(db, colPath, editing.id), { ...data, updatedAt: serverTimestamp() })
+      } else {
+        await addDoc(collection(db, colPath), { ...data, createdAt: serverTimestamp() })
+      }
       setDialogOpen(false)
     } catch (err) {
-      if (err.message === 'DUPLICATE_INVITE') {
-        setFormError(t('tenants.duplicateInvite') || 'A pending invitation already exists for this tenant at this property')
-      } else {
-        logError('[Tenants] Invite error:', err)
-        setFormError(t('tenants.inviteError') || 'Failed to send invitation. Please try again.')
-      }
+      logError('[Tenants] Save error:', err)
+      setFormError('Failed to save. Please try again.')
     } finally {
       setSaving(false)
     }
   }
 
+  async function handleDelete(id) {
+    if (!window.confirm('Delete this tenant record? This cannot be undone.')) return
+    try {
+      await deleteDoc(doc(db, colPath, id))
+      if (viewTenant?.id === id) setViewTenant(null)
+    } catch (err) {
+      logError('[Tenants] Delete error:', err)
+    }
+  }
+
+  // ── Invite helpers ────────────────────────────────────────────────────────
+  function openInvite(tenant) {
+    setInviteEmail(tenant?.email || '')
+    setInvitePropertyId(tenant?.propertyId || '')
+    setInviteUnitId(tenant?.unitId || '')
+    setInviteError('')
+    if (tenant?.propertyId) loadUnits(tenant.propertyId, 'invite')
+    setInviteDialogOpen(true)
+  }
+
+  function handleInvitePropertyChange(propertyId) {
+    setInvitePropertyId(propertyId)
+    setInviteUnitId('')
+    loadUnits(propertyId, 'invite')
+  }
+
+  async function handleInvite(e) {
+    e.preventDefault()
+    const email = inviteEmail.trim()
+    if (!email) return setInviteError('Email is required')
+    if (!invitePropertyId) return setInviteError('Please select a property')
+
+    setInviteSaving(true)
+    try {
+      await createInvitation({
+        inviterUid: currentUser.uid,
+        inviterName: currentUser.displayName || currentUser.email,
+        inviteeEmail: email,
+        propertyId: invitePropertyId,
+        propertyName: properties.find(p => p.id === invitePropertyId)?.name || '',
+        unitId: inviteUnitId || undefined,
+        unitNumber: inviteUnits.find(u => u.id === inviteUnitId)?.unitNumber || '',
+        role: 'tenant',
+        inviterRole: role,
+      })
+      setInviteDialogOpen(false)
+    } catch (err) {
+      if (err.message === 'DUPLICATE_INVITE') {
+        setInviteError('A pending invitation already exists for this tenant.')
+      } else {
+        logError('[Tenants] Invite error:', err)
+        setInviteError('Failed to send invitation.')
+      }
+    } finally {
+      setInviteSaving(false)
+    }
+  }
+
   async function handleRevoke(invitationId) {
-    if (!window.confirm(t('tenants.revokeConfirm') || 'Revoke this invitation?')) return
+    if (!window.confirm('Revoke this invitation?')) return
     try {
       await revokeInvitation(invitationId)
     } catch (err) {
@@ -187,63 +356,232 @@ export default function TenantsPage() {
     }
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Get invitation status for a tenant ────────────────────────────────────
+  function getInviteForTenant(tenant) {
+    if (!tenant.email) return null
+    return invitations.find(inv =>
+      inv.inviteeEmail === tenant.email.toLowerCase()
+      && inv.status !== INVITE_STATUS.REVOKED
+      && inv.status !== INVITE_STATUS.DECLINED
+    )
+  }
+
+  // ── Lease status badge ────────────────────────────────────────────────────
+  function leaseStatusBadge(status) {
+    const s = LEASE_STATUSES.find(ls => ls.key === status)
+    if (!s) return null
+    return <Badge variant="outline" className={s.color}>{s.label}</Badge>
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DETAIL VIEW
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (viewTenant) {
+    const tenant = tenants.find(t => t.id === viewTenant.id) || viewTenant
+    const invite = getInviteForTenant(tenant)
+    return (
+      <AppLayout>
+        <div className="space-y-6 max-w-3xl">
+          {/* Back + header */}
+          <div>
+            <Button variant="ghost" size="sm" onClick={() => setViewTenant(null)} className="mb-2 -ml-2">
+              <ChevronLeft className="w-4 h-4 mr-1" /> Back to Tenants
+            </Button>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight">{tenant.fullName}</h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {tenant.propertyName}{tenant.unitNumber ? ` — Unit ${tenant.unitNumber}` : ''}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {leaseStatusBadge(tenant.leaseStatus)}
+                {invite && (
+                  <Badge variant="outline" className={INVITE_STATUS_BADGE[invite.status]?.className}>
+                    {INVITE_STATUS_BADGE[invite.status]?.label}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Personal Information */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Personal Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <InfoRow label="Full Name" value={tenant.fullName} />
+                <InfoRow label="Email" value={tenant.email} icon={<Mail className="w-3.5 h-3.5" />} link={tenant.email ? `mailto:${tenant.email}` : null} />
+                <InfoRow label="Phone" value={tenant.phone} icon={<Phone className="w-3.5 h-3.5" />} link={tenant.phone ? `tel:${tenant.phone}` : null} />
+                <InfoRow label="Secondary Phone" value={tenant.secondaryPhone} />
+                <InfoRow label="Nationality" value={tenant.nationality} />
+                <InfoRow label="Emirates ID" value={tenant.emiratesId} />
+                <InfoRow label="Emirates ID Expiry" value={fmtDate(tenant.emiratesIdExpiry)} />
+                <InfoRow label="Passport Number" value={tenant.passportNumber} />
+                <InfoRow label="Passport Expiry" value={fmtDate(tenant.passportExpiry)} />
+                <InfoRow label="Visa Status" value={tenant.visaStatus} />
+                <InfoRow label="Visa Expiry" value={fmtDate(tenant.visaExpiry)} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Lease Details */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Lease Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <InfoRow label="Property" value={tenant.propertyName} icon={<Building2 className="w-3.5 h-3.5" />} />
+                <InfoRow label="Unit" value={tenant.unitNumber || '—'} />
+                <InfoRow label="Lease Start" value={fmtDate(tenant.leaseStart)} icon={<Calendar className="w-3.5 h-3.5" />} />
+                <InfoRow label="Lease End" value={fmtDate(tenant.leaseEnd)} />
+                <InfoRow label="Monthly Rent" value={tenant.monthlyRent ? formatCurrency(tenant.monthlyRent) : '—'} />
+                <InfoRow label="Security Deposit" value={tenant.securityDeposit ? formatCurrency(tenant.securityDeposit) : '—'} />
+                <InfoRow label="Payment Frequency" value={tenant.paymentFrequency ? tenant.paymentFrequency.charAt(0).toUpperCase() + tenant.paymentFrequency.slice(1) : '—'} />
+                <InfoRow label="Lease Status" value={leaseStatusBadge(tenant.leaseStatus)} />
+                <InfoRow label="Ejari Number" value={tenant.ejariNumber} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Emergency Contact */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Emergency Contact</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <InfoRow label="Name" value={tenant.emergencyName} />
+                <InfoRow label="Phone" value={tenant.emergencyPhone} />
+                <InfoRow label="Relationship" value={tenant.emergencyRelation} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Documents Checklist */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText className="w-4 h-4" /> Documents Checklist
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {DOCUMENT_TYPES.map(dt => {
+                  const collected = tenant.documents?.[dt.key]
+                  return (
+                    <div key={dt.key} className="flex items-center gap-2 text-sm">
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center text-xs ${collected ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-muted-foreground/30'}`}>
+                        {collected ? '✓' : ''}
+                      </div>
+                      <span className={collected ? 'text-foreground' : 'text-muted-foreground'}>{dt.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notes */}
+          {tenant.notes && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{tenant.notes}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Actions */}
+          {canEditTenants && (
+            <div className="flex items-center gap-3">
+              <Button size="sm" onClick={() => openEdit(tenant)}>
+                <Pencil className="w-4 h-4 mr-1" /> Edit Tenant
+              </Button>
+              {!invite && tenant.email && (
+                <Button size="sm" variant="outline" onClick={() => openInvite(tenant)}>
+                  <Mail className="w-4 h-4 mr-1" /> Send App Invite
+                </Button>
+              )}
+              <Button size="sm" variant="destructive" onClick={() => handleDelete(tenant.id)}>
+                <Trash2 className="w-4 h-4 mr-1" /> Delete
+              </Button>
+            </div>
+          )}
+        </div>
+      </AppLayout>
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LIST VIEW
+  // ═══════════════════════════════════════════════════════════════════════════
   return (
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {t('tenants.title') || 'Tenants'}
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              {t('tenants.subtitle') || 'Manage tenant invitations and access'}
-            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('tenants.title') || 'Tenants'}</h1>
+            <p className="text-muted-foreground text-sm">{t('tenants.subtitle') || 'Manage tenant records, documents, and invitations.'}</p>
           </div>
-          <Button onClick={openInviteDialog}>
-            <Plus className="w-4 h-4" /> {t('tenants.inviteTenant') || 'Invite Tenant'}
-          </Button>
+          {canEditTenants && (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => openInvite(null)}>
+                <Mail className="w-4 h-4 mr-1" /> Invite to App
+              </Button>
+              <Button onClick={openAdd}>
+                <Plus className="w-4 h-4 mr-1" /> Add Tenant
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Search */}
+        {/* Search + Filters */}
         <Card>
           <CardContent className="p-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('tenants.search') || 'Search by name, email, or property...'}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="pl-9"
-              />
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, email, phone, or Emirates ID..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <select value={filterProperty} onChange={e => setFilterProperty(e.target.value)} className={SELECT_CLASS + ' sm:w-48'}>
+                <option value="all">All Properties</option>
+                {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={SELECT_CLASS + ' sm:w-40'}>
+                <option value="all">All Statuses</option>
+                {LEASE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+              </select>
             </div>
           </CardContent>
         </Card>
 
-        {/* Table */}
+        {/* Tenant Table */}
         <Card>
           <CardContent className="p-0">
             {loading ? (
-              <p className="text-sm text-muted-foreground py-12 text-center">
-                {t('common.loading') || 'Loading...'}
-              </p>
+              <p className="text-sm text-muted-foreground py-12 text-center">Loading tenants...</p>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Users className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                <h3 className="text-sm font-medium">
-                  {search
-                    ? (t('tenants.noResults') || 'No tenants match your search')
-                    : (t('tenants.noTenants') || 'No tenants yet')}
-                </h3>
+                <h3 className="text-sm font-medium">{search || filterProperty !== 'all' || filterStatus !== 'all' ? 'No tenants match your filters' : 'No tenants yet'}</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {search
-                    ? (t('tenants.tryDifferentSearch') || 'Try a different search term')
-                    : (t('tenants.inviteDesc') || 'Invite tenants to give them access to their property and unit information.')}
+                  {search ? 'Try a different search term' : 'Add tenant records with their personal information, lease details, and documents.'}
                 </p>
-                {!search && (
-                  <Button onClick={openInviteDialog} size="sm" className="mt-4">
-                    <Plus className="w-4 h-4" /> {t('tenants.inviteTenant') || 'Invite Tenant'}
+                {!search && canEditTenants && (
+                  <Button onClick={openAdd} size="sm" className="mt-4">
+                    <Plus className="w-4 h-4" /> Add Tenant
                   </Button>
                 )}
               </div>
@@ -252,64 +590,90 @@ export default function TenantsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{t('tenants.tenant') || 'Tenant'}</TableHead>
-                      <TableHead>{t('tenants.property') || 'Property'}</TableHead>
-                      <TableHead className="hidden sm:table-cell">{t('tenants.unit') || 'Unit'}</TableHead>
-                      <TableHead>{t('tenants.status') || 'Status'}</TableHead>
-                      <TableHead className="hidden md:table-cell">{t('tenants.invitedDate') || 'Invited'}</TableHead>
+                      <TableHead>Tenant</TableHead>
+                      <TableHead>Property / Unit</TableHead>
+                      <TableHead className="hidden sm:table-cell">Phone</TableHead>
+                      <TableHead>Lease</TableHead>
+                      <TableHead className="hidden md:table-cell">Rent</TableHead>
+                      <TableHead className="hidden lg:table-cell">Status</TableHead>
                       <TableHead className="w-10" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map(inv => {
-                      const badge = STATUS_BADGE[inv.status] || STATUS_BADGE[INVITE_STATUS.PENDING]
+                    {filtered.map(tenant => {
+                      const invite = getInviteForTenant(tenant)
                       return (
-                        <TableRow key={inv.id}>
+                        <TableRow key={tenant.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setViewTenant(tenant)}>
                           <TableCell>
                             <div>
-                              {inv.inviteeName && (
-                                <p className="font-medium text-sm">{inv.inviteeName}</p>
-                              )}
-                              <p className={inv.inviteeName ? 'text-xs text-muted-foreground' : 'text-sm font-medium'}>
-                                {inv.inviteeEmail}
-                              </p>
+                              <p className="font-medium text-sm">{tenant.fullName}</p>
+                              {tenant.email && <p className="text-xs text-muted-foreground">{tenant.email}</p>}
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm">{inv.propertyName || '—'}</span>
+                            <div>
+                              <p className="text-sm">{tenant.propertyName || '—'}</p>
+                              {tenant.unitNumber && <p className="text-xs text-muted-foreground">Unit {tenant.unitNumber}</p>}
+                            </div>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">
-                            <span className="text-sm">{inv.unitNumber || '—'}</span>
+                            <span className="text-sm text-muted-foreground">{tenant.phone || '—'}</span>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={badge.variant} className={badge.className}>
-                              {t(`tenants.status_${inv.status}`) || badge.label}
-                            </Badge>
+                            <div className="text-xs text-muted-foreground">
+                              {tenant.leaseStart && tenant.leaseEnd
+                                ? <>{fmtDate(tenant.leaseStart)} → {fmtDate(tenant.leaseEnd)}</>
+                                : '—'
+                              }
+                            </div>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            <span className="text-sm text-muted-foreground">
-                              {formatDate(inv.createdAt)}
-                            </span>
+                            <span className="text-sm">{tenant.monthlyRent ? formatCurrency(tenant.monthlyRent) : '—'}</span>
                           </TableCell>
-                          <TableCell>
-                            {inv.status === INVITE_STATUS.PENDING && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => handleRevoke(inv.id)}
-                                    className="text-destructive focus:text-destructive"
-                                  >
-                                    <XCircle className="mr-2 h-3.5 w-3.5" />
-                                    {t('tenants.revoke') || 'Revoke Invitation'}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
+                          <TableCell className="hidden lg:table-cell">
+                            <div className="flex items-center gap-1.5">
+                              {leaseStatusBadge(tenant.leaseStatus)}
+                              {invite && (
+                                <Badge variant="outline" className={INVITE_STATUS_BADGE[invite.status]?.className + ' text-[10px] px-1.5'}>
+                                  {invite.status === INVITE_STATUS.ACCEPTED ? '✓ App' : '⏳'}
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell onClick={e => e.stopPropagation()}>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setViewTenant(tenant)}>
+                                  <Eye className="mr-2 h-3.5 w-3.5" /> View Details
+                                </DropdownMenuItem>
+                                {canEditTenants && (
+                                  <>
+                                    <DropdownMenuItem onClick={() => openEdit(tenant)}>
+                                      <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                                    </DropdownMenuItem>
+                                    {!invite && tenant.email && (
+                                      <DropdownMenuItem onClick={() => openInvite(tenant)}>
+                                        <Mail className="mr-2 h-3.5 w-3.5" /> Send App Invite
+                                      </DropdownMenuItem>
+                                    )}
+                                    {invite?.status === INVITE_STATUS.PENDING && (
+                                      <DropdownMenuItem onClick={() => handleRevoke(invite.id)} className="text-amber-600">
+                                        <XCircle className="mr-2 h-3.5 w-3.5" /> Revoke Invite
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => handleDelete(tenant.id)} className="text-destructive focus:text-destructive">
+                                      <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       )
@@ -322,91 +686,254 @@ export default function TenantsPage() {
         </Card>
       </div>
 
-      {/* Invite Tenant Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!saving) setDialogOpen(open) }}>
-        <DialogContent className="sm:max-w-md">
+      {/* ═══ ADD / EDIT TENANT DIALOG ═══════════════════════════════════════ */}
+      <Dialog open={dialogOpen} onOpenChange={open => { if (!saving) setDialogOpen(open) }}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t('tenants.inviteTenant') || 'Invite Tenant'}</DialogTitle>
+            <DialogTitle>{editing ? 'Edit Tenant' : 'Add Tenant'}</DialogTitle>
             <DialogDescription>
-              {t('tenants.inviteDialogDesc') || 'Send an invitation to a tenant for a specific property and unit.'}
+              {editing ? 'Update tenant information.' : 'Enter the tenant\'s personal details, lease information, and document checklist.'}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleInvite} className="space-y-4 mt-2">
-            {/* Email */}
+
+          <form onSubmit={handleSave} className="space-y-6 mt-2">
+            {/* ── Personal Information ──────────────────────────────── */}
+            <div>
+              <h3 className="text-sm font-semibold mb-3">Personal Information</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Full Name <span className="text-destructive">*</span></Label>
+                  <Input value={form.fullName} onChange={e => set('fullName', e.target.value)} placeholder="e.g. Ahmed Al Maktoum" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="tenant@email.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone</Label>
+                  <Input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+971 ..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Secondary Phone</Label>
+                  <Input value={form.secondaryPhone} onChange={e => set('secondaryPhone', e.target.value)} placeholder="Optional" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nationality</Label>
+                  <Input value={form.nationality} onChange={e => set('nationality', e.target.value)} placeholder="e.g. UAE, India, Egypt" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Emirates ID</Label>
+                  <Input value={form.emiratesId} onChange={e => set('emiratesId', e.target.value)} placeholder="784-XXXX-XXXXXXX-X" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Emirates ID Expiry</Label>
+                  <Input type="date" value={form.emiratesIdExpiry} onChange={e => set('emiratesIdExpiry', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Passport Number</Label>
+                  <Input value={form.passportNumber} onChange={e => set('passportNumber', e.target.value)} placeholder="Passport number" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Passport Expiry</Label>
+                  <Input type="date" value={form.passportExpiry} onChange={e => set('passportExpiry', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Visa Status</Label>
+                  <Input value={form.visaStatus} onChange={e => set('visaStatus', e.target.value)} placeholder="e.g. Employment, Investor, Family" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Visa Expiry</Label>
+                  <Input type="date" value={form.visaExpiry} onChange={e => set('visaExpiry', e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* ── Lease Details ─────────────────────────────────────── */}
+            <div>
+              <h3 className="text-sm font-semibold mb-3">Lease Details</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Property <span className="text-destructive">*</span></Label>
+                  <select value={form.propertyId} onChange={e => handlePropertyChange(e.target.value)} className={SELECT_CLASS}>
+                    <option value="">Select property...</option>
+                    {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Unit</Label>
+                  <select value={form.unitId} onChange={e => set('unitId', e.target.value)} className={SELECT_CLASS} disabled={!form.propertyId || unitsLoading}>
+                    <option value="">{unitsLoading ? 'Loading...' : !form.propertyId ? 'Select property first' : units.length === 0 ? 'No units' : 'Select unit...'}</option>
+                    {units.map(u => <option key={u.id} value={u.id}>{u.unitNumber}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Lease Start</Label>
+                  <Input type="date" value={form.leaseStart} onChange={e => set('leaseStart', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Lease End</Label>
+                  <Input type="date" value={form.leaseEnd} onChange={e => set('leaseEnd', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Monthly Rent</Label>
+                  <Input type="number" value={form.monthlyRent} onChange={e => set('monthlyRent', e.target.value)} placeholder="0" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Security Deposit</Label>
+                  <Input type="number" value={form.securityDeposit} onChange={e => set('securityDeposit', e.target.value)} placeholder="0" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Payment Frequency</Label>
+                  <select value={form.paymentFrequency} onChange={e => set('paymentFrequency', e.target.value)} className={SELECT_CLASS}>
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="semi_annual">Semi-Annual</option>
+                    <option value="annual">Annual</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Lease Status</Label>
+                  <select value={form.leaseStatus} onChange={e => set('leaseStatus', e.target.value)} className={SELECT_CLASS}>
+                    {LEASE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>Ejari Number</Label>
+                  <Input value={form.ejariNumber} onChange={e => set('ejariNumber', e.target.value)} placeholder="Ejari contract registration number" />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* ── Emergency Contact ─────────────────────────────────── */}
+            <div>
+              <h3 className="text-sm font-semibold mb-3">Emergency Contact</h3>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Name</Label>
+                  <Input value={form.emergencyName} onChange={e => set('emergencyName', e.target.value)} placeholder="Contact name" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone</Label>
+                  <Input value={form.emergencyPhone} onChange={e => set('emergencyPhone', e.target.value)} placeholder="+971 ..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Relationship</Label>
+                  <Input value={form.emergencyRelation} onChange={e => set('emergencyRelation', e.target.value)} placeholder="e.g. Spouse, Parent" />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* ── Documents Checklist ───────────────────────────────── */}
+            <div>
+              <h3 className="text-sm font-semibold mb-3">Documents Checklist</h3>
+              <p className="text-xs text-muted-foreground mb-3">Track which documents have been collected from the tenant.</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {DOCUMENT_TYPES.map(dt => (
+                  <label key={dt.key} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!form.documents[dt.key]}
+                      onChange={e => setDocCheck(dt.key, e.target.checked)}
+                      className="rounded border-input"
+                    />
+                    {dt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* ── Notes ────────────────────────────────────────────── */}
             <div className="space-y-2">
-              <Label>{t('common.email') || 'Email'}</Label>
-              <Input
-                type="email"
-                value={inviteEmail}
-                onChange={e => { setInviteEmail(e.target.value); setFormError('') }}
-                placeholder={t('tenants.emailPlaceholder') || 'tenant@example.com'}
-                required
+              <Label>Notes</Label>
+              <textarea
+                value={form.notes}
+                onChange={e => set('notes', e.target.value)}
+                className={TEXTAREA_CLASS}
+                placeholder="Any additional notes about this tenant..."
+                rows={3}
               />
             </div>
 
-            {/* Property */}
-            <div className="space-y-2">
-              <Label>{t('tenants.property') || 'Property'}</Label>
-              <select
-                value={selectedPropertyId}
-                onChange={e => handlePropertyChange(e.target.value)}
-                className={SELECT_CLASS}
-              >
-                <option value="">{t('tenants.selectProperty') || 'Select a property...'}</option>
-                {properties.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Unit */}
-            <div className="space-y-2">
-              <Label>{t('tenants.unit') || 'Unit'}</Label>
-              <select
-                value={selectedUnitId}
-                onChange={e => setSelectedUnitId(e.target.value)}
-                className={SELECT_CLASS}
-                disabled={!selectedPropertyId || unitsLoading}
-              >
-                <option value="">
-                  {unitsLoading
-                    ? (t('common.loading') || 'Loading...')
-                    : !selectedPropertyId
-                      ? (t('tenants.selectPropertyFirst') || 'Select a property first')
-                      : units.length === 0
-                        ? (t('tenants.noUnits') || 'No units available')
-                        : (t('tenants.selectUnit') || 'Select a unit (optional)')}
-                </option>
-                {units.map(u => (
-                  <option key={u.id} value={u.id}>{u.unitNumber}</option>
-                ))}
-              </select>
-            </div>
-
             {/* Error */}
-            {formError && (
-              <p className="text-sm text-destructive">{formError}</p>
-            )}
+            {formError && <p className="text-sm text-destructive">{formError}</p>}
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setDialogOpen(false)}
-                disabled={saving}
-              >
-                {t('common.cancel') || 'Cancel'}
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>
               <Button type="submit" disabled={saving}>
-                {saving
-                  ? (t('common.sending') || 'Sending...')
-                  : (t('tenants.sendInvite') || 'Send Invitation')}
+                {saving ? 'Saving...' : editing ? 'Save Changes' : 'Add Tenant'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ═══ INVITE DIALOG ═════════════════════════════════════════════════ */}
+      <Dialog open={inviteDialogOpen} onOpenChange={open => { if (!inviteSaving) setInviteDialogOpen(open) }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Invite Tenant to App</DialogTitle>
+            <DialogDescription>
+              Send an app invitation so the tenant can view their unit details, submit maintenance requests, and receive announcements.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleInvite} className="space-y-4 mt-2">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input type="email" value={inviteEmail} onChange={e => { setInviteEmail(e.target.value); setInviteError('') }} placeholder="tenant@email.com" required />
+            </div>
+            <div className="space-y-2">
+              <Label>Property</Label>
+              <select value={invitePropertyId} onChange={e => handleInvitePropertyChange(e.target.value)} className={SELECT_CLASS}>
+                <option value="">Select property...</option>
+                {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Unit</Label>
+              <select value={inviteUnitId} onChange={e => setInviteUnitId(e.target.value)} className={SELECT_CLASS} disabled={!invitePropertyId || inviteUnitsLoading}>
+                <option value="">{inviteUnitsLoading ? 'Loading...' : !invitePropertyId ? 'Select property first' : inviteUnits.length === 0 ? 'No units' : 'Select unit (optional)'}</option>
+                {inviteUnits.map(u => <option key={u.id} value={u.id}>{u.unitNumber}</option>)}
+              </select>
+            </div>
+            {inviteError && <p className="text-sm text-destructive">{inviteError}</p>}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setInviteDialogOpen(false)} disabled={inviteSaving}>Cancel</Button>
+              <Button type="submit" disabled={inviteSaving}>
+                {inviteSaving ? 'Sending...' : 'Send Invitation'}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
     </AppLayout>
+  )
+}
+
+// ─── Helper component ─────────────────────────────────────────────────────────
+
+function InfoRow({ label, value, icon, link }) {
+  const display = value || '—'
+  return (
+    <div className="space-y-0.5">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      {link ? (
+        <a href={link} className="text-sm font-medium flex items-center gap-1.5 hover:underline underline-offset-2">
+          {icon} {display}
+        </a>
+      ) : (
+        <div className="text-sm font-medium flex items-center gap-1.5">
+          {icon} {typeof display === 'string' ? display : display}
+        </div>
+      )}
+    </div>
   )
 }
