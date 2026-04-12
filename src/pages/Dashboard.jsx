@@ -3,6 +3,7 @@ import { collection, query, orderBy, onSnapshot, limit, collectionGroup } from '
 import { db } from '@/firebase/config'
 import { useAuth, ROLES } from '@/contexts/AuthContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
+import { Skeleton } from '@/components/ui/skeleton'
 import AppLayout from '@/components/AppLayout'
 import AlertsPanel from '@/components/AlertsPanel'
 import TenantDashboard from '@/components/TenantDashboard'
@@ -176,7 +177,7 @@ export default function Dashboard() {
                 <Icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-semibold">{loading ? '—' : value}</div>
+                {loading ? <Skeleton className="h-8 w-24" /> : <div className="text-2xl font-semibold">{value}</div>}
                 <p className="text-xs text-muted-foreground mt-1">{description}</p>
               </CardContent>
             </Card>
@@ -224,7 +225,18 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-sm text-muted-foreground py-8 text-center">{t('common.loading')}</p>
+                <div className="space-y-3">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="flex items-center gap-3 py-2">
+                      <Skeleton className="w-8 h-8 rounded-md" />
+                      <div className="flex-1 space-y-1.5">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                  ))}
+                </div>
               ) : recent.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-8 text-center">
                   {t('dashboard.noProperties')}
@@ -268,7 +280,18 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-sm text-muted-foreground py-8 text-center">{t('common.loading')}</p>
+                <div className="space-y-3">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="flex items-center gap-3 py-2">
+                      <Skeleton className="w-8 h-8 rounded-md" />
+                      <div className="flex-1 space-y-1.5">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                  ))}
+                </div>
               ) : recentExpenses.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-8 text-center">
                   {t('dashboard.noExpenses')}

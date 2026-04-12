@@ -171,7 +171,8 @@ export default function PortfolioPage() {
               {t('portfolio.subtitle')}
             </p>
           </div>
-          <Button onClick={exportPDF} disabled={generating || loading} size="sm">
+          <Button onClick={exportPDF} disabled={generating || loading || properties.length === 0} size="sm"
+            title={properties.length === 0 ? t('portfolio.addPropertiesFirst') || 'Add properties first to export' : ''}>
             {generating ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('portfolio.exporting')}</> : <><FileDown className="w-4 h-4" /> {t('portfolio.exportPdf')}</>}
           </Button>
         </div>

@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore'
+import { collection, query, onSnapshot, orderBy, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
+import { logError } from '@/utils/logger'
 import AppLayout from '@/components/AppLayout'
+import ChequeFormDialog from '@/components/ChequeFormDialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { FileCheck, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
+import { FileCheck, ChevronLeft, ChevronRight, AlertCircle, Plus } from 'lucide-react'
 
 export default function ChequeCalendarPage() {
   const { currentUser } = useAuth()
@@ -17,6 +19,9 @@ export default function ChequeCalendarPage() {
   const [allCheques, setAllCheques] = useState([])
   const [loading, setLoading] = useState(true)
   const [viewDate, setViewDate] = useState(new Date())
+  const [chequeDialogOpen, setChequeDialogOpen] = useState(false)
+  const [selectedPropertyId, setSelectedPropertyId] = useState('')
+  const [chequeSaving, setChequeSaving] = useState(false)
 
   // Load cheques from all properties
   useEffect(() => {
@@ -45,6 +50,21 @@ export default function ChequeCalendarPage() {
 
     return () => unsubs.forEach(u => u())
   }, [currentUser, properties, propsLoading])
+
+  async function handleChequeSave(data) {
+    const propId = selectedPropertyId || (properties.length > 0 ? properties[0].id : null)
+    if (!propId) return
+    setChequeSaving(true)
+    try {
+      const chequePath = `users/${currentUser.uid}/properties/${propId}/cheques`
+      await addDoc(collection(db, chequePath), { ...data, createdAt: serverTimestamp() })
+      setChequeDialogOpen(false)
+    } catch (err) {
+      logError('[Firestore] Cheque save error:', err)
+    } finally {
+      setChequeSaving(false)
+    }
+  }
 
   const today = new Date()
   const todayStr = today.toISOString().slice(0, 10)
@@ -87,9 +107,27 @@ export default function ChequeCalendarPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t('cheques.title')}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t('cheques.subtitle')}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('cheques.title')}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t('cheques.subtitle')}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {properties.length > 1 && (
+              <select
+                value={selectedPropertyId || (properties[0]?.id || '')}
+                onChange={e => setSelectedPropertyId(e.target.value)}
+                className="h-8 rounded-md border border-input bg-transparent px-2 text-sm"
+              >
+                {properties.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            )}
+            <Button size="sm" onClick={() => setChequeDialogOpen(true)} disabled={properties.length === 0}>
+              <Plus className="w-4 h-4 mr-1" /> {t('cheques.addCheque') || 'Add Cheque'}
+            </Button>
+          </div>
         </div>
 
         {/* Today's action */}
@@ -249,6 +287,14 @@ export default function ChequeCalendarPage() {
           </CardContent>
         </Card>
       </div>
+
+      <ChequeFormDialog
+        open={chequeDialogOpen}
+        onOpenChange={(open) => { if (!chequeSaving) setChequeDialogOpen(open) }}
+        cheque={null}
+        onSave={handleChequeSave}
+        saving={chequeSaving}
+      />
     </AppLayout>
   )
 }

@@ -765,6 +765,7 @@ const translations = {
     // ─── Cheque Calendar ───
     'cheques.title': 'Cheque Calendar',
     'cheques.subtitle': 'Daily cheque deposit view across all properties.',
+    'cheques.addCheque': 'Add Cheque',
     'cheques.depositToday': 'Deposit Today',
     'cheques.noDueToday': 'No cheques due today',
     'cheques.overdue': 'Overdue',
@@ -784,6 +785,7 @@ const translations = {
     'portfolio.subtitle': 'Cross-property P&L with VAT tracking across your portfolio.',
     'portfolio.exporting': 'Exporting...',
     'portfolio.exportPdf': 'Export PDF',
+    'portfolio.addPropertiesFirst': 'Add properties with financial data first',
     'portfolio.monthlyRent': 'Monthly Rent',
     'portfolio.annualIncome': 'Annual Income',
     'portfolio.expensesYtd': 'Expenses (YTD)',
@@ -1724,6 +1726,7 @@ const translations = {
     // ─── Cheque Calendar ───
     'cheques.title': 'تقويم الشيكات',
     'cheques.subtitle': 'عرض يومي لإيداع الشيكات عبر جميع العقارات.',
+    'cheques.addCheque': 'إضافة شيك',
     'cheques.depositToday': 'إيداع اليوم',
     'cheques.noDueToday': 'لا شيكات مستحقة اليوم',
     'cheques.overdue': 'متأخر',
@@ -1743,6 +1746,7 @@ const translations = {
     'portfolio.subtitle': 'تقرير الأرباح والخسائر مع تتبع ضريبة القيمة المضافة عبر محفظتك.',
     'portfolio.exporting': 'جاري التصدير...',
     'portfolio.exportPdf': 'تصدير PDF',
+    'portfolio.addPropertiesFirst': 'أضف عقارات ببيانات مالية أولاً',
     'portfolio.monthlyRent': 'الإيجار الشهري',
     'portfolio.annualIncome': 'الدخل السنوي',
     'portfolio.expensesYtd': 'المصروفات (منذ بداية السنة)',
