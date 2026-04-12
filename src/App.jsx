@@ -11,7 +11,8 @@ const PropertyDetail = lazy(() => import('@/pages/PropertyDetail'))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
 const AlertsPage = lazy(() => import('@/pages/AlertsPage'))
 const LogsPage = lazy(() => import('@/pages/LogsPage'))
-const VendorsPage = lazy(() => import('@/pages/VendorsPage'))
+const TeamsPage = lazy(() => import('@/pages/TeamsPage'))
+const TenantsPage = lazy(() => import('@/pages/TenantsPage'))
 const MessagesPage = lazy(() => import('@/pages/MessagesPage'))
 const ChequeCalendarPage = lazy(() => import('@/pages/ChequeCalendarPage'))
 const PortfolioPage = lazy(() => import('@/pages/PortfolioPage'))
@@ -63,7 +64,8 @@ export default function App() {
         <Route path="/properties/:id" element={<PrivateRoute><PropertyDetail /></PrivateRoute>} />
         <Route path="/alerts" element={<PrivateRoute><AlertsPage /></PrivateRoute>} />
         <Route path="/logs" element={<PrivateRoute><LogsPage /></PrivateRoute>} />
-        <Route path="/vendors" element={<PrivateRoute><VendorsPage /></PrivateRoute>} />
+        <Route path="/team" element={<PrivateRoute><TeamsPage /></PrivateRoute>} />
+        <Route path="/tenants" element={<PrivateRoute><TenantsPage /></PrivateRoute>} />
         <Route path="/templates" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
         <Route path="/cheques" element={<PrivateRoute><ChequeCalendarPage /></PrivateRoute>} />
         <Route path="/portfolio" element={<PrivateRoute><PortfolioPage /></PrivateRoute>} />

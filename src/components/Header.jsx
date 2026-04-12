@@ -8,7 +8,7 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Wrench, FileText, FileCheck, PieChart, ShieldCheck, Users, BarChart3, Cog } from 'lucide-react'
+import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { getSidebarItems } from '@/utils/permissions'
@@ -25,7 +25,8 @@ const NAV_GROUPS = [
   {
     header: 'nav.management',
     items: [
-      { id: 'vendors',     to: '/vendors',     key: 'nav.vendors',     icon: Wrench },
+      { id: 'team',        to: '/team',        key: 'nav.team',        icon: Users },
+      { id: 'tenants',     to: '/tenants',     key: 'nav.tenants',     icon: UserCheck },
       { id: 'messages',    to: '/templates',   key: 'nav.templates',   icon: FileText },
       { id: 'cheques',     to: '/cheques',     key: 'nav.cheques',     icon: FileCheck },
     ],

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText, Wrench, FileText, FileCheck, PieChart, ShieldCheck, Users, BarChart3, Cog } from 'lucide-react'
+import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -17,7 +17,8 @@ const NAV_GROUPS = [
   {
     header: 'nav.management',
     items: [
-      { id: 'vendors',     to: '/vendors',     key: 'nav.vendors',     icon: Wrench },
+      { id: 'team',        to: '/team',        key: 'nav.team',        icon: Users },
+      { id: 'tenants',     to: '/tenants',     key: 'nav.tenants',     icon: UserCheck },
       { id: 'messages',    to: '/templates',   key: 'nav.templates',   icon: FileText },
       { id: 'cheques',     to: '/cheques',     key: 'nav.cheques',     icon: FileCheck },
     ],

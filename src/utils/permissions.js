@@ -16,7 +16,8 @@ export const FEATURES = {
   PROPERTY_DETAIL:  'property_detail',
   ALERTS:           'alerts',
   LOGS:             'logs',
-  VENDORS:          'vendors',
+  TEAM:             'team',
+  TENANTS:          'tenants',
   MESSAGES:         'messages',
   CHEQUES:          'cheques',
   PORTFOLIO:        'portfolio',
@@ -81,7 +82,7 @@ const ACCESS = {
 
   owner: new Set([
     FEATURES.DASHBOARD, FEATURES.PROPERTIES, FEATURES.PROPERTY_DETAIL,
-    FEATURES.ALERTS, FEATURES.LOGS, FEATURES.VENDORS, FEATURES.MESSAGES,
+    FEATURES.ALERTS, FEATURES.LOGS, FEATURES.TEAM, FEATURES.TENANTS, FEATURES.MESSAGES,
     FEATURES.CHEQUES, FEATURES.PORTFOLIO, FEATURES.SETTINGS,
     // All tabs
     FEATURES.TAB_OVERVIEW, FEATURES.TAB_UNITS, FEATURES.TAB_MAINTENANCE,
@@ -101,7 +102,7 @@ const ACCESS = {
 
   property_manager: new Set([
     FEATURES.DASHBOARD, FEATURES.PROPERTIES, FEATURES.PROPERTY_DETAIL,
-    FEATURES.ALERTS, FEATURES.LOGS, FEATURES.VENDORS, FEATURES.MESSAGES,
+    FEATURES.ALERTS, FEATURES.LOGS, FEATURES.TEAM, FEATURES.TENANTS, FEATURES.MESSAGES,
     FEATURES.CHEQUES, FEATURES.SETTINGS,
     // All tabs except bulk ops
     FEATURES.TAB_OVERVIEW, FEATURES.TAB_UNITS, FEATURES.TAB_MAINTENANCE,
@@ -205,17 +206,17 @@ const INVITE_MAP = {
 
 export const SIDEBAR_ITEMS = {
   admin: [
-    'dashboard', 'properties', 'alerts', 'logs', 'vendors',
+    'dashboard', 'properties', 'alerts', 'logs', 'team', 'tenants',
     'messages', 'cheques', 'portfolio', 'settings',
     // Admin section
     'admin', 'admin_users', 'admin_analytics', 'admin_settings',
   ],
   owner: [
-    'dashboard', 'properties', 'alerts', 'logs', 'vendors',
+    'dashboard', 'properties', 'alerts', 'logs', 'team', 'tenants',
     'messages', 'cheques', 'portfolio', 'settings',
   ],
   property_manager: [
-    'dashboard', 'properties', 'alerts', 'logs', 'vendors',
+    'dashboard', 'properties', 'alerts', 'logs', 'team', 'tenants',
     'messages', 'cheques', 'settings',
   ],
   staff: [
