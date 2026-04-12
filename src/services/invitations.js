@@ -84,6 +84,41 @@ export async function createInvitation({
   }
 
   const docRef = await addDoc(collection(db, 'invitations'), invitation)
+
+  // Send email notification via Firestore "Trigger Email" extension
+  const ROLE_LABELS = {
+    property_manager: 'Property Manager',
+    staff: 'Staff Member',
+    vendor: 'Vendor',
+    tenant: 'Tenant',
+  }
+  const roleLabel = ROLE_LABELS[role] || role
+  const signupUrl = 'https://x4lm.github.io/my-web-app/signup'
+
+  try {
+    await addDoc(collection(db, 'mail'), {
+      to: inviteeEmail.toLowerCase(),
+      message: {
+        subject: `You're invited to join ${propertyName} on Bait to Maintain`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto;">
+            <h2 style="color: #111;">You've been invited!</h2>
+            <p><strong>${inviterName}</strong> has invited you as a <strong>${roleLabel}</strong> for the property <strong>${propertyName}</strong>${unitNumber ? ` (Unit ${unitNumber})` : ''}.</p>
+            <p>To accept this invitation:</p>
+            <ol>
+              <li>Create an account or sign in at Bait to Maintain</li>
+              <li>The invitation will appear automatically on your dashboard</li>
+            </ol>
+            <a href="${signupUrl}" style="display: inline-block; padding: 10px 24px; background: #111; color: #fff; text-decoration: none; border-radius: 6px; margin-top: 8px;">Get Started</a>
+            <p style="color: #888; font-size: 12px; margin-top: 24px;">Bait to Maintain — Smart Property Management</p>
+          </div>
+        `,
+      },
+    })
+  } catch {
+    // Email sending is best-effort — don't fail the invitation
+  }
+
   return docRef.id
 }
 
