@@ -64,7 +64,7 @@ export default function App() {
         <Route path="/alerts" element={<PrivateRoute><AlertsPage /></PrivateRoute>} />
         <Route path="/logs" element={<PrivateRoute><LogsPage /></PrivateRoute>} />
         <Route path="/vendors" element={<PrivateRoute><VendorsPage /></PrivateRoute>} />
-        <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
+        <Route path="/templates" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
         <Route path="/cheques" element={<PrivateRoute><ChequeCalendarPage /></PrivateRoute>} />
         <Route path="/portfolio" element={<PrivateRoute><PortfolioPage /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />

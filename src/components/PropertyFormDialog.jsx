@@ -78,7 +78,7 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           {/* Basic Info */}
           <div className="space-y-2">
-            <Label htmlFor="prop-name">{t('propertyForm.propertyName')}</Label>
+            <Label htmlFor="prop-name">{t('propertyForm.propertyName')} <span className="text-destructive">*</span></Label>
             <Input
               id="prop-name"
               value={form.name}
@@ -90,7 +90,7 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="prop-address">{t('propertyForm.address')}</Label>
+            <Label htmlFor="prop-address">{t('propertyForm.address')} <span className="text-destructive">*</span></Label>
             <Input
               id="prop-address"
               value={form.address}
@@ -103,7 +103,7 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="prop-type">{t('propertyForm.type')}</Label>
+              <Label htmlFor="prop-type">{t('propertyForm.type')} <span className="text-destructive">*</span></Label>
               <select
                 id="prop-type"
                 value={form.type}
@@ -122,7 +122,7 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prop-status">{t('propertyForm.status')}</Label>
+              <Label htmlFor="prop-status">{t('propertyForm.status')} <span className="text-destructive">*</span></Label>
               <select
                 id="prop-status"
                 value={form.status}

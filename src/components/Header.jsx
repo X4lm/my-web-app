@@ -13,16 +13,37 @@ import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { getSidebarItems } from '@/utils/permissions'
 
+const NAV_GROUPS = [
+  {
+    // Main - no header needed
+    items: [
+      { id: 'dashboard',   to: '/dashboard',   key: 'nav.dashboard',   icon: LayoutDashboard },
+      { id: 'properties',  to: '/properties',  key: 'nav.properties',  icon: Building2 },
+      { id: 'alerts',      to: '/alerts',      key: 'nav.alerts',      icon: AlertCircle },
+    ],
+  },
+  {
+    header: 'nav.management',
+    items: [
+      { id: 'vendors',     to: '/vendors',     key: 'nav.vendors',     icon: Wrench },
+      { id: 'messages',    to: '/templates',   key: 'nav.templates',   icon: FileText },
+      { id: 'cheques',     to: '/cheques',     key: 'nav.cheques',     icon: FileCheck },
+    ],
+  },
+  {
+    header: 'nav.reports',
+    items: [
+      { id: 'logs',        to: '/logs',        key: 'nav.logs',        icon: ScrollText },
+      { id: 'portfolio',   to: '/portfolio',   key: 'nav.portfolio',   icon: PieChart },
+    ],
+  },
+]
+
+const SETTINGS_ITEM = { id: 'settings', to: '/settings', key: 'nav.settings', icon: Settings }
+
 const ALL_NAV_ITEMS = [
-  { id: 'dashboard',   to: '/dashboard',   key: 'nav.dashboard',   icon: LayoutDashboard },
-  { id: 'properties',  to: '/properties',  key: 'nav.properties',  icon: Building2 },
-  { id: 'alerts',      to: '/alerts',      key: 'nav.alerts',      icon: AlertCircle },
-  { id: 'logs',        to: '/logs',        key: 'nav.logs',        icon: ScrollText },
-  { id: 'vendors',     to: '/vendors',     key: 'nav.vendors',     icon: Wrench },
-  { id: 'messages',    to: '/messages',    key: 'nav.messages',    icon: FileText },
-  { id: 'cheques',     to: '/cheques',     key: 'nav.cheques',     icon: FileCheck },
-  { id: 'portfolio',   to: '/portfolio',   key: 'nav.portfolio',   icon: PieChart },
-  { id: 'settings',    to: '/settings',    key: 'nav.settings',    icon: Settings },
+  ...NAV_GROUPS.flatMap(g => g.items),
+  SETTINGS_ITEM,
 ]
 
 const ADMIN_NAV_ITEMS = [
@@ -41,9 +62,7 @@ export default function Header() {
 
   const role = userProfile?.role || 'owner'
   const allowed = getSidebarItems(role)
-  const mainItems = ALL_NAV_ITEMS.filter(item => allowed.includes(item.id))
   const adminItems = ADMIN_NAV_ITEMS.filter(item => allowed.includes(item.id))
-  const allVisibleItems = [...mainItems, ...adminItems]
 
   const initials = currentUser?.displayName
     ? currentUser.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -64,6 +83,7 @@ export default function Header() {
             size="icon"
             className="md:hidden"
             onClick={() => setMobileOpen(o => !o)}
+            aria-label="Toggle menu"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -73,7 +93,7 @@ export default function Header() {
             <div className="flex items-center justify-center w-6 h-6 rounded bg-foreground">
               <Home className="w-3.5 h-3.5 text-background" />
             </div>
-            <span className="font-semibold text-sm">PropManager</span>
+            <span className="font-semibold text-sm">Bait to Maintain</span>
           </div>
 
           {/* Spacer for desktop */}
@@ -88,6 +108,7 @@ export default function Header() {
               size="icon"
               onClick={toggleTheme}
               className="h-8 w-8"
+              aria-label="Toggle dark mode"
             >
               {theme === 'dark' ? (
                 <Sun className="h-4 w-4" />
@@ -98,7 +119,7 @@ export default function Header() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full bg-muted">
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full bg-muted" aria-label="User menu">
                   <span className="text-xs font-semibold">{initials}</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -133,11 +154,43 @@ export default function Header() {
             className="absolute start-0 top-14 bottom-0 w-60 bg-sidebar border-e border-sidebar-border p-3 space-y-1 overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
-            {mainItems.map(({ to, key, icon: Icon }) => (
+            {NAV_GROUPS.map((group, gi) => {
+              const visibleItems = group.items.filter(item => allowed.includes(item.id))
+              if (visibleItems.length === 0) return null
+              return (
+                <div key={gi}>
+                  {group.header && (
+                    <div className="pt-4 pb-1 px-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t(group.header)}</p>
+                    </div>
+                  )}
+                  {visibleItems.map(({ to, key, icon: Icon }) => (
+                    <NavLink
+                      key={to}
+                      to={to}
+                      end={to === '/'}
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-sidebar-accent text-foreground'
+                            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground'
+                        )
+                      }
+                    >
+                      <Icon className="w-4 h-4" />
+                      {t(key)}
+                    </NavLink>
+                  ))}
+                </div>
+              )
+            })}
+
+            {/* Settings - separated */}
+            {allowed.includes(SETTINGS_ITEM.id) && (
               <NavLink
-                key={to}
-                to={to}
-                end={to === '/'}
+                to={SETTINGS_ITEM.to}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
                   cn(
@@ -148,10 +201,11 @@ export default function Header() {
                   )
                 }
               >
-                <Icon className="w-4 h-4" />
-                {t(key)}
+                <Settings className="w-4 h-4" />
+                {t(SETTINGS_ITEM.key)}
               </NavLink>
-            ))}
+            )}
+
             {adminItems.length > 0 && (
               <>
                 <div className="pt-4 pb-1 px-3">

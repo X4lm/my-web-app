@@ -48,7 +48,7 @@ export default function MFASetup() {
         ) : (
           <div className="space-y-4">
             <p className="text-sm">Scan this QR code with your authenticator app, then enter the verification code.</p>
-            <img src={totpSecret.generateQrCodeUrl(currentUser.email, 'PropVault')} alt="QR Code" className="w-48 h-48" />
+            <img src={totpSecret.generateQrCodeUrl(currentUser.email, 'Bait to Maintain')} alt="QR Code" className="w-48 h-48" />
             <Input
               placeholder="Enter 6-digit code"
               value={verificationCode}

@@ -95,7 +95,7 @@ const L = {
     test1Quote: 'Finally I can see everything in one place. The maintenance alerts alone saved me from a AED 50,000 water tank disaster.',
     test2Name: 'Fatima Al Hashimi',
     test2Role: 'Manages 6 villas in Abu Dhabi',
-    test2Quote: 'I used to track everything on paper and WhatsApp. PropVault replaced five different apps and gave me back my weekends.',
+    test2Quote: 'I used to track everything on paper and WhatsApp. Bait to Maintain replaced five different apps and gave me back my weekends.',
     test3Name: 'Omar Khalid Rahman',
     test3Role: 'Manages 23 units in Sharjah',
     test3Quote: 'The 3D building view and instant occupancy tracking transformed how I present to property owners. Incredibly professional.',
@@ -194,7 +194,7 @@ const L = {
     test1Quote: 'أخيراً أستطيع رؤية كل شيء في مكان واحد. تنبيهات الصيانة وحدها أنقذتني من كارثة خزان مياه بقيمة 50,000 درهم.',
     test2Name: 'فاطمة الهاشمي',
     test2Role: 'تدير 6 فلل في أبوظبي',
-    test2Quote: 'كنت أتتبع كل شيء على الورق والواتساب. PropVault استبدل خمسة تطبيقات مختلفة وأعاد لي عطلات نهاية الأسبوع.',
+    test2Quote: 'كنت أتتبع كل شيء على الورق والواتساب. Bait to Maintain استبدل خمسة تطبيقات مختلفة وأعاد لي عطلات نهاية الأسبوع.',
     test3Name: 'عمر خالد رحمن',
     test3Role: 'يدير 23 وحدة في الشارقة',
     test3Quote: 'عرض المبنى ثلاثي الأبعاد وتتبع الإشغال الفوري غيّرا طريقة عرضي لأصحاب العقارات. احترافية لا تصدق.',
@@ -747,7 +747,7 @@ export default function LandingPage() {
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-[#D4A853] to-[#E8C97A]">
                 <BuildingIcon className="w-4.5 h-4.5 text-[#0B1120]" />
               </div>
-              <span className="text-lg font-bold tracking-tight text-white">PropVault</span>
+              <span className="text-lg font-bold tracking-tight text-white">Bait to Maintain</span>
             </div>
 
             {/* Desktop links */}
@@ -1296,7 +1296,7 @@ export default function LandingPage() {
                 <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-[#D4A853] to-[#E8C97A]">
                   <BuildingIcon className="w-4 h-4 text-[#0B1120]" />
                 </div>
-                <span className="text-base font-bold tracking-tight text-white">PropVault</span>
+                <span className="text-base font-bold tracking-tight text-white">Bait to Maintain</span>
               </div>
               <p className="text-white/30 text-xs mt-2">{tx('footerTagline')}</p>
             </div>
@@ -1327,7 +1327,7 @@ export default function LandingPage() {
 
             {/* Copyright */}
             <p className="text-white/25 text-xs text-center md:text-right">
-              &copy; {new Date().getFullYear()} PropVault. All rights reserved.
+              &copy; {new Date().getFullYear()} Bait to Maintain. All rights reserved.
             </p>
           </div>
         </div>

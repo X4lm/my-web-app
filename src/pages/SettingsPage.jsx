@@ -252,7 +252,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">{t('settings.requestData') || 'Request My Data'}</p>
-                <p className="text-xs text-muted-foreground">{t('settings.requestDataDesc') || 'Get a copy of all your personal data stored in PropVault.'}</p>
+                <p className="text-xs text-muted-foreground">{t('settings.requestDataDesc') || 'Get a copy of all your personal data stored in Bait to Maintain.'}</p>
               </div>
               <Button
                 variant="outline"

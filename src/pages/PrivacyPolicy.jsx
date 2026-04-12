@@ -17,7 +17,7 @@ export default function PrivacyPolicy() {
             <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-foreground">
               <Home className="w-3.5 h-3.5 text-background" />
             </div>
-            <span className="text-sm font-semibold">PropVault</span>
+            <span className="text-sm font-semibold">Bait to Maintain</span>
           </div>
         </div>
 
@@ -27,7 +27,7 @@ export default function PrivacyPolicy() {
             <p className="text-muted-foreground text-sm mb-6">Last updated: April 12, 2026</p>
 
             <h2>1. Information We Collect</h2>
-            <p>PropVault collects the following categories of personal data:</p>
+            <p>Bait to Maintain collects the following categories of personal data:</p>
             <ul>
               <li><strong>Account Information:</strong> Name, email address, password (hashed)</li>
               <li><strong>Property Data:</strong> Property details, addresses, rental amounts, unit information</li>
@@ -87,10 +87,10 @@ export default function PrivacyPolicy() {
             <p>Your data may be processed on Google Cloud servers located outside the UAE. We rely on Google's data processing agreements and security certifications to ensure adequate protection in compliance with UAE PDPL requirements.</p>
 
             <h2>8. Cookies & Local Storage</h2>
-            <p>PropVault uses browser local storage to save your preferences (language, currency, date format). We do not use third-party tracking cookies.</p>
+            <p>Bait to Maintain uses browser local storage to save your preferences (language, currency, date format). We do not use third-party tracking cookies.</p>
 
             <h2>9. Children's Privacy</h2>
-            <p>PropVault is not intended for use by individuals under 18 years of age.</p>
+            <p>Bait to Maintain is not intended for use by individuals under 18 years of age.</p>
 
             <h2>10. Changes to This Policy</h2>
             <p>We may update this policy from time to time. Material changes will be communicated via in-app announcement.</p>

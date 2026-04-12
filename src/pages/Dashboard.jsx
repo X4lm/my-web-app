@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Building2, DollarSign, CheckCircle, Users, Percent,
-  Home, ArrowRight, Receipt,
+  Home, ArrowRight, Receipt, X,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [allUnits, setAllUnits] = useState([])
   const [recentExpenses, setRecentExpenses] = useState([])
   const [unitsLoading, setUnitsLoading] = useState(true)
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false)
 
   // Load all units across all properties
   useEffect(() => {
@@ -121,7 +122,7 @@ export default function Dashboard() {
     { label: t('dashboard.totalProperties'), value: totalProps, icon: Building2, description: t('dashboard.allProperties') },
     { label: t('dashboard.available'), value: available, icon: CheckCircle, description: t('dashboard.readyToRent') },
     { label: t('dashboard.occupied'), value: occupied, icon: Users, description: t('dashboard.currentlyRented') },
-    { label: t('dashboard.monthlyIncome'), value: formatCurrency(monthlyIncome), icon: DollarSign, description: t('dashboard.currentlyRented') },
+    { label: t('dashboard.monthlyIncome'), value: formatCurrency(monthlyIncome), icon: DollarSign, description: t('dashboard.fromOccupied') },
   ]
 
   const unitStatCards = [
@@ -143,8 +144,31 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {/* Onboarding card */}
+        {!loading && totalProps === 0 && !onboardingDismissed && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-base">{t('onboarding.welcome')}</CardTitle>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setOnboardingDismissed(true)} aria-label={t('onboarding.dismiss')}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <ol className="list-decimal list-inside space-y-2 text-sm">
+                <li>
+                  <Button variant="link" className="p-0 h-auto text-sm" onClick={() => navigate('/properties')}>
+                    {t('onboarding.step1')}
+                  </Button>
+                </li>
+                <li>{t('onboarding.step2')}</li>
+                <li>{t('onboarding.step3')}</li>
+              </ol>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Property stats */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {statCards.map(({ label, value, icon: Icon, description }) => (
             <Card key={label}>
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -163,7 +187,7 @@ export default function Dashboard() {
         {!loading && !unitsLoading && totalUnits > 0 && (
           <div>
             <h2 className="text-sm font-medium text-muted-foreground mb-3">{t('dashboard.unitOverview')}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
               {unitStatCards.map(({ label, value, icon: Icon, description }) => (
                 <Card key={label}>
                   <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">

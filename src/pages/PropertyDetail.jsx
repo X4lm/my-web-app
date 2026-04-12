@@ -27,7 +27,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, Users, ScrollText, MessageSquare, Megaphone, FileDown, FolderOpen, LogOut, Zap, Layers } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Shield, Landmark, Box, Pencil, User, Users, ScrollText, MessageSquare, Megaphone, FileDown, FolderOpen, LogOut, Zap, Layers, ChevronDown } from 'lucide-react'
 import { diffFields, hasUnits } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { canAccess, canEdit, FEATURES } from '@/utils/permissions'
@@ -43,6 +43,7 @@ export default function PropertyDetail() {
   const [loading, setLoading] = useState(true)
   const [editOpen, setEditOpen] = useState(false)
   const [editSaving, setEditSaving] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
 
   const tabFromUrl = searchParams.get('tab')
   const sectionFromUrl = searchParams.get('section')
@@ -132,10 +133,14 @@ export default function PropertyDetail() {
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/properties')} className="mt-1">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
+        <div className="space-y-1">
+          <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <button onClick={() => navigate('/properties')} className="hover:text-foreground transition-colors">
+              {t('nav.properties')}
+            </button>
+            <span>/</span>
+            <span className="text-foreground font-medium truncate">{property.name}</span>
+          </nav>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-2xl font-semibold tracking-tight">{property.name}</h1>
@@ -169,25 +174,52 @@ export default function PropertyDetail() {
 
         {/* Tabs */}
         <Tabs defaultValue={defaultTab}>
-          <div className="overflow-x-auto">
-            <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
+          <div className="flex items-center gap-2">
+            <TabsList className="inline-flex w-auto">
               {canAccess(role, FEATURES.TAB_OVERVIEW) && <TabsTrigger value="overview">{t('property.overview')}</TabsTrigger>}
               {isBuilding && canAccess(role, FEATURES.TAB_UNITS) && <TabsTrigger value="units">{t('property.units')}</TabsTrigger>}
               {canAccess(role, FEATURES.TAB_MAINTENANCE) && <TabsTrigger value="maintenance">{t('property.maintenance')}</TabsTrigger>}
-              {canAccess(role, FEATURES.TAB_WORK_ORDERS) && <TabsTrigger value="work-orders">{t('property.workOrders')}</TabsTrigger>}
               {canAccess(role, FEATURES.TAB_FINANCIALS) && <TabsTrigger value="financials">{t('property.financials')}</TabsTrigger>}
-              {canAccess(role, FEATURES.TAB_INSPECTION) && <TabsTrigger value="inspection">{t('property.inspection')}</TabsTrigger>}
-              {canAccess(role, FEATURES.TAB_COMMS) && <TabsTrigger value="comms">{t('property.comms')}</TabsTrigger>}
-              {isBuilding && canAccess(role, FEATURES.TAB_ANNOUNCEMENTS) && <TabsTrigger value="announcements">{t('property.announcements')}</TabsTrigger>}
               {canAccess(role, FEATURES.TAB_DOCUMENTS) && <TabsTrigger value="documents">{t('property.documents')}</TabsTrigger>}
-              {isBuilding && canAccess(role, FEATURES.TAB_UTILITIES) && <TabsTrigger value="utilities">{t('property.utilities')}</TabsTrigger>}
-              {isBuilding && canAccess(role, FEATURES.TAB_MOVE_OUT) && <TabsTrigger value="move-out">{t('property.moveOut')}</TabsTrigger>}
-              {isBuilding && canAccess(role, FEATURES.TAB_BULK_OPS) && <TabsTrigger value="bulk">{t('property.bulkOps')}</TabsTrigger>}
-              {canAccess(role, FEATURES.TAB_REPORTS) && <TabsTrigger value="reports">{t('property.reports')}</TabsTrigger>}
-              {canAccess(role, FEATURES.TAB_TEAM) && <TabsTrigger value="team">{t('team.title')}</TabsTrigger>}
-              {canAccess(role, FEATURES.TAB_LOGS) && <TabsTrigger value="logs">{t('property.logs')}</TabsTrigger>}
-              {isBuilding && canAccess(role, FEATURES.TAB_3D_MODEL) && <TabsTrigger value="3d-model">{t('property.3dModel')}</TabsTrigger>}
             </TabsList>
+
+            {/* More dropdown for secondary tabs */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1 text-xs"
+                onClick={() => setMoreOpen(o => !o)}
+              >
+                {t('common.more')} <ChevronDown className="w-3 h-3" />
+              </Button>
+              {moreOpen && (
+                <div className="absolute end-0 top-full mt-1 z-50 bg-popover border rounded-md shadow-lg py-1 min-w-[180px]">
+                  {[
+                    { value: 'work-orders', key: 'property.workOrders', feature: FEATURES.TAB_WORK_ORDERS },
+                    { value: 'inspection', key: 'property.inspection', feature: FEATURES.TAB_INSPECTION },
+                    { value: 'comms', key: 'property.comms', feature: FEATURES.TAB_COMMS },
+                    ...(isBuilding ? [{ value: 'announcements', key: 'property.announcements', feature: FEATURES.TAB_ANNOUNCEMENTS }] : []),
+                    ...(isBuilding ? [{ value: 'utilities', key: 'property.utilities', feature: FEATURES.TAB_UTILITIES }] : []),
+                    ...(isBuilding ? [{ value: 'move-out', key: 'property.moveOut', feature: FEATURES.TAB_MOVE_OUT }] : []),
+                    ...(isBuilding ? [{ value: 'bulk', key: 'property.bulkOps', feature: FEATURES.TAB_BULK_OPS }] : []),
+                    { value: 'reports', key: 'property.reports', feature: FEATURES.TAB_REPORTS },
+                    { value: 'team', key: 'team.title', feature: FEATURES.TAB_TEAM },
+                    { value: 'logs', key: 'property.logs', feature: FEATURES.TAB_LOGS },
+                    ...(isBuilding ? [{ value: '3d-model', key: 'property.3dModel', feature: FEATURES.TAB_3D_MODEL }] : []),
+                  ].filter(item => canAccess(role, item.feature)).map(item => (
+                    <TabsTrigger
+                      key={item.value}
+                      value={item.value}
+                      className="w-full text-start px-3 py-1.5 text-xs hover:bg-muted transition-colors rounded-none justify-start"
+                      onClick={() => setMoreOpen(false)}
+                    >
+                      {t(item.key)}
+                    </TabsTrigger>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <TabsContent value="overview">

@@ -5,16 +5,37 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { getSidebarItems } from '@/utils/permissions'
 
+const NAV_GROUPS = [
+  {
+    // Main - no header needed
+    items: [
+      { id: 'dashboard',   to: '/dashboard',   key: 'nav.dashboard',   icon: LayoutDashboard },
+      { id: 'properties',  to: '/properties',  key: 'nav.properties',  icon: Building2 },
+      { id: 'alerts',      to: '/alerts',      key: 'nav.alerts',      icon: AlertCircle },
+    ],
+  },
+  {
+    header: 'nav.management',
+    items: [
+      { id: 'vendors',     to: '/vendors',     key: 'nav.vendors',     icon: Wrench },
+      { id: 'messages',    to: '/templates',   key: 'nav.templates',   icon: FileText },
+      { id: 'cheques',     to: '/cheques',     key: 'nav.cheques',     icon: FileCheck },
+    ],
+  },
+  {
+    header: 'nav.reports',
+    items: [
+      { id: 'logs',        to: '/logs',        key: 'nav.logs',        icon: ScrollText },
+      { id: 'portfolio',   to: '/portfolio',   key: 'nav.portfolio',   icon: PieChart },
+    ],
+  },
+]
+
+const SETTINGS_ITEM = { id: 'settings', to: '/settings', key: 'nav.settings', icon: Settings }
+
 const ALL_NAV_ITEMS = [
-  { id: 'dashboard',   to: '/dashboard',   key: 'nav.dashboard',   icon: LayoutDashboard },
-  { id: 'properties',  to: '/properties',  key: 'nav.properties',  icon: Building2 },
-  { id: 'alerts',      to: '/alerts',      key: 'nav.alerts',      icon: AlertCircle },
-  { id: 'logs',        to: '/logs',        key: 'nav.logs',        icon: ScrollText },
-  { id: 'vendors',     to: '/vendors',     key: 'nav.vendors',     icon: Wrench },
-  { id: 'messages',    to: '/messages',    key: 'nav.messages',    icon: FileText },
-  { id: 'cheques',     to: '/cheques',     key: 'nav.cheques',     icon: FileCheck },
-  { id: 'portfolio',   to: '/portfolio',   key: 'nav.portfolio',   icon: PieChart },
-  { id: 'settings',    to: '/settings',    key: 'nav.settings',    icon: Settings },
+  ...NAV_GROUPS.flatMap(g => g.items),
+  SETTINGS_ITEM,
 ]
 
 const ADMIN_NAV_ITEMS = [
@@ -30,7 +51,6 @@ export default function Sidebar() {
   const role = userProfile?.role || 'owner'
   const allowed = getSidebarItems(role)
 
-  const mainItems = ALL_NAV_ITEMS.filter(item => allowed.includes(item.id))
   const adminItems = ADMIN_NAV_ITEMS.filter(item => allowed.includes(item.id))
 
   return (
@@ -40,16 +60,47 @@ export default function Sidebar() {
         <div className="flex items-center justify-center w-7 h-7 rounded-md bg-foreground">
           <Home className="w-4 h-4 text-background" />
         </div>
-        <span className="font-semibold text-sm tracking-tight">PropManager</span>
+        <span className="font-semibold text-sm tracking-tight">Bait to Maintain</span>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {mainItems.map(({ to, key, icon: Icon }) => (
+        {NAV_GROUPS.map((group, gi) => {
+          const visibleItems = group.items.filter(item => allowed.includes(item.id))
+          if (visibleItems.length === 0) return null
+          return (
+            <div key={gi}>
+              {group.header && (
+                <div className="pt-4 pb-1 px-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t(group.header)}</p>
+                </div>
+              )}
+              {visibleItems.map(({ to, key, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={to === '/'}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-sidebar-accent text-foreground'
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground'
+                    )
+                  }
+                >
+                  <Icon className="w-4 h-4" />
+                  {t(key)}
+                </NavLink>
+              ))}
+            </div>
+          )
+        })}
+
+        {/* Settings - separated at bottom of nav groups */}
+        {allowed.includes(SETTINGS_ITEM.id) && (
           <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
+            to={SETTINGS_ITEM.to}
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
@@ -59,10 +110,10 @@ export default function Sidebar() {
               )
             }
           >
-            <Icon className="w-4 h-4" />
-            {t(key)}
+            <Settings className="w-4 h-4" />
+            {t(SETTINGS_ITEM.key)}
           </NavLink>
-        ))}
+        )}
 
         {adminItems.length > 0 && (
           <>
@@ -92,7 +143,7 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="px-6 py-4 border-t border-sidebar-border">
-        <p className="text-xs text-muted-foreground">PropManager v1.0</p>
+        <p className="text-xs text-muted-foreground">Bait to Maintain v1.0</p>
       </div>
     </aside>
   )

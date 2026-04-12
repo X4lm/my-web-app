@@ -100,6 +100,7 @@ export default function Signup() {
                   required
                   autoComplete="new-password"
                 />
+                <p className="text-xs text-muted-foreground">At least 12 characters, including uppercase, lowercase, number, and special character.</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm">{t('auth.confirmPassword')}</Label>

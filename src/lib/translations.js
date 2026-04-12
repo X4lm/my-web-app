@@ -7,6 +7,7 @@ const translations = {
     'nav.logs': 'Activity Logs',
     'nav.vendors': 'Vendors',
     'nav.messages': 'Templates',
+    'nav.templates': 'Templates',
     'nav.cheques': 'Cheques',
     'nav.portfolio': 'Portfolio',
     'nav.settings': 'Settings',
@@ -16,6 +17,8 @@ const translations = {
     'nav.adminAnalytics': 'Analytics',
     'nav.adminSettings': 'System Settings',
     'nav.adminSection': 'Administration',
+    'nav.management': 'Management',
+    'nav.reports': 'Reports',
 
     // ─── Common ───
     'common.save': 'Save',
@@ -34,6 +37,7 @@ const translations = {
     'common.noResults': 'No results found',
     'common.available': 'Available',
     'common.occupied': 'Occupied',
+    'common.more': 'More',
     'common.name': 'Name',
     'common.email': 'Email',
     'common.phone': 'Phone',
@@ -89,14 +93,14 @@ const translations = {
     'auth.invalidCredentials': 'Invalid email or password.',
     'auth.tooManyAttempts': 'Too many attempts. Please try again later.',
     'auth.signInFailed': 'Sign in failed',
-    'auth.propManager': 'PropManager',
+    'auth.propManager': 'Bait to Maintain',
 
     // ─── Auth / Signup ───
     'auth.createAccount': 'Create your account',
     'auth.createAccountDesc': 'Start managing your properties today',
     'auth.fullName': 'Full name',
     'auth.fullNamePlaceholder': 'John Smith',
-    'auth.minChars': 'Min. 6 characters',
+    'auth.minChars': 'Min. 12 characters (include number & symbol)',
     'auth.confirmPassword': 'Confirm password',
     'auth.confirmPasswordPlaceholder': 'Repeat your password',
     'auth.creatingAccount': 'Creating account...',
@@ -119,6 +123,7 @@ const translations = {
     'dashboard.allProperties': 'All listed properties',
     'dashboard.readyToRent': 'Ready to rent',
     'dashboard.currentlyRented': 'Currently rented',
+    'dashboard.fromOccupied': 'From occupied units',
     'dashboard.unitOverview': 'Unit Overview',
     'dashboard.activeAlerts': 'Active Alerts Across All Properties',
     'dashboard.recentProperties': 'Recent Properties',
@@ -674,7 +679,7 @@ const translations = {
     'reports.generateDesc': 'Generate a comprehensive PDF report for the property owner including financials, occupancy, maintenance status, and more.',
     'reports.page': 'Page',
     'reports.of': 'of',
-    'reports.confidential': 'PropManager — Confidential',
+    'reports.confidential': 'Bait to Maintain — Confidential',
 
     // ─── Message Templates ───
     'templates.title': 'Message Templates',
@@ -776,7 +781,7 @@ const translations = {
 
     // ─── Portfolio ───
     'portfolio.title': 'Portfolio Overview',
-    'portfolio.subtitle': 'Cross-property P&L with VAT tracking for commercial properties.',
+    'portfolio.subtitle': 'Cross-property P&L with VAT tracking across your portfolio.',
     'portfolio.exporting': 'Exporting...',
     'portfolio.exportPdf': 'Export PDF',
     'portfolio.monthlyRent': 'Monthly Rent',
@@ -795,7 +800,7 @@ const translations = {
     'portfolio.properties': 'properties',
     'portfolio.units': 'units',
     'portfolio.reportTitle': 'Portfolio P&L Report',
-    'portfolio.confidential': 'PropManager — Confidential',
+    'portfolio.confidential': 'Bait to Maintain — Confidential',
 
     // ─── Settings ───
     'settings.title': 'Settings',
@@ -944,6 +949,13 @@ const translations = {
     'invite.accepted': 'Invitation accepted!',
     'invite.declined': 'Invitation declined.',
     'invite.pendingCount': '{count} pending invitation(s)',
+
+    // ─── Onboarding ───
+    'onboarding.welcome': "Welcome! Let's get started",
+    'onboarding.step1': 'Add your first property',
+    'onboarding.step2': 'Add units for buildings',
+    'onboarding.step3': 'Track maintenance & finances',
+    'onboarding.dismiss': 'Dismiss',
   },
 
   ar: {
@@ -954,6 +966,7 @@ const translations = {
     'nav.logs': 'سجل النشاط',
     'nav.vendors': 'المقاولون',
     'nav.messages': 'القوالب',
+    'nav.templates': 'القوالب',
     'nav.cheques': 'الشيكات',
     'nav.portfolio': 'المحفظة',
     'nav.settings': 'الإعدادات',
@@ -963,6 +976,8 @@ const translations = {
     'nav.adminAnalytics': 'التحليلات',
     'nav.adminSettings': 'إعدادات النظام',
     'nav.adminSection': 'الإدارة',
+    'nav.management': 'الإدارة',
+    'nav.reports': 'التقارير',
 
     // ─── Common ───
     'common.save': 'حفظ',
@@ -981,6 +996,7 @@ const translations = {
     'common.noResults': 'لم يتم العثور على نتائج',
     'common.available': 'متاح',
     'common.occupied': 'مؤجر',
+    'common.more': 'المزيد',
     'common.name': 'الاسم',
     'common.email': 'البريد الإلكتروني',
     'common.phone': 'الهاتف',
@@ -1036,14 +1052,14 @@ const translations = {
     'auth.invalidCredentials': 'بريد إلكتروني أو كلمة مرور غير صحيحة.',
     'auth.tooManyAttempts': 'محاولات كثيرة جداً. يرجى المحاولة لاحقاً.',
     'auth.signInFailed': 'فشل تسجيل الدخول',
-    'auth.propManager': 'PropManager',
+    'auth.propManager': 'Bait to Maintain',
 
     // ─── Auth / Signup ───
     'auth.createAccount': 'أنشئ حسابك',
     'auth.createAccountDesc': 'ابدأ بإدارة عقاراتك اليوم',
     'auth.fullName': 'الاسم الكامل',
     'auth.fullNamePlaceholder': 'أحمد محمد',
-    'auth.minChars': 'حد أدنى 6 أحرف',
+    'auth.minChars': 'حد أدنى 12 حرفاً (يشمل رقم ورمز)',
     'auth.confirmPassword': 'تأكيد كلمة المرور',
     'auth.confirmPasswordPlaceholder': 'أعد كتابة كلمة المرور',
     'auth.creatingAccount': 'جاري إنشاء الحساب...',
@@ -1066,6 +1082,7 @@ const translations = {
     'dashboard.allProperties': 'جميع العقارات المدرجة',
     'dashboard.readyToRent': 'جاهز للتأجير',
     'dashboard.currentlyRented': 'مؤجر حالياً',
+    'dashboard.fromOccupied': 'من الوحدات المؤجرة',
     'dashboard.unitOverview': 'نظرة عامة على الوحدات',
     'dashboard.activeAlerts': 'التنبيهات النشطة عبر جميع العقارات',
     'dashboard.recentProperties': 'العقارات الأخيرة',
@@ -1621,7 +1638,7 @@ const translations = {
     'reports.generateDesc': 'إنشاء تقرير PDF شامل لمالك العقار يتضمن المالية والإشغال وحالة الصيانة والمزيد.',
     'reports.page': 'صفحة',
     'reports.of': 'من',
-    'reports.confidential': 'PropManager — سري',
+    'reports.confidential': 'Bait to Maintain — سري',
 
     // ─── Message Templates ───
     'templates.title': 'قوالب الرسائل',
@@ -1723,7 +1740,7 @@ const translations = {
 
     // ─── Portfolio ───
     'portfolio.title': 'نظرة عامة على المحفظة',
-    'portfolio.subtitle': 'تقرير الأرباح والخسائر عبر العقارات مع تتبع ضريبة القيمة المضافة.',
+    'portfolio.subtitle': 'تقرير الأرباح والخسائر مع تتبع ضريبة القيمة المضافة عبر محفظتك.',
     'portfolio.exporting': 'جاري التصدير...',
     'portfolio.exportPdf': 'تصدير PDF',
     'portfolio.monthlyRent': 'الإيجار الشهري',
@@ -1742,7 +1759,7 @@ const translations = {
     'portfolio.properties': 'عقارات',
     'portfolio.units': 'وحدات',
     'portfolio.reportTitle': 'تقرير الأرباح والخسائر للمحفظة',
-    'portfolio.confidential': 'PropManager — سري',
+    'portfolio.confidential': 'Bait to Maintain — سري',
 
     // ─── Settings ───
     'settings.title': 'الإعدادات',
@@ -1891,6 +1908,13 @@ const translations = {
     'invite.accepted': 'تم قبول الدعوة!',
     'invite.declined': 'تم رفض الدعوة.',
     'invite.pendingCount': '{count} دعوة معلقة',
+
+    // ─── Onboarding ───
+    'onboarding.welcome': 'مرحبًا! لنبدأ',
+    'onboarding.step1': 'أضف أول عقار لك',
+    'onboarding.step2': 'أضف وحدات للمباني',
+    'onboarding.step3': 'تتبع الصيانة والمالية',
+    'onboarding.dismiss': 'إغلاق',
   },
 }
 

@@ -19,6 +19,7 @@ export default function WeatherWidget() {
   const { settings } = useLocale()
   const [weather, setWeather] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
 
   // Resolve the effective unit: auto falls back to browser locale
   const useFahrenheit = settings.temperatureUnit === 'fahrenheit'
@@ -26,11 +27,15 @@ export default function WeatherWidget() {
         && navigator.language?.startsWith('en-US'))
 
   useEffect(() => {
+    let retries = 0
+    const MAX_RETRIES = 2
+
     async function fetchWeather(lat, lon) {
       try {
         const tempUnit = useFahrenheit ? '&temperature_unit=fahrenheit' : ''
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto${tempUnit}`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto${tempUnit}`,
+          { signal: AbortSignal.timeout(5000) }
         )
         const data = await res.json()
         const temp = Math.round(data.current.temperature_2m)
@@ -39,6 +44,11 @@ export default function WeatherWidget() {
         setWeather({ temp, condition, unit: useFahrenheit ? '\u00B0F' : '\u00B0C' })
       } catch (err) {
         logError('[Weather] Fetch error:', err)
+        if (retries < MAX_RETRIES) {
+          retries++
+          return fetchWeather(lat, lon)
+        }
+        setHasError(true)
       } finally {
         setLoading(false)
       }
@@ -78,7 +88,7 @@ export default function WeatherWidget() {
     )
   }
 
-  if (!weather) return null
+  if (hasError || !weather) return null
 
   const Icon = WEATHER_ICONS[weather.condition] || CloudSun
 
