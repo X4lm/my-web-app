@@ -40,7 +40,6 @@ export default function VendorDashboard() {
   const [filter, setFilter] = useState('active') // 'active' | 'all' | 'completed'
 
   const linkedPropertyIds = userProfile?.linkedProperties || []
-  const vendorName = currentUser?.displayName || currentUser?.email || ''
 
   useEffect(() => {
     if (linkedPropertyIds.length === 0) { setLoading(false); return }
@@ -71,7 +70,7 @@ export default function VendorDashboard() {
           )
           woSnap.docs.forEach(d => {
             const data = d.data()
-            if (data.assignedVendorUid ? data.assignedVendorUid === currentUser.uid : data.assignedVendor === vendorName) {
+            if (data.assignedVendorUid === currentUser.uid) {
               allOrders.push({
                 id: d.id,
                 propertyId: propId,

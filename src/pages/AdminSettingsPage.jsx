@@ -14,7 +14,8 @@ import { Separator } from '@/components/ui/separator'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import { Megaphone, Globe, Mail, Loader2, Save, XCircle, Clock, CheckCircle2, Trash2 } from 'lucide-react'
+import { Megaphone, Globe, Mail, Loader2, Save, XCircle, Clock, CheckCircle2, Trash2, Database } from 'lucide-react'
+import { migrateVendorUids } from '@/scripts/migrateVendorUids'
 
 const CURRENCIES = ['AED', 'USD', 'EUR', 'GBP', 'SAR', 'KWD', 'BHD', 'QAR', 'OMR', 'EGP', 'INR']
 const DATE_FORMATS = ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD']
@@ -33,6 +34,10 @@ export default function AdminSettingsPage() {
   const [announcementActive, setAnnouncementActive] = useState(false)
   const [defaultCurrency, setDefaultCurrency] = useState('AED')
   const [defaultDateFormat, setDefaultDateFormat] = useState('DD/MM/YYYY')
+
+  // Migration
+  const [migrating, setMigrating] = useState(false)
+  const [migrationResult, setMigrationResult] = useState(null)
 
   // Invitations
   const [invitations, setInvitations] = useState([])
@@ -286,6 +291,55 @@ export default function AdminSettingsPage() {
                     })}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        {/* Data Migrations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Database className="w-4 h-4" /> {t('admin.dataMigrations') || 'Data Migrations'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Backfill Vendor UIDs on Work Orders</p>
+                <p className="text-xs text-muted-foreground">
+                  Matches legacy work orders (assigned by vendor name) to vendor user accounts and writes their UID.
+                  Run once after inviting vendors to the platform.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={migrating}
+                onClick={async () => {
+                  if (!window.confirm('This will scan all work orders and backfill vendor UIDs. Continue?')) return
+                  setMigrating(true)
+                  setMigrationResult(null)
+                  try {
+                    const result = await migrateVendorUids()
+                    setMigrationResult(result)
+                  } catch (err) {
+                    setMigrationResult({ message: `Migration failed: ${err.message}` })
+                  } finally {
+                    setMigrating(false)
+                  }
+                }}
+              >
+                {migrating ? <><Loader2 className="w-4 h-4 animate-spin" /> Running...</> : 'Run Migration'}
+              </Button>
+            </div>
+            {migrationResult && (
+              <div className="p-3 rounded-md bg-muted text-sm">
+                <p>{migrationResult.message}</p>
+                {migrationResult.errors?.length > 0 && (
+                  <ul className="mt-2 text-xs text-destructive">
+                    {migrationResult.errors.map((e, i) => <li key={i}>{e}</li>)}
+                  </ul>
+                )}
               </div>
             )}
           </CardContent>

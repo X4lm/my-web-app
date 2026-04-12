@@ -177,7 +177,23 @@ export default function BulkOperations({ propertyId, property }) {
         }
       }
 
-      if (updated > 0) await batch.commit()
+      if (updated > 0) {
+        await batch.commit()
+        try {
+          await addDoc(collection(db, 'users', currentUser.uid, 'auditLogs'), {
+            action: 'csv_import',
+            fileName: file.name,
+            unitsAffected: updated,
+            fieldsUpdated: [
+              rentIdx !== -1 && 'monthlyRent',
+              tenantIdx !== -1 && 'tenantName',
+              phoneIdx !== -1 && 'tenantPhone',
+            ].filter(Boolean),
+            performedBy: currentUser.uid,
+            performedAt: serverTimestamp(),
+          })
+        } catch { /* audit log failure shouldn't block */ }
+      }
       setResult({ success: true, message: `Updated ${updated} unit${updated !== 1 ? 's' : ''} from CSV.` })
     } catch (err) {
       logError('[Bulk] CSV import error:', err)
