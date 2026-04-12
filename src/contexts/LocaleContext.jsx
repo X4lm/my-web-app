@@ -59,6 +59,12 @@ const EXCHANGE_RATES = {
   EGP: 48.5,
 }
 
+const TEMPERATURE_UNITS = {
+  auto: { label: 'Auto' },
+  celsius: { label: '\u00B0C' },
+  fahrenheit: { label: '\u00B0F' },
+}
+
 const DEFAULTS = {
   currency: 'USD',
   dateFormat: 'MM/DD/YYYY',
@@ -66,6 +72,7 @@ const DEFAULTS = {
   language: 'en',
   calendar: 'gregorian',
   secondaryCurrency: '',
+  temperatureUnit: 'auto', // 'auto' | 'celsius' | 'fahrenheit'
 }
 
 export function LocaleProvider({ children }) {
@@ -224,7 +231,7 @@ export function LocaleProvider({ children }) {
       getCurrencyCode, getCurrencyLabel,
       t, isRTL,
       CURRENCIES, DATE_FORMATS, LANGUAGES,
-      CALENDAR_SYSTEMS, EXCHANGE_RATES,
+      CALENDAR_SYSTEMS, EXCHANGE_RATES, TEMPERATURE_UNITS,
     }}>
       {children}
     </LocaleContext.Provider>

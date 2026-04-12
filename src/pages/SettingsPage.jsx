@@ -17,7 +17,7 @@ const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transpar
 
 export default function SettingsPage() {
   const { currentUser } = useAuth()
-  const { settings, updateSettings, formatCurrency, formatDate, formatWithConversion, t, CURRENCIES, DATE_FORMATS, LANGUAGES, CALENDAR_SYSTEMS } = useLocale()
+  const { settings, updateSettings, formatCurrency, formatDate, formatWithConversion, t, CURRENCIES, DATE_FORMATS, LANGUAGES, CALENDAR_SYSTEMS, TEMPERATURE_UNITS } = useLocale()
   const [name, setName] = useState(currentUser?.displayName || '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -133,7 +133,7 @@ export default function SettingsPage() {
             <CardDescription>{t('settings.currencyLocaleDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <Label htmlFor="currency">{t('settings.currency')}</Label>
                 <select
@@ -171,6 +171,19 @@ export default function SettingsPage() {
                   {Object.entries(LANGUAGES).map(([code, { label }]) => (
                     <option key={code} value={code}>{label}</option>
                   ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="temperature-unit">{t('settings.temperatureUnit')}</Label>
+                <select
+                  id="temperature-unit"
+                  value={settings.temperatureUnit || 'auto'}
+                  onChange={e => updateSettings({ temperatureUnit: e.target.value })}
+                  className={SELECT_CLASS}
+                >
+                  <option value="auto">{t('settings.temperatureAuto')}</option>
+                  <option value="celsius">{t('settings.temperatureCelsius')}</option>
+                  <option value="fahrenheit">{t('settings.temperatureFahrenheit')}</option>
                 </select>
               </div>
             </div>

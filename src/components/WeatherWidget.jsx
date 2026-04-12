@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { logError } from '@/utils/logger'
+import { useLocale } from '@/contexts/LocaleContext'
 import { CloudSun, CloudRain, Cloud, Sun, Snowflake, CloudLightning, Wind, Loader2 } from 'lucide-react'
 
 const WEATHER_ICONS = {
@@ -15,12 +16,16 @@ const WEATHER_ICONS = {
 }
 
 export default function WeatherWidget() {
+  const { settings } = useLocale()
   const [weather, setWeather] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const useFahrenheit = navigator.language?.startsWith('en-US')
+  // Resolve the effective unit: auto falls back to browser locale
+  const useFahrenheit = settings.temperatureUnit === 'fahrenheit'
+    || (settings.temperatureUnit !== 'celsius' && settings.temperatureUnit !== 'fahrenheit'
+        && navigator.language?.startsWith('en-US'))
 
+  useEffect(() => {
     async function fetchWeather(lat, lon) {
       try {
         const tempUnit = useFahrenheit ? '&temperature_unit=fahrenheit' : ''
@@ -31,7 +36,7 @@ export default function WeatherWidget() {
         const temp = Math.round(data.current.temperature_2m)
         const code = data.current.weather_code
         const condition = getConditionFromCode(code)
-        setWeather({ temp, condition, unit: useFahrenheit ? '°F' : '°C' })
+        setWeather({ temp, condition, unit: useFahrenheit ? '\u00B0F' : '\u00B0C' })
       } catch (err) {
         logError('[Weather] Fetch error:', err)
       } finally {
@@ -39,6 +44,7 @@ export default function WeatherWidget() {
       }
     }
 
+    setLoading(true)
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
@@ -50,7 +56,7 @@ export default function WeatherWidget() {
     } else {
       fetchWeather(40.7128, -74.006)
     }
-  }, [])
+  }, [useFahrenheit])
 
   function getConditionFromCode(code) {
     if (code === 0 || code === 1) return 'Clear'

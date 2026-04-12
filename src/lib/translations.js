@@ -827,6 +827,10 @@ const translations = {
     'settings.calendarHijri': 'All dates will display in Hijri (Islamic) calendar.',
     'settings.calendarBoth': 'Dates show Gregorian with Hijri in parentheses.',
     'settings.calendarGregorian': 'Standard Gregorian calendar.',
+    'settings.temperatureUnit': 'Temperature',
+    'settings.temperatureAuto': 'Auto (based on locale)',
+    'settings.temperatureCelsius': 'Celsius (\u00B0C)',
+    'settings.temperatureFahrenheit': 'Fahrenheit (\u00B0F)',
     'settings.previewAmount': 'Amount',
     'settings.previewDate': 'Date',
 
@@ -1770,6 +1774,10 @@ const translations = {
     'settings.calendarHijri': 'سيتم عرض جميع التواريخ بالتقويم الهجري.',
     'settings.calendarBoth': 'التواريخ تعرض الميلادي مع الهجري بين قوسين.',
     'settings.calendarGregorian': 'التقويم الميلادي القياسي.',
+    'settings.temperatureUnit': 'درجة الحرارة',
+    'settings.temperatureAuto': 'تلقائي (حسب الموقع)',
+    'settings.temperatureCelsius': 'مئوية (\u00B0C)',
+    'settings.temperatureFahrenheit': 'فهرنهايت (\u00B0F)',
     'settings.previewAmount': 'المبلغ',
     'settings.previewDate': 'التاريخ',
 
