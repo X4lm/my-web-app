@@ -9,7 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { updateProfile, sendPasswordResetEmail } from 'firebase/auth'
-import { auth } from '@/firebase/config'
+import { auth, db } from '@/firebase/config'
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
+import { Link } from 'react-router-dom'
 
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
@@ -223,6 +225,73 @@ export default function SettingsPage() {
               <p className="font-medium mb-1">{t('settings.preview')}</p>
               <p>{t('settings.previewAmount')}: <span className="text-foreground font-medium">{formatWithConversion(350000)}</span></p>
               <p>{t('settings.previewDate')}: <span className="text-foreground font-medium">{formatDate('2025-03-15')}</span></p>
+            </div>
+          </CardContent>
+        </Card>
+        <Separator />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t('settings.dataPrivacy') || 'Data & Privacy'}</CardTitle>
+            <CardDescription>{t('settings.dataPrivacyDesc') || 'Manage your personal data and privacy preferences.'}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">{t('settings.requestData') || 'Request My Data'}</p>
+                <p className="text-xs text-muted-foreground">{t('settings.requestDataDesc') || 'Get a copy of all your personal data stored in PropVault.'}</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    await addDoc(collection(db, 'dataRequests'), {
+                      userId: currentUser.uid,
+                      email: currentUser.email,
+                      type: 'data_export',
+                      status: 'pending',
+                      createdAt: serverTimestamp(),
+                    })
+                    alert('Data request submitted. You will be notified when ready.')
+                  } catch {
+                    alert('Failed to submit request. Please try again.')
+                  }
+                }}
+              >
+                {t('settings.requestDataBtn') || 'Request Export'}
+              </Button>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">{t('settings.deleteAccount') || 'Delete Account'}</p>
+                <p className="text-xs text-muted-foreground">{t('settings.deleteAccountDesc') || 'Permanently delete your account and all associated data.'}</p>
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={async () => {
+                  if (!window.confirm('Are you sure? This action cannot be undone. All your data will be permanently deleted within 30 days.')) return
+                  try {
+                    await addDoc(collection(db, 'dataRequests'), {
+                      userId: currentUser.uid,
+                      email: currentUser.email,
+                      type: 'account_deletion',
+                      status: 'pending',
+                      createdAt: serverTimestamp(),
+                    })
+                    alert('Account deletion request submitted. Your account will be deleted within 30 days.')
+                  } catch {
+                    alert('Failed to submit request. Please try again.')
+                  }
+                }}
+              >
+                {t('settings.deleteAccountBtn') || 'Delete Account'}
+              </Button>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              <Link to="/privacy" className="underline underline-offset-2">View Privacy Policy</Link>
             </div>
           </CardContent>
         </Card>

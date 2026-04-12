@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 
@@ -1306,7 +1306,6 @@ export default function LandingPage() {
               {[
                 { label: tx('navFeatures'), action: () => scrollTo('features') },
                 { label: tx('navSecurity'), action: () => scrollTo('security') },
-                { label: tx('footerPrivacy'), action: null },
                 { label: tx('footerTerms'), action: null },
                 { label: tx('navContact'), action: () => scrollTo('footer') },
               ].map(item => (
@@ -1318,6 +1317,12 @@ export default function LandingPage() {
                   {item.label}
                 </button>
               ))}
+              <Link
+                to="/privacy"
+                className="text-white/40 hover:text-white/70 transition-colors duration-300"
+              >
+                {tx('footerPrivacy')}
+              </Link>
             </div>
 
             {/* Copyright */}

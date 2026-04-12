@@ -113,6 +113,20 @@ export default function Signup() {
                   autoComplete="new-password"
                 />
               </div>
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="consent"
+                  required
+                  className="mt-1 rounded border-input"
+                />
+                <Label htmlFor="consent" className="text-xs text-muted-foreground font-normal leading-relaxed">
+                  I agree to the processing of my personal data as described in the{' '}
+                  <Link to="/privacy" target="_blank" className="text-foreground underline underline-offset-2">
+                    Privacy Policy
+                  </Link>
+                </Label>
+              </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? t('auth.creatingAccount') : t('auth.createAccountBtn')}
               </Button>
