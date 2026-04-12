@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import ImageUpload from '@/components/ImageUpload'
 import DocumentUpload from '@/components/DocumentUpload'
 import { useLocale } from '@/contexts/LocaleContext'
+import { validateAmount } from '@/utils/validation'
 
 const EMPTY = {
   name: '', address: '', type: 'villa', rentAmount: '', status: 'available',
@@ -41,8 +42,12 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
     const e = {}
     if (!form.name.trim()) e.name = t('common.required')
     if (!form.address.trim()) e.address = t('common.required')
-    if (!form.rentAmount || isNaN(form.rentAmount) || Number(form.rentAmount) <= 0)
-      e.rentAmount = t('common.validAmount')
+    const amtErr = validateAmount(form.rentAmount)
+    if (amtErr) e.rentAmount = amtErr
+    if (form.marketValue) {
+      const mvErr = validateAmount(form.marketValue)
+      if (mvErr) e.marketValue = mvErr
+    }
     return e
   }
 
@@ -78,6 +83,7 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
               id="prop-name"
               value={form.name}
               onChange={e => set('name', e.target.value)}
+              maxLength={200}
               placeholder={t('propertyForm.namePlaceholder')}
             />
             {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
@@ -89,6 +95,7 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
               id="prop-address"
               value={form.address}
               onChange={e => set('address', e.target.value)}
+              maxLength={500}
               placeholder={t('propertyForm.addressPlaceholder')}
             />
             {errors.address && <p className="text-xs text-destructive">{errors.address}</p>}
@@ -192,6 +199,7 @@ export default function PropertyFormDialog({ open, onOpenChange, property, onSav
               id="prop-deed"
               value={form.titleDeedNumber}
               onChange={e => set('titleDeedNumber', e.target.value)}
+              maxLength={50}
               placeholder={t('propertyForm.deedPlaceholder')}
             />
           </div>

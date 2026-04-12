@@ -4,6 +4,7 @@ import {
   doc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import {
@@ -56,7 +57,7 @@ export default function UnitsTab({ propertyId, propertyType, propertyName }) {
       setUnits(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       setLoading(false)
     }, (err) => {
-      console.error('[Firestore] Units listen error:', err.code, err.message)
+      logError('[Firestore] Units listen error:', err.code, err.message)
       setLoading(false)
     })
     return unsub
@@ -80,7 +81,7 @@ export default function UnitsTab({ propertyId, propertyType, propertyName }) {
         })
         setUnitInvitations(map)
       } catch (err) {
-        console.error('[UnitsTab] Load invitations error:', err)
+        logError('[UnitsTab] Load invitations error:', err)
       }
     }
     loadInvitations()
@@ -137,7 +138,7 @@ export default function UnitsTab({ propertyId, propertyType, propertyName }) {
       setDialogOpen(false)
       setEditing(null)
     } catch (err) {
-      console.error('[Firestore] Unit save error:', err.code, err.message)
+      logError('[Firestore] Unit save error:', err.code, err.message)
     } finally {
       setSaving(false)
     }
@@ -148,7 +149,7 @@ export default function UnitsTab({ propertyId, propertyType, propertyName }) {
     try {
       await deleteDoc(doc(db, basePath, id))
     } catch (err) {
-      console.error('[Firestore] Unit delete error:', err.code, err.message)
+      logError('[Firestore] Unit delete error:', err.code, err.message)
     }
   }
 

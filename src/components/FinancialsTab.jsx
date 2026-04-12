@@ -4,6 +4,7 @@ import {
   doc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { diffFields, hasUnits } from '@/lib/utils'
@@ -61,7 +62,7 @@ export default function FinancialsTab({ propertyId, property }) {
       setExpenses(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       setLoading(false)
     }, (err) => {
-      console.error('[Firestore] Expenses listen error:', err)
+      logError('[Firestore] Expenses listen error:', err)
       setLoading(false)
     })
     return unsub
@@ -152,7 +153,7 @@ export default function FinancialsTab({ propertyId, property }) {
       setDialogOpen(false)
       setEditing(null)
     } catch (err) {
-      console.error('[Firestore] Expense save error:', err)
+      logError('[Firestore] Expense save error:', err)
     } finally {
       setSaving(false)
     }
@@ -169,7 +170,7 @@ export default function FinancialsTab({ propertyId, property }) {
         timestamp: serverTimestamp(),
       })
     } catch (err) {
-      console.error('[Firestore] Expense delete error:', err)
+      logError('[Firestore] Expense delete error:', err)
     }
   }
 
@@ -188,7 +189,7 @@ export default function FinancialsTab({ propertyId, property }) {
       setChequeDialogOpen(false)
       setEditingCheque(null)
     } catch (err) {
-      console.error('[Firestore] Cheque save error:', err)
+      logError('[Firestore] Cheque save error:', err)
     } finally {
       setChequeSaving(false)
     }
@@ -199,7 +200,7 @@ export default function FinancialsTab({ propertyId, property }) {
     try {
       await deleteDoc(doc(db, chequePath, id))
     } catch (err) {
-      console.error('[Firestore] Cheque delete error:', err)
+      logError('[Firestore] Cheque delete error:', err)
     }
   }
 

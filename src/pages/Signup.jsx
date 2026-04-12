@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home } from 'lucide-react'
+import { validatePassword } from '@/utils/validation'
 
 export default function Signup() {
   const [name, setName] = useState('')
@@ -23,14 +24,20 @@ export default function Signup() {
     e.preventDefault()
     setError('')
     if (password !== confirm) return setError(t('auth.passwordsNoMatch'))
-    if (password.length < 6) return setError(t('auth.passwordTooShort'))
+    const pwError = validatePassword(password)
+    if (pwError) return setError(pwError)
     setLoading(true)
     try {
       await signup(email, password, name)
       navigate('/')
     } catch (err) {
-      console.error('[Signup] Error:', err.code, err.message, err)
-      setError(`${err.code || 'unknown'}: ${err.message}`)
+      const safeErrors = {
+        'auth/email-already-in-use': 'Unable to create account. Please try a different email or sign in.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/weak-password': 'Please choose a stronger password.',
+        'auth/too-many-requests': 'Too many attempts. Please try again later.',
+      }
+      setError(safeErrors[err.code] || 'An error occurred creating your account. Please try again.')
     } finally {
       setLoading(false)
     }

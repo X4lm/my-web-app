@@ -4,6 +4,8 @@ import {
   doc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
+import { validateAmount } from '@/utils/validation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -84,6 +86,10 @@ export default function UtilityTracker({ propertyId }) {
 
   async function handleSave() {
     if (!form.accountNumber.trim()) return
+    if (form.depositAmount) {
+      const depErr = validateAmount(form.depositAmount)
+      if (depErr) { alert(depErr); return }
+    }
     setSaving(true)
     try {
       const data = { ...form, depositAmount: Number(form.depositAmount) || 0 }
@@ -95,7 +101,7 @@ export default function UtilityTracker({ propertyId }) {
       setDialogOpen(false)
       setEditing(null)
     } catch (err) {
-      console.error('[Utilities] Save error:', err)
+      logError('[Utilities] Save error:', err)
     } finally {
       setSaving(false)
     }
@@ -106,7 +112,7 @@ export default function UtilityTracker({ propertyId }) {
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
-      console.error('[Utilities] Delete error:', err)
+      logError('[Utilities] Delete error:', err)
     }
   }
 
@@ -222,11 +228,11 @@ export default function UtilityTracker({ propertyId }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>{t('utilities.accountNumber')} *</Label>
-                <Input value={form.accountNumber} onChange={e => setForm(f => ({ ...f, accountNumber: e.target.value }))} />
+                <Input value={form.accountNumber} onChange={e => setForm(f => ({ ...f, accountNumber: e.target.value }))} maxLength={50} />
               </div>
               <div className="space-y-2">
                 <Label>{t('utilities.premiseNumber')}</Label>
-                <Input value={form.premiseNumber} onChange={e => setForm(f => ({ ...f, premiseNumber: e.target.value }))} />
+                <Input value={form.premiseNumber} onChange={e => setForm(f => ({ ...f, premiseNumber: e.target.value }))} maxLength={50} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

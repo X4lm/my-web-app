@@ -4,6 +4,7 @@ import {
   onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -78,7 +79,7 @@ export default function MoveOutWorkflow({ propertyId }) {
       })
       setDialogOpen(false)
     } catch (err) {
-      console.error('[MoveOut] Create error:', err)
+      logError('[MoveOut] Create error:', err)
     } finally {
       setSaving(false)
     }
@@ -96,20 +97,30 @@ export default function MoveOutWorkflow({ propertyId }) {
         updatedAt: serverTimestamp(),
       })
     } catch (err) {
-      console.error('[MoveOut] Update error:', err)
+      logError('[MoveOut] Update error:', err)
     }
   }
 
   async function addDeduction(moveOutId, description, amount) {
     const mo = moveOuts.find(m => m.id === moveOutId)
     if (!mo) return
-    const deductions = [...(mo.deductions || []), { description, amount: Number(amount), date: new Date().toISOString().slice(0, 10) }]
+    const amt = Number(amount)
+    if (isNaN(amt) || amt <= 0 || amt > 99999999.99) {
+      alert('Invalid deduction amount')
+      return
+    }
+    const existingDeductions = mo.deductions || []
+    const existingTotal = existingDeductions.reduce((s, d) => s + d.amount, 0)
+    if (existingTotal + amt > (mo.securityDeposit || 0)) {
+      if (!confirm('Total deductions exceed security deposit. Continue?')) return
+    }
+    const deductions = [...existingDeductions, { description, amount: amt, date: new Date().toISOString().slice(0, 10) }]
     const totalDeductions = deductions.reduce((s, d) => s + d.amount, 0)
     const refundAmount = Math.max(0, (mo.securityDeposit || 0) - totalDeductions)
     try {
       await updateDoc(doc(db, colPath, moveOutId), { deductions, totalDeductions, refundAmount, updatedAt: serverTimestamp() })
     } catch (err) {
-      console.error('[MoveOut] Deduction error:', err)
+      logError('[MoveOut] Deduction error:', err)
     }
   }
 

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs, doc, updateDoc, query, orderBy } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useAuth, ROLES } from '@/contexts/AuthContext'
+
 import AppLayout from '@/components/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,7 +33,7 @@ const ROLE_VARIANT = {
 
 export default function AdminUsersPage() {
   const { t } = useLocale()
-  const { currentUser } = useAuth()
+  const { currentUser, userProfile } = useAuth()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -68,7 +70,7 @@ export default function AdminUsersPage() {
       })
       setPropCounts(counts)
     } catch (err) {
-      console.error('[AdminUsers] Load error:', err)
+      // load error
     } finally {
       setLoading(false)
     }
@@ -97,7 +99,7 @@ export default function AdminUsersPage() {
       await updateDoc(doc(db, 'users', user.id), { suspended: !isSuspended })
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, suspended: !isSuspended } : u))
     } catch (err) {
-      console.error('[AdminUsers] Suspend error:', err)
+      // suspend error
     }
   }
 
@@ -108,11 +110,12 @@ export default function AdminUsersPage() {
       await updateDoc(doc(db, 'users', user.id), { role: newRole })
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u))
     } catch (err) {
-      console.error('[AdminUsers] Role change error:', err)
+      logError('[AdminUsers] Role change error:', err)
     }
   }
 
   function exportCSV() {
+    if (userProfile?.role !== 'admin') return
     const headers = ['Name', 'Email', 'Role', 'Signup Date', 'Last Login', 'Status', 'Properties']
     const rows = filtered.map(u => [
       u.displayName || '',
@@ -123,7 +126,12 @@ export default function AdminUsersPage() {
       u.suspended ? 'Suspended' : 'Active',
       propCounts[u.id] || 0,
     ])
-    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n')
+    const esc = v => {
+      let s = String(v).replace(/"/g, '""')
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s
+      return `"${s}"`
+    }
+    const csv = [headers.join(','), ...rows.map(r => r.map(esc).join(','))].join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')

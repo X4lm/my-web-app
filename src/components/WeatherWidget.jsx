@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { logError } from '@/utils/logger'
 import { CloudSun, CloudRain, Cloud, Sun, Snowflake, CloudLightning, Wind, Loader2 } from 'lucide-react'
 
 const WEATHER_ICONS = {
@@ -32,7 +33,7 @@ export default function WeatherWidget() {
         const condition = getConditionFromCode(code)
         setWeather({ temp, condition, unit: useFahrenheit ? '°F' : '°C' })
       } catch (err) {
-        console.error('[Weather] Fetch error:', err)
+        logError('[Weather] Fetch error:', err)
       } finally {
         setLoading(false)
       }

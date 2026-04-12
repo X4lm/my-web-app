@@ -3,6 +3,7 @@ import {
   collection, addDoc, doc, getDoc, setDoc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -145,7 +146,7 @@ export default function InspectionTab({ propertyId }) {
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
-      console.error('[Inspection] Save error:', err)
+      logError('[Inspection] Save error:', err)
     } finally {
       setSaving(false)
     }

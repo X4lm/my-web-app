@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore'
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import app, { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -70,7 +71,7 @@ export default function DocumentsTab({ propertyId }) {
       setDocuments(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       setLoading(false)
     }, (err) => {
-      console.error('[Firestore] Documents listen error:', err)
+      logError('[Firestore] Documents listen error:', err)
       setLoading(false)
     })
     return unsub
@@ -109,7 +110,7 @@ export default function DocumentsTab({ propertyId }) {
       setDialogOpen(false)
       if (fileRef.current) fileRef.current.value = ''
     } catch (err) {
-      console.error('[Documents] Upload error:', err)
+      logError('[Documents] Upload error:', err)
     } finally {
       setUploading(false)
     }
@@ -126,7 +127,7 @@ export default function DocumentsTab({ propertyId }) {
         } catch { /* storage delete may fail if already removed */ }
       }
     } catch (err) {
-      console.error('[Documents] Delete error:', err)
+      logError('[Documents] Delete error:', err)
     }
   }
 

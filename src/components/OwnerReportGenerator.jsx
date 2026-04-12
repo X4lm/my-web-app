@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { collection, query, orderBy, getDocs } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { hasUnits, TYPE_LABELS } from '@/lib/utils'
@@ -77,7 +78,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
           latestInspection, currentYear,
         })
       } catch (err) {
-        console.error('[Report] Load error:', err)
+        logError('[Report] Load error:', err)
       } finally {
         setLoading(false)
       }
@@ -219,7 +220,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
       const doc = await buildPDF()
       doc.save(`${property.name.replace(/\s+/g, '_')}_Report_${new Date().toISOString().slice(0, 10)}.pdf`)
     } catch (err) {
-      console.error('[PDF] Generation error:', err)
+      logError('[PDF] Generation error:', err)
     } finally {
       setGenerating(false)
     }
@@ -234,7 +235,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
       const url = URL.createObjectURL(blob)
       setPdfUrl(url)
     } catch (err) {
-      console.error('[PDF] Preview error:', err)
+      logError('[PDF] Preview error:', err)
     } finally {
       setPreviewing(false)
     }

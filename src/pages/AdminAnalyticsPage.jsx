@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -180,7 +181,7 @@ export default function AdminAnalyticsPage() {
 
       setData({ userGrowth, activeUsers, propertyGrowth, loginHeatmap, topUsers, pageViews })
     } catch (err) {
-      console.error('[AdminAnalytics] Error:', err)
+      logError('[AdminAnalytics] Error:', err)
     } finally {
       setLoading(false)
     }

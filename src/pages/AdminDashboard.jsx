@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -128,7 +129,7 @@ export default function AdminDashboard() {
         activeThisWeek,
       })
     } catch (err) {
-      console.error('[AdminDashboard] Load error:', err)
+      logError('[AdminDashboard] Load error:', err)
     } finally {
       setLoading(false)
     }

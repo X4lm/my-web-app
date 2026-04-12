@@ -4,6 +4,7 @@ import {
   doc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -88,7 +89,7 @@ export default function MessageTemplates() {
       setTemplates(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       setLoading(false)
     }, (err) => {
-      console.error('[Firestore] Templates listen error:', err)
+      logError('[Firestore] Templates listen error:', err)
       setLoading(false)
     })
     return unsub
@@ -123,7 +124,7 @@ export default function MessageTemplates() {
       setDialogOpen(false)
       setEditing(null)
     } catch (err) {
-      console.error('[Firestore] Template save error:', err)
+      logError('[Firestore] Template save error:', err)
     } finally {
       setSaving(false)
     }
@@ -134,7 +135,7 @@ export default function MessageTemplates() {
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
-      console.error('[Firestore] Template delete error:', err)
+      logError('[Firestore] Template delete error:', err)
     }
   }
 
@@ -145,7 +146,7 @@ export default function MessageTemplates() {
         await addDoc(collection(db, colPath), { ...tmpl, createdAt: serverTimestamp() })
       }
     } catch (err) {
-      console.error('[Firestore] Load defaults error:', err)
+      logError('[Firestore] Load defaults error:', err)
     }
   }
 

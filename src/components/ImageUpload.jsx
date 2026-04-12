@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react'
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import app from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Upload, X, Loader2 } from 'lucide-react'
+import { validateFile } from '@/utils/validation'
 
 export default function ImageUpload({ value, onChange, folder, label }) {
   const { currentUser } = useAuth()
@@ -15,13 +17,18 @@ export default function ImageUpload({ value, onChange, folder, label }) {
     if (!file) return
     setUploading(true)
     try {
+      const safeName = validateFile(file, {
+        maxSizeMB: 5,
+        allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+      })
       const storage = getStorage(app)
-      const storageRef = ref(storage, `${currentUser.uid}/${folder}/${Date.now()}_${file.name}`)
+      const storageRef = ref(storage, `${currentUser.uid}/${folder}/${Date.now()}_${safeName}`)
       await uploadBytes(storageRef, file)
       const url = await getDownloadURL(storageRef)
       onChange(url)
     } catch (err) {
-      console.error('[Storage] Upload error:', err)
+      if (err.message.includes('File') || err.message.includes('limit') || err.message.includes('type')) { alert(err.message) }
+      logError('[Storage] Upload error:', err)
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''

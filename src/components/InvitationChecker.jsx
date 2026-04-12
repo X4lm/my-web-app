@@ -27,8 +27,8 @@ export default function InvitationChecker() {
       try {
         const invites = await getPendingInvitationsForEmail(currentUser.email)
         setPendingInvites(invites)
-      } catch (err) {
-        console.error('[InvitationChecker] Error:', err)
+      } catch {
+        // silently handle
       } finally {
         setChecked(true)
       }
@@ -54,10 +54,8 @@ export default function InvitationChecker() {
         linkedProperties: arrayUnion(invite.propertyId),
       }
 
-      // Only set role if user's current role is 'owner' (default signup role)
-      // and the invitation is for a more specific role.
-      // Don't override if user already has a specific role assignment.
-      if (userProfile?.role === 'owner' || !userProfile?.role) {
+      const SAFE_INVITE_ROLES = ['property_manager', 'staff', 'vendor', 'tenant']
+      if ((userProfile?.role === 'owner' || !userProfile?.role) && SAFE_INVITE_ROLES.includes(invite.role)) {
         updates.role = invite.role
       }
 
@@ -77,8 +75,8 @@ export default function InvitationChecker() {
         setResult(null)
         setCurrentIndex(i => i + 1)
       }, 1500)
-    } catch (err) {
-      console.error('[InvitationChecker] Accept error:', err)
+    } catch {
+      // silently handle
     } finally {
       setProcessing(false)
     }
@@ -94,8 +92,8 @@ export default function InvitationChecker() {
         setResult(null)
         setCurrentIndex(i => i + 1)
       }, 1500)
-    } catch (err) {
-      console.error('[InvitationChecker] Decline error:', err)
+    } catch {
+      // silently handle
     } finally {
       setProcessing(false)
     }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,7 +36,7 @@ export default function LogsTab({ propertyId }) {
       setLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       setLoading(false)
     }, (err) => {
-      console.error('[Firestore] Logs listen error:', err)
+      logError('[Firestore] Logs listen error:', err)
       setLoading(false)
     })
 

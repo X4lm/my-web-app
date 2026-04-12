@@ -4,6 +4,7 @@ import {
   doc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -66,7 +67,7 @@ export default function CommunicationLog({ propertyId }) {
       setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       setLoading(false)
     }, (err) => {
-      console.error('[Firestore] Communications listen error:', err)
+      logError('[Firestore] Communications listen error:', err)
       setLoading(false)
     })
     return unsub
@@ -104,7 +105,7 @@ export default function CommunicationLog({ propertyId }) {
       setDialogOpen(false)
       setEditing(null)
     } catch (err) {
-      console.error('[Firestore] Communication save error:', err)
+      logError('[Firestore] Communication save error:', err)
     } finally {
       setSaving(false)
     }
@@ -115,7 +116,7 @@ export default function CommunicationLog({ propertyId }) {
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
-      console.error('[Firestore] Communication delete error:', err)
+      logError('[Firestore] Communication delete error:', err)
     }
   }
 
@@ -246,6 +247,7 @@ export default function CommunicationLog({ propertyId }) {
               <Input
                 value={form.contactName}
                 onChange={e => setForm(f => ({ ...f, contactName: e.target.value }))}
+                maxLength={200}
                 placeholder={t('comms.contactPlaceholder')}
               />
             </div>
@@ -280,6 +282,7 @@ export default function CommunicationLog({ propertyId }) {
               <Input
                 value={form.subject}
                 onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
+                maxLength={300}
                 placeholder={t('comms.subjectPlaceholder')}
               />
             </div>
@@ -289,6 +292,7 @@ export default function CommunicationLog({ propertyId }) {
                 className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                 value={form.notes}
                 onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                maxLength={2000}
                 placeholder={t('comms.notesPlaceholder')}
               />
             </div>

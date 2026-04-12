@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import {
-  collection, getDocs, updateDoc, doc, writeBatch,
+  collection, getDocs, updateDoc, doc, writeBatch, addDoc, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,6 +31,10 @@ export default function BulkOperations({ propertyId, property }) {
   async function applyBulkRentIncrease() {
     const pct = Number(increasePercent)
     if (!pct || pct <= 0 || pct > 100) return
+    const MAX_RERA_INCREASE = 20
+    if (pct > MAX_RERA_INCREASE) {
+      if (!confirm(`Warning: ${pct}% exceeds typical RERA rent increase limits (${MAX_RERA_INCREASE}%). Continue?`)) return
+    }
     setProcessing(true)
     setResult(null)
     try {
@@ -53,11 +58,20 @@ export default function BulkOperations({ propertyId, property }) {
 
       if (updated > 0) {
         await batch.commit()
+        try {
+          await addDoc(collection(db, 'users', currentUser.uid, 'auditLogs'), {
+            action: 'bulk_rent_increase',
+            percentage: pct,
+            unitsAffected: updated,
+            performedBy: currentUser.uid,
+            performedAt: serverTimestamp(),
+          })
+        } catch { /* audit log failure shouldn't block */ }
       }
       setResult({ success: true, message: `Updated rent for ${updated} unit${updated !== 1 ? 's' : ''} by ${pct}%` })
       setRentDialogOpen(false)
     } catch (err) {
-      console.error('[Bulk] Rent increase error:', err)
+      logError('[Bulk] Rent increase error:', err)
       setResult({ success: false, message: 'Failed to update rents. Please try again.' })
     } finally {
       setProcessing(false)
@@ -81,7 +95,12 @@ export default function BulkOperations({ propertyId, property }) {
         u.annualRent || '', u.notes || '',
       ])
 
-      const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))].join('\n')
+      const esc = v => {
+        let s = String(v).replace(/"/g, '""')
+        if (/^[=+\-@\t\r]/.test(s)) s = "'" + s
+        return `"${s}"`
+      }
+      const csv = [headers.join(','), ...rows.map(r => r.map(esc).join(','))].join('\n')
       const blob = new Blob([csv], { type: 'text/csv' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -90,7 +109,7 @@ export default function BulkOperations({ propertyId, property }) {
       a.click()
       URL.revokeObjectURL(url)
     } catch (err) {
-      console.error('[Bulk] CSV export error:', err)
+      logError('[Bulk] CSV export error:', err)
     } finally {
       setExporting(false)
     }
@@ -106,6 +125,13 @@ export default function BulkOperations({ propertyId, property }) {
       const lines = text.split('\n').filter(l => l.trim())
       if (lines.length < 2) {
         setResult({ success: false, message: 'CSV file is empty or has no data rows.' })
+        return
+      }
+
+      const MAX_IMPORT_ROWS = 500
+      const rows = lines.slice(1)
+      if (rows.length > MAX_IMPORT_ROWS) {
+        alert(`CSV import limited to ${MAX_IMPORT_ROWS} rows. Please split your file.`)
         return
       }
 
@@ -137,7 +163,11 @@ export default function BulkOperations({ propertyId, property }) {
         if (!unitNum || !unitsByNumber[unitNum]) continue
 
         const updates = {}
-        if (rentIdx !== -1 && values[rentIdx]) updates.monthlyRent = Number(values[rentIdx]) || 0
+        if (rentIdx !== -1 && values[rentIdx]) {
+          const rent = Number(values[rentIdx])
+          if (isNaN(rent) || rent < 0 || rent > 99999999.99) continue
+          updates.monthlyRent = rent
+        }
         if (tenantIdx !== -1 && values[tenantIdx]) updates.tenantName = values[tenantIdx]
         if (phoneIdx !== -1 && values[phoneIdx]) updates.tenantPhone = values[phoneIdx]
 
@@ -150,7 +180,7 @@ export default function BulkOperations({ propertyId, property }) {
       if (updated > 0) await batch.commit()
       setResult({ success: true, message: `Updated ${updated} unit${updated !== 1 ? 's' : ''} from CSV.` })
     } catch (err) {
-      console.error('[Bulk] CSV import error:', err)
+      logError('[Bulk] CSV import error:', err)
       setResult({ success: false, message: 'Failed to import CSV. Check file format.' })
     } finally {
       setProcessing(false)

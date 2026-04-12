@@ -1,10 +1,11 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   updateProfile,
+  sendEmailVerification,
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '@/firebase/config'
@@ -21,7 +22,7 @@ export const ROLES = {
   TENANT: 'tenant',
 }
 
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || ''
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000
 
 export function useAuth() {
   return useContext(AuthContext)
@@ -31,37 +32,44 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null)
   const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const idleTimerRef = useRef(null)
 
-  /** Check if this user should be promoted to admin based on VITE_ADMIN_EMAIL */
-  function isDesignatedAdmin(email) {
-    return ADMIN_EMAIL && email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
-  }
+  const resetIdleTimer = useCallback(() => {
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+    idleTimerRef.current = setTimeout(() => {
+      signOut(auth)
+    }, SESSION_TIMEOUT_MS)
+  }, [])
 
-  /** Fetch or create a Firestore user profile document */
+  useEffect(() => {
+    const events = ['mousedown', 'keypress', 'scroll', 'touchstart']
+    events.forEach(e => document.addEventListener(e, resetIdleTimer))
+    resetIdleTimer()
+    return () => {
+      events.forEach(e => document.removeEventListener(e, resetIdleTimer))
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+    }
+  }, [resetIdleTimer])
+
   async function fetchOrCreateProfile(user) {
     if (!user) { setUserProfile(null); return null }
     const ref = doc(db, 'users', user.uid)
     const snap = await getDoc(ref)
     if (snap.exists()) {
       const profile = { id: snap.id, ...snap.data() }
-
-      // Auto-promote to admin if email matches VITE_ADMIN_EMAIL and not already admin
-      if (isDesignatedAdmin(user.email) && profile.role !== ROLES.ADMIN) {
-        console.log('[Auth] Promoting user to admin (matches VITE_ADMIN_EMAIL)')
-        await setDoc(ref, { role: ROLES.ADMIN }, { merge: true })
-        profile.role = ROLES.ADMIN
+      if (profile.suspended) {
+        await signOut(auth)
+        setUserProfile(null)
+        return null
       }
-
       setUserProfile(profile)
       return profile
     }
-    // First time — create profile (should only happen via signup, but safety net)
-    const role = isDesignatedAdmin(user.email) ? ROLES.ADMIN : ROLES.OWNER
     const newProfile = {
       uid: user.uid,
       email: user.email,
       displayName: user.displayName || '',
-      role,
+      role: ROLES.OWNER,
       linkedProperties: [],
       createdAt: serverTimestamp(),
       lastLogin: serverTimestamp(),
@@ -74,83 +82,51 @@ export function AuthProvider({ children }) {
   }
 
   async function signup(email, password, displayName) {
-    console.log('[Auth] Attempting signup for:', email)
-    try {
-      const result = await createUserWithEmailAndPassword(auth, email, password)
-      console.log('[Auth] Account created successfully, updating profile...')
-      await updateProfile(result.user, { displayName })
-      console.log('[Auth] Profile updated with displayName:', displayName)
+    const result = await createUserWithEmailAndPassword(auth, email, password)
+    await updateProfile(result.user, { displayName })
+    await sendEmailVerification(result.user)
 
-      // Create Firestore user document
-      const role = isDesignatedAdmin(email) ? ROLES.ADMIN : ROLES.OWNER
-      const profile = {
-        uid: result.user.uid,
-        email: result.user.email,
-        displayName,
-        role,
-        linkedProperties: [],
-        createdAt: serverTimestamp(),
-        lastLogin: serverTimestamp(),
-        suspended: false,
-      }
-      await setDoc(doc(db, 'users', result.user.uid), profile)
-      setUserProfile({ id: result.user.uid, ...profile })
-      console.log('[Auth] User profile created with role:', role)
-
-      return result
-    } catch (err) {
-      console.error('[Auth] Signup failed:', err.code, err.message)
-      throw err
+    const profile = {
+      uid: result.user.uid,
+      email: result.user.email,
+      displayName,
+      role: ROLES.OWNER,
+      linkedProperties: [],
+      createdAt: serverTimestamp(),
+      lastLogin: serverTimestamp(),
+      suspended: false,
     }
+    await setDoc(doc(db, 'users', result.user.uid), profile)
+    setUserProfile({ id: result.user.uid, ...profile })
+    return result
   }
 
   async function login(email, password) {
-    console.log('[Auth] Attempting login for:', email)
-    try {
-      const result = await signInWithEmailAndPassword(auth, email, password)
-      console.log('[Auth] Login successful')
+    const result = await signInWithEmailAndPassword(auth, email, password)
+    logLoginEvent(result.user.uid)
 
-      // Log login event for analytics
-      logLoginEvent(result.user.uid)
-
-      // Update lastLogin and check for admin promotion
-      const ref = doc(db, 'users', result.user.uid)
-      const snap = await getDoc(ref)
-      if (snap.exists()) {
-        const updates = { lastLogin: serverTimestamp() }
-        const existingData = snap.data()
-
-        // Auto-promote to admin if email matches VITE_ADMIN_EMAIL
-        if (isDesignatedAdmin(email) && existingData.role !== ROLES.ADMIN) {
-          console.log('[Auth] Promoting user to admin on login (matches VITE_ADMIN_EMAIL)')
-          updates.role = ROLES.ADMIN
-        }
-
-        await setDoc(ref, updates, { merge: true })
-        setUserProfile({
-          id: snap.id,
-          ...existingData,
-          ...updates,
-          lastLogin: new Date(),
-        })
-      } else {
-        await fetchOrCreateProfile(result.user)
+    const ref = doc(db, 'users', result.user.uid)
+    const snap = await getDoc(ref)
+    if (snap.exists()) {
+      const existingData = snap.data()
+      if (existingData.suspended) {
+        await signOut(auth)
+        throw new Error('Account suspended. Contact administrator.')
       }
-
-      return result
-    } catch (err) {
-      console.error('[Auth] Login failed:', err.code, err.message)
-      throw err
+      await setDoc(ref, { lastLogin: serverTimestamp() }, { merge: true })
+      setUserProfile({ id: snap.id, ...existingData, lastLogin: new Date() })
+    } else {
+      await fetchOrCreateProfile(result.user)
     }
+    return result
   }
 
   function logout() {
-    console.log('[Auth] Logging out')
     setUserProfile(null)
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
     return signOut(auth)
   }
 
-  /** Reload user profile from Firestore (useful after invitation accept, role change, etc.) */
   async function refreshProfile() {
     if (!currentUser) return null
     return fetchOrCreateProfile(currentUser)
@@ -158,7 +134,6 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('[Auth] State changed:', user ? `logged in as ${user.email}` : 'not logged in')
       setCurrentUser(user)
       if (user) {
         await fetchOrCreateProfile(user)

@@ -13,6 +13,8 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [attempts, setAttempts] = useState(0)
+  const [lockUntil, setLockUntil] = useState(null)
   const { login } = useAuth()
   const { t } = useLocale()
   const navigate = useNavigate()
@@ -20,13 +22,31 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+
+    if (lockUntil && Date.now() < lockUntil) {
+      const secsLeft = Math.ceil((lockUntil - Date.now()) / 1000)
+      setError(`Too many attempts. Try again in ${secsLeft} seconds.`)
+      return
+    }
+
     setLoading(true)
     try {
       await login(email, password)
+      setAttempts(0)
       navigate('/')
     } catch (err) {
-      console.error('[Login] Error:', err.code, err.message, err)
-      setError(err.code ? getErrorMessage(err.code) : err.message)
+      const newAttempts = attempts + 1
+      setAttempts(newAttempts)
+
+      if (newAttempts >= 8) {
+        setLockUntil(Date.now() + 300000)
+      } else if (newAttempts >= 5) {
+        setLockUntil(Date.now() + 60000)
+      } else if (newAttempts >= 3) {
+        setLockUntil(Date.now() + 30000)
+      }
+
+      setError(err.code ? getErrorMessage(err.code) : err.message || t('auth.signInFailed'))
     } finally {
       setLoading(false)
     }
@@ -41,7 +61,7 @@ export default function Login() {
       case 'auth/too-many-requests':
         return t('auth.tooManyAttempts')
       default:
-        return `${t('auth.signInFailed')} (${code})`
+        return t('auth.signInFailed')
     }
   }
 

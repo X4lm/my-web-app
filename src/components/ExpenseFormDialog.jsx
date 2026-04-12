@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useLocale } from '@/contexts/LocaleContext'
+import { validateAmount } from '@/utils/validation'
 
 const EMPTY = { date: '', category: 'maintenance', cost: '', vendor: '', description: '' }
 
@@ -31,7 +32,8 @@ export default function ExpenseFormDialog({ open, onOpenChange, expense, onSave,
   function validate() {
     const e = {}
     if (!form.date) e.date = t('common.required')
-    if (!form.cost || isNaN(form.cost) || Number(form.cost) <= 0) e.cost = t('common.validAmount')
+    const costErr = validateAmount(form.cost)
+    if (costErr) e.cost = costErr
     if (!form.description.trim()) e.description = t('common.required')
     return e
   }
@@ -77,6 +79,7 @@ export default function ExpenseFormDialog({ open, onOpenChange, expense, onSave,
             <Input
               value={form.description}
               onChange={e => set('description', e.target.value)}
+              maxLength={500}
               placeholder={t('expenseForm.descPlaceholder')}
             />
             {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
@@ -100,6 +103,7 @@ export default function ExpenseFormDialog({ open, onOpenChange, expense, onSave,
               <Input
                 value={form.vendor}
                 onChange={e => set('vendor', e.target.value)}
+                maxLength={200}
                 placeholder={t('expenseForm.vendorPlaceholder')}
               />
             </div>

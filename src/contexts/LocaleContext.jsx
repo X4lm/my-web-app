@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import translations from '@/lib/translations'
 
@@ -87,7 +88,7 @@ export function LocaleProvider({ children }) {
           localStorage.setItem('localeSettings', JSON.stringify({ ...DEFAULTS, ...data }))
         }
       } catch (err) {
-        console.error('[Locale] Load error:', err)
+        logError('[Locale] Load error:', err)
       } finally {
         setLoaded(true)
       }
@@ -118,7 +119,7 @@ export function LocaleProvider({ children }) {
       try {
         await setDoc(doc(db, 'users', currentUser.uid, 'settings', 'locale'), merged)
       } catch (err) {
-        console.error('[Locale] Save error:', err)
+        logError('[Locale] Save error:', err)
       }
     }
   }

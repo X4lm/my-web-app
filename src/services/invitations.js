@@ -19,6 +19,12 @@ export const INVITE_STATUS = {
  */
 export const INVITABLE_ROLES = ['property_manager', 'staff', 'vendor', 'tenant']
 
+const ROLE_CAN_INVITE = {
+  admin: ['property_manager', 'staff', 'vendor', 'tenant'],
+  owner: ['property_manager', 'staff', 'vendor', 'tenant'],
+  property_manager: ['staff', 'vendor', 'tenant'],
+}
+
 // ─── Create ────────────────────────────────────────────────────────────────────
 
 /**
@@ -32,14 +38,20 @@ export const INVITABLE_ROLES = ['property_manager', 'staff', 'vendor', 'tenant']
  * @param {string} [params.unitId] - Unit ID (only for tenant invites)
  * @param {string} [params.unitNumber] - Unit number label (denormalized)
  * @param {string} params.role - Role to assign (property_manager/staff/vendor/tenant)
+ * @param {string} params.inviterRole - Role of the person sending the invite
  * @returns {Promise<string>} - The new invitation document ID
  */
 export async function createInvitation({
   inviterUid, inviterName, inviteeEmail,
-  propertyId, propertyName, unitId, unitNumber, role,
+  propertyId, propertyName, unitId, unitNumber, role, inviterRole,
 }) {
   if (!INVITABLE_ROLES.includes(role)) {
     throw new Error(`Invalid invitation role: ${role}`)
+  }
+
+  const allowedRoles = ROLE_CAN_INVITE[inviterRole] || []
+  if (!allowedRoles.includes(role)) {
+    throw new Error(`Your role (${inviterRole}) cannot invite as ${role}`)
   }
 
   // Check for existing pending invitation for same email + property + role

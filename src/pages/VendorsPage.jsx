@@ -4,6 +4,7 @@ import {
   doc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
@@ -113,7 +114,7 @@ export default function VendorsPage() {
       setDialogOpen(false)
       setEditing(null)
     } catch (err) {
-      console.error('[Vendors] Save error:', err)
+      logError('[Vendors] Save error:', err)
     } finally {
       setSaving(false)
     }
@@ -124,7 +125,7 @@ export default function VendorsPage() {
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
-      console.error('[Vendors] Delete error:', err)
+      logError('[Vendors] Delete error:', err)
     }
   }
 

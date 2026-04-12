@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { useLocale } from '@/contexts/LocaleContext'
+import { validateEmiratesId, validateAmount } from '@/utils/validation'
 
 const RESIDENTIAL_TYPES = ['studio', '1br', '2br', '3br']
 const COMMERCIAL_TYPES = ['office', 'retail', 'warehouse', 'showroom']
@@ -51,8 +52,20 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
     const e = {}
     if (!form.unitNumber.toString().trim()) e.unitNumber = t('common.required')
     if (!form.floor.toString().trim()) e.floor = t('common.required')
-    if (!form.monthlyRent || isNaN(form.monthlyRent) || Number(form.monthlyRent) <= 0)
-      e.monthlyRent = t('common.validAmount')
+    const rentErr = validateAmount(form.monthlyRent)
+    if (rentErr) e.monthlyRent = rentErr
+    if (form.securityDeposit) {
+      const depErr = validateAmount(form.securityDeposit)
+      if (depErr) e.securityDeposit = depErr
+    }
+    if (form.annualRent) {
+      const annErr = validateAmount(form.annualRent)
+      if (annErr) e.annualRent = annErr
+    }
+    if (form.tenantEmiratesId) {
+      const idErr = validateEmiratesId(form.tenantEmiratesId)
+      if (idErr) e.tenantEmiratesId = idErr
+    }
     return e
   }
 
@@ -86,6 +99,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.unitNumber}
                 onChange={e => set('unitNumber', e.target.value)}
+                maxLength={20}
                 placeholder={t('unitForm.unitPlaceholder')}
               />
               {errors.unitNumber && <p className="text-xs text-destructive">{errors.unitNumber}</p>}
@@ -95,6 +109,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.floor}
                 onChange={e => set('floor', e.target.value)}
+                maxLength={10}
                 placeholder={t('unitForm.floorPlaceholder')}
               />
               {errors.floor && <p className="text-xs text-destructive">{errors.floor}</p>}
@@ -141,6 +156,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.tenantName}
                 onChange={e => set('tenantName', e.target.value)}
+                maxLength={200}
                 placeholder={t('unitForm.tenantNameVacantPlaceholder')}
               />
             </div>
@@ -149,6 +165,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.tenantContact}
                 onChange={e => set('tenantContact', e.target.value)}
+                maxLength={20}
                 placeholder={t('unitForm.tenantPhonePlaceholder')}
               />
             </div>
@@ -161,6 +178,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
                 type="email"
                 value={form.tenantEmail}
                 onChange={e => set('tenantEmail', e.target.value)}
+                maxLength={100}
                 placeholder={t('unitForm.tenantEmailPlaceholder')}
               />
             </div>
@@ -169,8 +187,10 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.tenantEmiratesId}
                 onChange={e => set('tenantEmiratesId', e.target.value)}
+                maxLength={20}
                 placeholder={t('unitForm.tenantIdPlaceholder')}
               />
+              {errors.tenantEmiratesId && <p className="text-xs text-destructive">{errors.tenantEmiratesId}</p>}
             </div>
           </div>
 
@@ -180,6 +200,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.tenantNationality}
                 onChange={e => set('tenantNationality', e.target.value)}
+                maxLength={50}
                 placeholder={t('unitForm.nationalityPlaceholder')}
               />
             </div>
@@ -188,6 +209,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.tenantCompany}
                 onChange={e => set('tenantCompany', e.target.value)}
+                maxLength={200}
                 placeholder={t('unitForm.companyPlaceholder')}
               />
             </div>
@@ -199,6 +221,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.emergencyContactName}
                 onChange={e => set('emergencyContactName', e.target.value)}
+                maxLength={200}
                 placeholder={t('unitForm.emergencyContactNamePlaceholder')}
               />
             </div>
@@ -207,6 +230,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.emergencyContactPhone}
                 onChange={e => set('emergencyContactPhone', e.target.value)}
+                maxLength={20}
                 placeholder={t('unitForm.emergencyContactPhonePlaceholder')}
               />
             </div>
@@ -232,6 +256,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.ejariNumber}
                 onChange={e => set('ejariNumber', e.target.value)}
+                maxLength={50}
                 placeholder={t('unitForm.ejariPlaceholder')}
               />
             </div>
@@ -240,6 +265,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
               <Input
                 value={form.contractNumber}
                 onChange={e => set('contractNumber', e.target.value)}
+                maxLength={50}
                 placeholder={t('unitForm.contractPlaceholder')}
               />
             </div>
@@ -277,6 +303,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
                   <Input
                     value={form.tradeLicenseNumber}
                     onChange={e => set('tradeLicenseNumber', e.target.value)}
+                    maxLength={50}
                     placeholder={t('unitForm.tradeLicensePlaceholder')}
                   />
                 </div>
@@ -285,6 +312,7 @@ export default function UnitFormDialog({ open, onOpenChange, unit, onSave, savin
                   <Input
                     value={form.commercialActivity}
                     onChange={e => set('commercialActivity', e.target.value)}
+                    maxLength={200}
                     placeholder={t('unitForm.commercialActivityPlaceholder')}
                   />
                 </div>

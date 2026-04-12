@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/my-web-app/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+        script-src 'self' https://apis.google.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com wss://*.firebaseio.com;
+        img-src 'self' data: blob: https://*.googleusercontent.com https://*.firebasestorage.app;
+        frame-src https://*.firebaseapp.com;" />
     <title>PropVault — Smart Property Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,7 +25,12 @@
         var redirect = sessionStorage.redirect;
         delete sessionStorage.redirect;
         if (redirect && redirect !== location.href) {
-          history.replaceState(null, null, redirect);
+          try {
+            var url = new URL(redirect, location.origin);
+            if (url.origin === location.origin) {
+              history.replaceState(null, null, redirect);
+            }
+          } catch(e) { /* invalid URL, ignore */ }
         }
       })();
     </script>

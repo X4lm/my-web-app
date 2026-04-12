@@ -70,8 +70,8 @@ export default function TeamTab({ propertyId, property }) {
       ])
       setInvitations(invs)
       setUnits(unitsSnap.docs.map(d => ({ id: d.id, ...d.data() })))
-    } catch (err) {
-      console.error('[TeamTab] Load error:', err)
+    } catch {
+      // silently handle
     } finally {
       setLoading(false)
     }
@@ -105,6 +105,7 @@ export default function TeamTab({ propertyId, property }) {
         unitId: invRole === 'tenant' ? invUnit : undefined,
         unitNumber: unitDoc?.unitNumber || undefined,
         role: invRole,
+        inviterRole: userProfile?.role || 'owner',
       })
       setSuccessMsg(t('team.inviteSent'))
       setInvEmail('')
@@ -129,8 +130,8 @@ export default function TeamTab({ propertyId, property }) {
       // If they had accepted, remove the property from their linkedProperties
       // (we'd need to know their UID — for now, just revoke the invitation)
       await loadData()
-    } catch (err) {
-      console.error('[TeamTab] Remove error:', err)
+    } catch {
+      // silently handle
     }
   }
 

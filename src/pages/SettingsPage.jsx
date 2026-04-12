@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
@@ -30,7 +31,7 @@ export default function SettingsPage() {
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
-      console.error('[Settings] Update failed:', err)
+      logError('[Settings] Update failed:', err)
     } finally {
       setSaving(false)
     }
@@ -108,7 +109,7 @@ export default function SettingsPage() {
                       setResetSent(true)
                       setTimeout(() => setResetSent(false), 5000)
                     } catch (err) {
-                      console.error('[Settings] Password reset error:', err)
+                      logError('[Settings] Password reset error:', err)
                     } finally {
                       setResetSending(false)
                     }

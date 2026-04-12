@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useLocale } from '@/contexts/LocaleContext'
+import { validateAmount } from '@/utils/validation'
 
 const EMPTY = {
   chequeNumber: '', bankName: '', amount: '', date: '',
@@ -36,7 +37,8 @@ export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, s
     const e = {}
     if (!form.chequeNumber.trim()) e.chequeNumber = t('common.required')
     if (!form.bankName.trim()) e.bankName = t('common.required')
-    if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) e.amount = t('common.validAmount')
+    const amtErr = validateAmount(form.amount)
+    if (amtErr) e.amount = amtErr
     if (!form.date) e.date = t('common.required')
     if (!form.payerName.trim()) e.payerName = t('common.required')
     return e
@@ -64,6 +66,7 @@ export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, s
               <Input
                 value={form.chequeNumber}
                 onChange={e => set('chequeNumber', e.target.value)}
+                maxLength={50}
                 placeholder={t('chequeForm.chequePlaceholder')}
               />
               {errors.chequeNumber && <p className="text-xs text-destructive">{errors.chequeNumber}</p>}
@@ -73,6 +76,7 @@ export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, s
               <Input
                 value={form.bankName}
                 onChange={e => set('bankName', e.target.value)}
+                maxLength={100}
                 placeholder={t('chequeForm.bankPlaceholder')}
               />
               {errors.bankName && <p className="text-xs text-destructive">{errors.bankName}</p>}
@@ -105,6 +109,7 @@ export default function ChequeFormDialog({ open, onOpenChange, cheque, onSave, s
               <Input
                 value={form.payerName}
                 onChange={e => set('payerName', e.target.value)}
+                maxLength={200}
                 placeholder={t('chequeForm.payerPlaceholder')}
               />
               {errors.payerName && <p className="text-xs text-destructive">{errors.payerName}</p>}

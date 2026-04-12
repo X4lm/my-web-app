@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { collection, query, orderBy, onSnapshot, doc, getDoc, getDocs } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { getMaintenanceAlerts } from '@/lib/maintenanceConfig'
 import { hasUnits } from '@/lib/utils'
@@ -106,7 +107,7 @@ export function usePropertyAlerts() {
       setAllAlerts(allAlertsList)
       setLoading(false)
     }, (err) => {
-      console.error('[Alerts] Listen error:', err)
+      logError('[Alerts] Listen error:', err)
       setLoading(false)
     })
 

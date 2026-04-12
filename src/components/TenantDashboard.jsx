@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs, query, where, orderBy, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
+import { lookupPropertyOwner } from '@/services/propertyIndex'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
@@ -40,23 +42,18 @@ export default function TenantDashboard() {
 
   async function loadTenantData() {
     try {
-      // We need to find the owner of this property to access data.
-      // Search all users who own this property
-      const usersSnap = await getDocs(collection(db, 'users'))
       let ownerUid = null
       let propertyData = null
       let unitData = null
 
-      for (const userDoc of usersSnap.docs) {
-        try {
-          const propRef = doc(db, 'users', userDoc.id, 'properties', linkedPropertyId)
-          const propSnap = await getDoc(propRef)
-          if (propSnap.exists()) {
-            ownerUid = userDoc.id
-            propertyData = { id: propSnap.id, ...propSnap.data() }
-            break
-          }
-        } catch { /* skip */ }
+      const ownerInfo = await lookupPropertyOwner(linkedPropertyId)
+      if (ownerInfo) {
+        ownerUid = ownerInfo.ownerUid
+        const propRef = doc(db, 'users', ownerUid, 'properties', linkedPropertyId)
+        const propSnap = await getDoc(propRef)
+        if (propSnap.exists()) {
+          propertyData = { id: propSnap.id, ...propSnap.data() }
+        }
       }
 
       if (!ownerUid || !propertyData) { setLoading(false); return }
@@ -98,7 +95,7 @@ export default function TenantDashboard() {
         } catch { /* skip */ }
       }
     } catch (err) {
-      console.error('[TenantDashboard] Load error:', err)
+      logError('[TenantDashboard] Load error:', err)
     } finally {
       setLoading(false)
     }
@@ -109,35 +106,27 @@ export default function TenantDashboard() {
     if (!reqTitle.trim()) return
     setReqSending(true)
     try {
-      // Find owner UID for this property
-      const usersSnap = await getDocs(collection(db, 'users'))
-      for (const userDoc of usersSnap.docs) {
-        try {
-          const propRef = doc(db, 'users', userDoc.id, 'properties', linkedPropertyId)
-          const propSnap = await getDoc(propRef)
-          if (propSnap.exists()) {
-            await addDoc(
-              collection(db, 'users', userDoc.id, 'properties', linkedPropertyId, 'workOrders'),
-              {
-                title: reqTitle,
-                description: reqDesc,
-                unitNumber: unit?.unitNumber || '',
-                status: 'open',
-                priority: 'medium',
-                reportedBy: currentUser.displayName || currentUser.email,
-                createdAt: serverTimestamp(),
-              }
-            )
-            break
+      const ownerInfo = await lookupPropertyOwner(linkedPropertyId)
+      if (ownerInfo) {
+        await addDoc(
+          collection(db, 'users', ownerInfo.ownerUid, 'properties', linkedPropertyId, 'workOrders'),
+          {
+            title: reqTitle,
+            description: reqDesc,
+            unitNumber: unit?.unitNumber || '',
+            status: 'open',
+            priority: 'medium',
+            reportedBy: currentUser.displayName || currentUser.email,
+            createdAt: serverTimestamp(),
           }
-        } catch { /* skip */ }
+        )
       }
       setReqSent(true)
       setReqTitle('')
       setReqDesc('')
       setTimeout(() => { setReqSent(false); setShowRequestForm(false) }, 2000)
     } catch (err) {
-      console.error('[TenantDashboard] Submit error:', err)
+      logError('[TenantDashboard] Submit error:', err)
     } finally {
       setReqSending(false)
     }
@@ -263,6 +252,7 @@ export default function TenantDashboard() {
                       onChange={e => setReqTitle(e.target.value)}
                       placeholder={t('tenant.issueTitlePlaceholder')}
                       required
+                      maxLength={200}
                     />
                   </div>
                   <div className="space-y-2">
@@ -272,6 +262,7 @@ export default function TenantDashboard() {
                       onChange={e => setReqDesc(e.target.value)}
                       placeholder={t('tenant.issueDescPlaceholder')}
                       rows={3}
+                      maxLength={2000}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>

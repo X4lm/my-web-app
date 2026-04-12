@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { MAINTENANCE_SECTIONS, getMaintenanceAlerts } from '@/lib/maintenanceConfig'
 import { diffFields } from '@/lib/utils'
@@ -55,7 +56,7 @@ export default function MaintenanceTab({ propertyId, section }) {
           setEnabledOptional(enabled)
         }
       } catch (err) {
-        console.error('[Firestore] Maintenance load error:', err)
+        logError('[Firestore] Maintenance load error:', err)
       } finally {
         setLoading(false)
       }
@@ -123,7 +124,7 @@ export default function MaintenanceTab({ propertyId, section }) {
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
-      console.error('[Firestore] Maintenance save error:', err)
+      logError('[Firestore] Maintenance save error:', err)
     } finally {
       setSaving(false)
     }

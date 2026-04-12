@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs, query, where, orderBy, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
+import { lookupPropertyOwner } from '@/services/propertyIndex'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
@@ -47,45 +49,44 @@ export default function VendorDashboard() {
 
   async function loadVendorWorkOrders() {
     try {
-      const usersSnap = await getDocs(collection(db, 'users'))
       const allOrders = []
       const propMap = {}
 
-      for (const userDoc of usersSnap.docs) {
-        for (const propId of linkedPropertyIds) {
-          try {
-            const propRef = doc(db, 'users', userDoc.id, 'properties', propId)
-            const propSnap = await getDoc(propRef)
-            if (!propSnap.exists()) continue
+      for (const propId of linkedPropertyIds) {
+        try {
+          const ownerInfo = await lookupPropertyOwner(propId)
+          if (!ownerInfo) continue
 
-            propMap[propId] = { name: propSnap.data().name, ownerUid: userDoc.id }
+          const propRef = doc(db, 'users', ownerInfo.ownerUid, 'properties', propId)
+          const propSnap = await getDoc(propRef)
+          if (!propSnap.exists()) continue
 
-            const woSnap = await getDocs(
-              query(
-                collection(db, 'users', userDoc.id, 'properties', propId, 'workOrders'),
-                orderBy('createdAt', 'desc')
-              )
+          propMap[propId] = { name: propSnap.data().name, ownerUid: ownerInfo.ownerUid }
+
+          const woSnap = await getDocs(
+            query(
+              collection(db, 'users', ownerInfo.ownerUid, 'properties', propId, 'workOrders'),
+              orderBy('createdAt', 'desc')
             )
-            woSnap.docs.forEach(d => {
-              const data = d.data()
-              // Include work orders assigned to this vendor
-              if (data.assignedVendor === vendorName) {
-                allOrders.push({
-                  id: d.id,
-                  propertyId: propId,
-                  ownerUid: userDoc.id,
-                  ...data,
-                })
-              }
-            })
-          } catch { /* skip */ }
-        }
+          )
+          woSnap.docs.forEach(d => {
+            const data = d.data()
+            if (data.assignedVendorUid ? data.assignedVendorUid === currentUser.uid : data.assignedVendor === vendorName) {
+              allOrders.push({
+                id: d.id,
+                propertyId: propId,
+                ownerUid: ownerInfo.ownerUid,
+                ...data,
+              })
+            }
+          })
+        } catch { /* skip */ }
       }
 
       setPropertyMap(propMap)
       setWorkOrders(allOrders)
     } catch (err) {
-      console.error('[VendorDashboard] Load error:', err)
+      logError('[VendorDashboard] Load error:', err)
     } finally {
       setLoading(false)
     }
@@ -101,7 +102,7 @@ export default function VendorDashboard() {
         prev.map(o => o.id === wo.id ? { ...o, status: newStatus } : o)
       )
     } catch (err) {
-      console.error('[VendorDashboard] Status update error:', err)
+      logError('[VendorDashboard] Status update error:', err)
     } finally {
       setUpdatingId(null)
     }

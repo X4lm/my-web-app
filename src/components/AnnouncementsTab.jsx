@@ -4,6 +4,7 @@ import {
   doc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -58,7 +59,7 @@ export default function AnnouncementsTab({ propertyId }) {
       setAnnouncements(items)
       setLoading(false)
     }, (err) => {
-      console.error('[Firestore] Announcements listen error:', err)
+      logError('[Firestore] Announcements listen error:', err)
       setLoading(false)
     })
     return unsub
@@ -95,7 +96,7 @@ export default function AnnouncementsTab({ propertyId }) {
       setDialogOpen(false)
       setEditing(null)
     } catch (err) {
-      console.error('[Firestore] Announcement save error:', err)
+      logError('[Firestore] Announcement save error:', err)
     } finally {
       setSaving(false)
     }
@@ -106,7 +107,7 @@ export default function AnnouncementsTab({ propertyId }) {
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
-      console.error('[Firestore] Announcement delete error:', err)
+      logError('[Firestore] Announcement delete error:', err)
     }
   }
 
@@ -114,7 +115,7 @@ export default function AnnouncementsTab({ propertyId }) {
     try {
       await updateDoc(doc(db, colPath, ann.id), { pinned: !ann.pinned })
     } catch (err) {
-      console.error('[Firestore] Toggle pin error:', err)
+      logError('[Firestore] Toggle pin error:', err)
     }
   }
 
@@ -220,6 +221,7 @@ export default function AnnouncementsTab({ propertyId }) {
               <Input
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                maxLength={200}
                 placeholder={t('announce.titlePlaceholder')}
               />
             </div>
@@ -241,6 +243,7 @@ export default function AnnouncementsTab({ propertyId }) {
                 className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                 value={form.body}
                 onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
+                maxLength={5000}
                 placeholder={t('announce.messagePlaceholder')}
               />
             </div>

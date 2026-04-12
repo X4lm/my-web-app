@@ -27,6 +27,7 @@ import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCirc
 
 
 import { canEdit, FEATURES } from '@/utils/permissions'
+import { upsertPropertyIndex } from '@/services/propertyIndex'
 
 export default function Properties() {
   const { currentUser, userProfile } = useAuth()
@@ -49,11 +50,9 @@ export default function Properties() {
       orderBy('createdAt', 'desc')
     )
     const unsub = onSnapshot(q, (snap) => {
-      console.log('[Firestore] Properties loaded:', snap.docs.length)
       setProperties(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       setLoading(false)
-    }, (err) => {
-      console.error('[Firestore] Listen error:', err.code, err.message)
+    }, () => {
       setLoading(false)
     })
     return unsub
@@ -81,11 +80,11 @@ export default function Properties() {
         insuranceExpiry: 'Insurance Expiry', municipalityPermitExpiry: 'Municipality Permit Expiry',
       }
       if (editing) {
-        console.log('[Firestore] Updating property:', editing.id)
         const changes = diffFields(editing, data, fieldLabels)
         await updateDoc(doc(db, 'users', currentUser.uid, 'properties', editing.id), {
           ...data, updatedAt: serverTimestamp(), updatedBy: authorName,
         })
+        await upsertPropertyIndex(currentUser.uid, editing.id, data.name)
         await addDoc(collection(db, 'users', currentUser.uid, 'properties', editing.id, 'logs'), {
           action: 'property_updated',
           author: authorName,
@@ -94,8 +93,8 @@ export default function Properties() {
           timestamp: serverTimestamp(),
         })
       } else {
-        console.log('[Firestore] Adding new property')
         const newDoc = await addDoc(col, { ...data, createdAt: serverTimestamp(), createdBy: authorName })
+        await upsertPropertyIndex(currentUser.uid, newDoc.id, data.name)
         await addDoc(collection(db, 'users', currentUser.uid, 'properties', newDoc.id, 'logs'), {
           action: 'property_created',
           author: authorName,
@@ -105,8 +104,8 @@ export default function Properties() {
       }
       setDialogOpen(false)
       setEditing(null)
-    } catch (err) {
-      console.error('[Firestore] Save error:', err.code, err.message)
+    } catch {
+      // silently handle
     } finally {
       setSaving(false)
     }
@@ -115,10 +114,9 @@ export default function Properties() {
   async function handleDelete(id) {
     if (!window.confirm(t('properties.deleteConfirm'))) return
     try {
-      console.log('[Firestore] Deleting property:', id)
       await deleteDoc(doc(db, 'users', currentUser.uid, 'properties', id))
-    } catch (err) {
-      console.error('[Firestore] Delete error:', err.code, err.message)
+    } catch {
+      // silently handle
     }
   }
 

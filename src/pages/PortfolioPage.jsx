@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, getDocs, onSnapshot } from 'firebase/firestore'
+import { collection, query, orderBy, getDocs, onSnapshot, getDoc, doc } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { hasUnits, TYPE_LABELS } from '@/lib/utils'
@@ -15,7 +16,7 @@ import {
   DollarSign, TrendingUp, Building2, Percent, FileDown, Loader2,
 } from 'lucide-react'
 
-const VAT_RATE = 0.05
+const DEFAULT_VAT_RATE = 0.05
 const COMMERCIAL_TYPES = new Set(['commercial_building', 'office', 'retail', 'warehouse'])
 
 export default function PortfolioPage() {
@@ -25,6 +26,15 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true)
   const [propertyData, setPropertyData] = useState({})
   const [generating, setGenerating] = useState(false)
+  const [vatRate, setVatRate] = useState(DEFAULT_VAT_RATE)
+
+  useEffect(() => {
+    getDoc(doc(db, 'platformSettings', 'general')).then(snap => {
+      if (snap.exists() && snap.data().vatRate != null) {
+        setVatRate(snap.data().vatRate)
+      }
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!currentUser) return
@@ -58,7 +68,7 @@ export default function PortfolioPage() {
 
           const isCommercial = COMMERCIAL_TYPES.has(p.type)
           const annualRent = expectedRent * 12
-          const vatAmount = isCommercial ? annualRent * VAT_RATE : 0
+          const vatAmount = isCommercial ? annualRent * vatRate : 0
           const netIncome = annualRent - totalExpenses
 
           dataMap[p.id] = {
@@ -145,7 +155,7 @@ export default function PortfolioPage() {
 
       doc.save(`Portfolio_PL_${new Date().toISOString().slice(0, 10)}.pdf`)
     } catch (err) {
-      console.error('[PDF] Portfolio export error:', err)
+      logError('[PDF] Portfolio export error:', err)
     } finally {
       setGenerating(false)
     }

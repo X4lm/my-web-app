@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { doc, getDoc, setDoc, collection, getDocs, query, where, orderBy, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useLocale } from '@/contexts/LocaleContext'
 import { getAllInvitations, revokeInvitation, INVITE_STATUS } from '@/services/invitations'
 import AppLayout from '@/components/AppLayout'
@@ -53,7 +54,7 @@ export default function AdminSettingsPage() {
         setDefaultDateFormat(data.defaultDateFormat || 'DD/MM/YYYY')
       }
     } catch (err) {
-      console.error('[AdminSettings] Load error:', err)
+      logError('[AdminSettings] Load error:', err)
     } finally {
       setLoading(false)
     }
@@ -65,7 +66,7 @@ export default function AdminSettingsPage() {
       const invs = await getAllInvitations()
       setInvitations(invs)
     } catch (err) {
-      console.error('[AdminSettings] Invitations load error:', err)
+      logError('[AdminSettings] Invitations load error:', err)
     } finally {
       setInvitationsLoading(false)
     }
@@ -85,7 +86,7 @@ export default function AdminSettingsPage() {
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
-      console.error('[AdminSettings] Save error:', err)
+      logError('[AdminSettings] Save error:', err)
     } finally {
       setSaving(false)
     }
@@ -99,7 +100,7 @@ export default function AdminSettingsPage() {
         inv.id === invId ? { ...inv, status: INVITE_STATUS.REVOKED } : inv
       ))
     } catch (err) {
-      console.error('[AdminSettings] Revoke error:', err)
+      logError('[AdminSettings] Revoke error:', err)
     }
   }
 

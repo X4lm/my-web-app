@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { doc, onSnapshot, updateDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import AppLayout from '@/components/AppLayout'
 import UnitsTab from '@/components/UnitsTab'
@@ -58,7 +59,7 @@ export default function PropertyDetail() {
         setLoading(false)
       },
       (err) => {
-        console.error('[Firestore] Property detail error:', err)
+        logError('[Firestore] Property detail error:', err)
         setLoading(false)
       }
     )
@@ -97,7 +98,7 @@ export default function PropertyDetail() {
       })
       setEditOpen(false)
     } catch (err) {
-      console.error('[Firestore] Update error:', err.code, err.message)
+      logError('[Firestore] Update error:', err.code, err.message)
     } finally {
       setEditSaving(false)
     }

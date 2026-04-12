@@ -4,6 +4,7 @@ import {
   doc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -120,6 +121,7 @@ export default function WorkOrdersTab({ propertyId }) {
       const data = {
         ...form,
         estimatedCost: form.estimatedCost ? Number(form.estimatedCost) : '',
+        assignedVendorUid: form.assignedVendorUid || null,
       }
       if (editing) {
         await updateDoc(doc(db, colPath, editing.id), { ...data, updatedAt: serverTimestamp() })
@@ -129,7 +131,7 @@ export default function WorkOrdersTab({ propertyId }) {
       setDialogOpen(false)
       setEditing(null)
     } catch (err) {
-      console.error('[WorkOrders] Save error:', err)
+      logError('[WorkOrders] Save error:', err)
     } finally {
       setSaving(false)
     }
@@ -140,7 +142,7 @@ export default function WorkOrdersTab({ propertyId }) {
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
-      console.error('[WorkOrders] Delete error:', err)
+      logError('[WorkOrders] Delete error:', err)
     }
   }
 
@@ -281,7 +283,7 @@ export default function WorkOrdersTab({ propertyId }) {
           <form onSubmit={handleSave} className="space-y-4 mt-2">
             <div className="space-y-2">
               <Label>{t('workOrders.titleLabel')}</Label>
-              <Input value={form.title} onChange={e => set('title', e.target.value)} placeholder={t('workOrders.titlePlaceholder')} />
+              <Input value={form.title} onChange={e => set('title', e.target.value)} placeholder={t('workOrders.titlePlaceholder')} maxLength={200} />
               {errors.title && <p className="text-xs text-destructive">{t('common.required')}</p>}
             </div>
             <div className="space-y-2">
@@ -290,6 +292,7 @@ export default function WorkOrdersTab({ propertyId }) {
                 value={form.description}
                 onChange={e => set('description', e.target.value)}
                 rows={3}
+                maxLength={2000}
                 className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none"
                 placeholder={t('workOrders.descriptionPlaceholder')}
               />
@@ -323,7 +326,7 @@ export default function WorkOrdersTab({ propertyId }) {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>{t('workOrders.unitNumber')}</Label>
-                <Input value={form.unitNumber} onChange={e => set('unitNumber', e.target.value)} placeholder={`${t('workOrders.unitNumber')} (${t('common.optional')})`} />
+                <Input value={form.unitNumber} onChange={e => set('unitNumber', e.target.value)} placeholder={`${t('workOrders.unitNumber')} (${t('common.optional')})`} maxLength={20} />
               </div>
               <div className="space-y-2">
                 <Label>{t('workOrders.assignedVendor')}</Label>
@@ -347,7 +350,7 @@ export default function WorkOrdersTab({ propertyId }) {
             </div>
             <div className="space-y-2">
               <Label>{t('workOrders.reportedBy')}</Label>
-              <Input value={form.reportedBy} onChange={e => set('reportedBy', e.target.value)} placeholder={t('workOrders.reportedByPlaceholder')} />
+              <Input value={form.reportedBy} onChange={e => set('reportedBy', e.target.value)} placeholder={t('workOrders.reportedByPlaceholder')} maxLength={200} />
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>{t('common.cancel')}</Button>
