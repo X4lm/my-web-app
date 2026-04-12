@@ -54,8 +54,14 @@ export default function InvitationChecker() {
         linkedProperties: arrayUnion(invite.propertyId),
       }
 
+      // Only change role for fresh signups who have no properties yet.
+      // Real owners (who already have properties) should NEVER be downgraded.
       const SAFE_INVITE_ROLES = ['property_manager', 'staff', 'vendor', 'tenant']
-      if ((userProfile?.role === 'owner' || !userProfile?.role) && SAFE_INVITE_ROLES.includes(invite.role)) {
+      const isNewUser = !userProfile?.role || (
+        userProfile.role === 'owner'
+        && (!userProfile.linkedProperties || userProfile.linkedProperties.length === 0)
+      )
+      if (isNewUser && SAFE_INVITE_ROLES.includes(invite.role)) {
         updates.role = invite.role
       }
 
