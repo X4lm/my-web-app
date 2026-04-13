@@ -15,8 +15,7 @@ import {
 } from '@/components/ui/table'
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
-  DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel, DropdownMenuSub,
-  DropdownMenuSubTrigger, DropdownMenuSubContent,
+  DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
 import { Search, MoreHorizontal, FileDown, Users, Loader2, ShieldCheck, Ban, RotateCcw, UserCog } from 'lucide-react'
 

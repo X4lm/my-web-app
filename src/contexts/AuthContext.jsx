@@ -7,7 +7,7 @@ import {
   updateProfile,
   sendEmailVerification,
 } from 'firebase/auth'
-import { doc, getDoc, setDoc, getDocs, updateDoc, collection, query, where, arrayUnion, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, setDoc, getDocs, updateDoc, collection, query, where, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '@/firebase/config'
 import { logLoginEvent } from '@/services/analytics'
 
@@ -22,10 +22,77 @@ export const ROLES = {
   TENANT: 'tenant',
 }
 
+const SAFE_ROLES = ['property_manager', 'staff', 'vendor', 'tenant']
+const ROLE_PRIORITY = { property_manager: 1, staff: 2, vendor: 3, tenant: 4 }
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000
 
 export function useAuth() {
   return useContext(AuthContext)
+}
+
+// ─── Resolve invitations for an email ─────────────────────────────────────────
+// Queries pending (and optionally accepted) invitations, returns role + linkedProperties
+// Also marks pending invitations as accepted
+async function resolveInvitations(email, includeAccepted = false) {
+  const statuses = includeAccepted ? ['pending', 'accepted'] : ['pending']
+
+  let inviteSnap
+  if (statuses.length === 1) {
+    inviteSnap = await getDocs(query(
+      collection(db, 'invitations'),
+      where('inviteeEmail', '==', email.toLowerCase()),
+      where('status', '==', statuses[0]),
+    ))
+  } else {
+    inviteSnap = await getDocs(query(
+      collection(db, 'invitations'),
+      where('inviteeEmail', '==', email.toLowerCase()),
+      where('status', 'in', statuses),
+    ))
+  }
+
+  if (inviteSnap.empty) return null
+
+  let role = null
+  const linkedProperties = []
+  const extras = {}
+
+  for (const invDoc of inviteSnap.docs) {
+    const inv = invDoc.data()
+
+    // Collect property IDs
+    if (inv.propertyId && !linkedProperties.includes(inv.propertyId)) {
+      linkedProperties.push(inv.propertyId)
+    }
+
+    // Pick highest-priority role
+    if (SAFE_ROLES.includes(inv.role)) {
+      if (!role || (ROLE_PRIORITY[inv.role] || 99) < (ROLE_PRIORITY[role] || 99)) {
+        role = inv.role
+      }
+    }
+
+    // Tenant-specific fields
+    if (inv.role === 'tenant' && inv.unitId && !extras.linkedUnitId) {
+      extras.linkedUnitId = inv.unitId
+      extras.linkedUnitNumber = inv.unitNumber || null
+    }
+
+    // Mark pending invitations as accepted
+    if (inv.status === 'pending') {
+      try {
+        await updateDoc(doc(db, 'invitations', invDoc.id), {
+          status: 'accepted',
+          acceptedAt: serverTimestamp(),
+        })
+      } catch (e) {
+        console.warn('Failed to accept invitation:', e)
+      }
+    }
+  }
+
+  if (!role || linkedProperties.length === 0) return null
+  return { role, linkedProperties, ...extras }
 }
 
 export function AuthProvider({ children }) {
@@ -51,60 +118,74 @@ export function AuthProvider({ children }) {
     }
   }, [resetIdleTimer])
 
+  // ─── Core: fetch or create user profile, with invitation resolution ─────────
   async function fetchOrCreateProfile(user) {
     if (!user) { setUserProfile(null); return null }
+
     const ref = doc(db, 'users', user.uid)
     const snap = await getDoc(ref)
+
+    // ── Existing user ──────────────────────────────────────────────────────
     if (snap.exists()) {
-      const profile = { id: snap.id, ...snap.data() }
-      if (profile.suspended) {
+      const data = snap.data()
+
+      if (data.suspended) {
         await signOut(auth)
         setUserProfile(null)
         return null
       }
+
+      // Auto-repair: if user is 'owner' with no linked properties,
+      // check if they have invitations that should slot them into the right role
+      const hasNoProperties = !data.linkedProperties || data.linkedProperties.length === 0
+      if (data.role === 'owner' && hasNoProperties) {
+        try {
+          // Check both pending AND accepted invitations (covers cases where
+          // InvitationChecker accepted the invite but didn't update the user doc)
+          const resolved = await resolveInvitations(user.email, true)
+          if (resolved) {
+            const updates = {
+              role: resolved.role,
+              linkedProperties: resolved.linkedProperties,
+              lastLogin: serverTimestamp(),
+            }
+            if (resolved.linkedUnitId) {
+              updates.linkedUnitId = resolved.linkedUnitId
+              updates.linkedUnitNumber = resolved.linkedUnitNumber
+            }
+            await updateDoc(ref, updates)
+            const updatedProfile = { id: snap.id, ...data, ...updates, lastLogin: new Date() }
+            setUserProfile(updatedProfile)
+            return updatedProfile
+          }
+        } catch (err) {
+          console.warn('Invitation auto-repair failed:', err)
+        }
+      }
+
+      // Normal path: return existing profile
+      const profile = { id: snap.id, ...data }
       setUserProfile(profile)
       return profile
     }
 
-    // New user — check for pending invitations before creating profile
+    // ── New user (no Firestore doc yet) ────────────────────────────────────
     let role = ROLES.OWNER
     let linkedProperties = []
     let extras = {}
 
     try {
-      const inviteQ = query(
-        collection(db, 'invitations'),
-        where('inviteeEmail', '==', user.email.toLowerCase()),
-        where('status', '==', 'pending'),
-      )
-      const inviteSnap = await getDocs(inviteQ)
-
-      if (!inviteSnap.empty) {
-        const SAFE_ROLES = ['property_manager', 'staff', 'vendor', 'tenant']
-        const ROLE_PRIORITY = { property_manager: 1, staff: 2, vendor: 3, tenant: 4 }
-
-        for (const invDoc of inviteSnap.docs) {
-          const inv = invDoc.data()
-          if (inv.propertyId && !linkedProperties.includes(inv.propertyId)) {
-            linkedProperties.push(inv.propertyId)
-          }
-          if (SAFE_ROLES.includes(inv.role)) {
-            if (role === ROLES.OWNER || (ROLE_PRIORITY[inv.role] || 99) < (ROLE_PRIORITY[role] || 99)) {
-              role = inv.role
-            }
-          }
-          if (inv.role === 'tenant' && inv.unitId && !extras.linkedUnitId) {
-            extras.linkedUnitId = inv.unitId
-            extras.linkedUnitNumber = inv.unitNumber || null
-          }
-          await updateDoc(doc(db, 'invitations', invDoc.id), {
-            status: 'accepted',
-            acceptedAt: serverTimestamp(),
-          })
+      const resolved = await resolveInvitations(user.email, false)
+      if (resolved) {
+        role = resolved.role
+        linkedProperties = resolved.linkedProperties
+        if (resolved.linkedUnitId) {
+          extras.linkedUnitId = resolved.linkedUnitId
+          extras.linkedUnitNumber = resolved.linkedUnitNumber
         }
       }
     } catch (err) {
-      console.warn('Auto-invitation check failed:', err)
+      console.warn('New user invitation check failed:', err)
     }
 
     const newProfile = {
@@ -124,153 +205,22 @@ export function AuthProvider({ children }) {
     return created
   }
 
+  // ─── Signup ─────────────────────────────────────────────────────────────────
   async function signup(email, password, displayName) {
     const result = await createUserWithEmailAndPassword(auth, email, password)
     await updateProfile(result.user, { displayName })
     await sendEmailVerification(result.user)
-
-    // Check for pending invitations for this email
-    let role = ROLES.OWNER
-    let linkedProperties = []
-    let linkedUnitId = null
-    let linkedUnitNumber = null
-
-    try {
-      const inviteQ = query(
-        collection(db, 'invitations'),
-        where('inviteeEmail', '==', email.toLowerCase()),
-        where('status', '==', 'pending'),
-      )
-      const inviteSnap = await getDocs(inviteQ)
-
-      if (!inviteSnap.empty) {
-        // Auto-accept all pending invitations
-        const SAFE_ROLES = ['property_manager', 'staff', 'vendor', 'tenant']
-        const ROLE_PRIORITY = { property_manager: 1, staff: 2, vendor: 3, tenant: 4 }
-
-        for (const invDoc of inviteSnap.docs) {
-          const inv = invDoc.data()
-
-          // Add property to linked list
-          if (inv.propertyId && !linkedProperties.includes(inv.propertyId)) {
-            linkedProperties.push(inv.propertyId)
-          }
-
-          // Use the highest-priority role from all invitations
-          if (SAFE_ROLES.includes(inv.role)) {
-            if (role === ROLES.OWNER || (ROLE_PRIORITY[inv.role] || 99) < (ROLE_PRIORITY[role] || 99)) {
-              role = inv.role
-            }
-          }
-
-          // Store tenant unit info from the first tenant invitation
-          if (inv.role === 'tenant' && inv.unitId && !linkedUnitId) {
-            linkedUnitId = inv.unitId
-            linkedUnitNumber = inv.unitNumber || null
-          }
-
-          // Mark invitation as accepted
-          await updateDoc(doc(db, 'invitations', invDoc.id), {
-            status: 'accepted',
-            acceptedAt: serverTimestamp(),
-          })
-        }
-      }
-    } catch (err) {
-      // If invitation check fails, default to owner — InvitationChecker is backup
-      console.warn('Auto-invitation check failed:', err)
-    }
-
-    const profile = {
-      uid: result.user.uid,
-      email: result.user.email,
-      displayName,
-      role,
-      linkedProperties,
-      createdAt: serverTimestamp(),
-      lastLogin: serverTimestamp(),
-      suspended: false,
-    }
-    if (linkedUnitId) {
-      profile.linkedUnitId = linkedUnitId
-      profile.linkedUnitNumber = linkedUnitNumber
-    }
-    await setDoc(doc(db, 'users', result.user.uid), profile)
-    setUserProfile({ id: result.user.uid, ...profile })
+    // fetchOrCreateProfile will be called by onAuthStateChanged,
+    // which handles invitation detection for new users
     return result
   }
 
+  // ─── Login ──────────────────────────────────────────────────────────────────
   async function login(email, password) {
     const result = await signInWithEmailAndPassword(auth, email, password)
     logLoginEvent(result.user.uid)
-
-    const ref = doc(db, 'users', result.user.uid)
-    const snap = await getDoc(ref)
-    if (snap.exists()) {
-      const existingData = snap.data()
-      if (existingData.suspended) {
-        await signOut(auth)
-        throw new Error('Account suspended. Contact administrator.')
-      }
-
-      // If user is still 'owner' with no properties, check for pending/accepted invitations
-      // This catches users who signed up but the invitation wasn't applied properly
-      const hasNoProperties = !existingData.linkedProperties || existingData.linkedProperties.length === 0
-      if (existingData.role === 'owner' && hasNoProperties) {
-        try {
-          const inviteQ = query(
-            collection(db, 'invitations'),
-            where('inviteeEmail', '==', email.toLowerCase()),
-            where('status', 'in', ['pending', 'accepted']),
-          )
-          const inviteSnap = await getDocs(inviteQ)
-          if (!inviteSnap.empty) {
-            const SAFE_ROLES = ['property_manager', 'staff', 'vendor', 'tenant']
-            const ROLE_PRIORITY = { property_manager: 1, staff: 2, vendor: 3, tenant: 4 }
-            let newRole = 'owner'
-            const newLinked = []
-            const extras = {}
-
-            for (const invDoc of inviteSnap.docs) {
-              const inv = invDoc.data()
-              if (inv.propertyId && !newLinked.includes(inv.propertyId)) {
-                newLinked.push(inv.propertyId)
-              }
-              if (SAFE_ROLES.includes(inv.role)) {
-                if (newRole === 'owner' || (ROLE_PRIORITY[inv.role] || 99) < (ROLE_PRIORITY[newRole] || 99)) {
-                  newRole = inv.role
-                }
-              }
-              if (inv.role === 'tenant' && inv.unitId && !extras.linkedUnitId) {
-                extras.linkedUnitId = inv.unitId
-                extras.linkedUnitNumber = inv.unitNumber || null
-              }
-              // Mark pending ones as accepted
-              if (inv.status === 'pending') {
-                await updateDoc(doc(db, 'invitations', invDoc.id), {
-                  status: 'accepted',
-                  acceptedAt: serverTimestamp(),
-                })
-              }
-            }
-
-            if (newRole !== 'owner' && newLinked.length > 0) {
-              const updates = { role: newRole, linkedProperties: newLinked, lastLogin: serverTimestamp(), ...extras }
-              await updateDoc(ref, updates)
-              setUserProfile({ id: snap.id, ...existingData, ...updates, lastLogin: new Date() })
-              return result
-            }
-          }
-        } catch (err) {
-          console.warn('Login invitation repair failed:', err)
-        }
-      }
-
-      await setDoc(ref, { lastLogin: serverTimestamp() }, { merge: true })
-      setUserProfile({ id: snap.id, ...existingData, lastLogin: new Date() })
-    } else {
-      await fetchOrCreateProfile(result.user)
-    }
+    // fetchOrCreateProfile will be called by onAuthStateChanged,
+    // which handles invitation repair for existing users
     return result
   }
 
