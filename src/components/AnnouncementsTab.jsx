@@ -31,16 +31,17 @@ const PRIORITY_OPTIONS = [
 
 const PRIORITY_MAP = Object.fromEntries(PRIORITY_OPTIONS.map(p => [p.value, p]))
 
-export default function AnnouncementsTab({ propertyId }) {
+export default function AnnouncementsTab({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDateTime } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
 
-  const colPath = `users/${currentUser.uid}/properties/${propertyId}/announcements`
+  const colPath = `users/${uid}/properties/${propertyId}/announcements`
 
   const [form, setForm] = useState({
     title: '', body: '', priority: 'info', pinned: false,

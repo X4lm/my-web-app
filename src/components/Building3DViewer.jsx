@@ -202,22 +202,23 @@ function CameraController({ controlsRef }) {
 }
 
 // ── Main component ──
-export default function Building3DViewer({ propertyId, property }) {
+export default function Building3DViewer({ propertyId, property, ownerUid }) {
   const { currentUser } = useAuth()
   const { formatCurrency } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedUnit, setSelectedUnit] = useState(null)
   const controlsRef = useRef()
 
   useEffect(() => {
-    const q = query(collection(db, 'users', currentUser.uid, 'properties', propertyId, 'units'))
+    const q = query(collection(db, 'users', uid, 'properties', propertyId, 'units'))
     const unsub = onSnapshot(q, (snap) => {
       setUnits(snap.docs.map(d => ({ id: d.id, ...d.data() })))
       setLoading(false)
     })
     return unsub
-  }, [currentUser.uid, propertyId])
+  }, [uid, propertyId])
 
   function resetCamera() {
     if (controlsRef.current) {

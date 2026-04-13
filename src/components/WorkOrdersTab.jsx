@@ -54,9 +54,10 @@ const EMPTY = {
   reportedBy: '', dueDate: '',
 }
 
-export default function WorkOrdersTab({ propertyId }) {
+export default function WorkOrdersTab({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatCurrency, formatDate } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [orders, setOrders] = useState([])
   const [vendors, setVendors] = useState([])
   const [loading, setLoading] = useState(true)
@@ -67,7 +68,7 @@ export default function WorkOrdersTab({ propertyId }) {
   const [saving, setSaving] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
 
-  const colPath = `users/${currentUser.uid}/properties/${propertyId}/workOrders`
+  const colPath = `users/${uid}/properties/${propertyId}/workOrders`
 
   useEffect(() => {
     const q = query(collection(db, colPath), orderBy('createdAt', 'desc'))
@@ -80,12 +81,12 @@ export default function WorkOrdersTab({ propertyId }) {
 
   // Load vendors for assignment dropdown
   useEffect(() => {
-    const q = query(collection(db, `users/${currentUser.uid}/vendors`), orderBy('name'))
+    const q = query(collection(db, `users/${uid}/vendors`), orderBy('name'))
     const unsub = onSnapshot(q, (snap) => {
       setVendors(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     })
     return unsub
-  }, [currentUser.uid])
+  }, [uid])
 
   const filtered = statusFilter === 'all' ? orders : orders.filter(o => o.status === statusFilter)
   const openCount = orders.filter(o => o.status === 'open').length

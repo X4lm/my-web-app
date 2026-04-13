@@ -31,9 +31,10 @@ const PAYMENT_VARIANT = { paid: 'success', pending: 'warning', overdue: 'destruc
 const PAYMENT_LABELS = { paid: 'Paid', pending: 'Pending', overdue: 'Overdue' }
 const CONDITION_VARIANT = { good: 'success', needs_attention: 'warning', critical: 'destructive' }
 
-export default function UnitsTab({ propertyId, propertyType, propertyName }) {
+export default function UnitsTab({ propertyId, propertyType, propertyName, ownerUid }) {
   const { currentUser, userProfile } = useAuth()
   const { t, formatCurrency } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -47,7 +48,7 @@ export default function UnitsTab({ propertyId, propertyType, propertyName }) {
   const [inviteMsg, setInviteMsg] = useState({ type: '', text: '' })
   const [unitInvitations, setUnitInvitations] = useState({}) // unitId -> invitation
 
-  const basePath = `users/${currentUser.uid}/properties/${propertyId}/units`
+  const basePath = `users/${uid}/properties/${propertyId}/units`
   const myRole = userProfile?.role || 'owner'
   const canInviteTenant = ['admin', 'owner', 'property_manager'].includes(myRole)
 

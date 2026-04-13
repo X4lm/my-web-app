@@ -35,9 +35,10 @@ const CHECKLIST_ITEM_KEYS = [
   { key: 'unit_cleaned', tKey: 'moveOut.unitCleaned', required: false },
 ]
 
-export default function MoveOutWorkflow({ propertyId }) {
+export default function MoveOutWorkflow({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDate, formatCurrency } = useLocale()
+  const uid = ownerUid || currentUser.uid
 
   const CHECKLIST_ITEMS = CHECKLIST_ITEM_KEYS.map(c => ({ ...c, label: t(c.tKey) }))
   const [moveOuts, setMoveOuts] = useState([])
@@ -46,7 +47,7 @@ export default function MoveOutWorkflow({ propertyId }) {
   const [saving, setSaving] = useState(false)
   const [expanded, setExpanded] = useState(null)
 
-  const colPath = `users/${currentUser.uid}/properties/${propertyId}/moveOuts`
+  const colPath = `users/${uid}/properties/${propertyId}/moveOuts`
 
   const [form, setForm] = useState({
     unitNumber: '', tenantName: '', noticeDate: '',

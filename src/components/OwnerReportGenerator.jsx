@@ -9,9 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FileDown, Loader2, Building2, DollarSign, Wrench, Calendar, Eye, X } from 'lucide-react'
 
-export default function OwnerReportGenerator({ propertyId, property }) {
+export default function OwnerReportGenerator({ propertyId, property, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatCurrency, formatDate, getCurrencyCode } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [generating, setGenerating] = useState(false)
   const [previewing, setPreviewing] = useState(false)
   const [pdfUrl, setPdfUrl] = useState(null)
@@ -19,7 +20,7 @@ export default function OwnerReportGenerator({ propertyId, property }) {
   const [loading, setLoading] = useState(true)
   const buildingPdf = useRef(false)
 
-  const basePath = `users/${currentUser.uid}/properties/${propertyId}`
+  const basePath = `users/${uid}/properties/${propertyId}`
 
   useEffect(() => {
     async function loadData() {

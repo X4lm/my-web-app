@@ -37,9 +37,10 @@ const STATUS_VARIANT = {
   revoked:  'outline',
 }
 
-export default function TeamTab({ propertyId, property }) {
+export default function TeamTab({ propertyId, property, ownerUid }) {
   const { currentUser, userProfile } = useAuth()
   const { t } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [invitations, setInvitations] = useState([])
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
@@ -66,7 +67,7 @@ export default function TeamTab({ propertyId, property }) {
     try {
       const [invs, unitsSnap] = await Promise.all([
         getPropertyInvitations(propertyId),
-        getDocs(collection(db, `users/${currentUser.uid}/properties/${propertyId}/units`)),
+        getDocs(collection(db, `users/${uid}/properties/${propertyId}/units`)),
       ])
       setInvitations(invs)
       setUnits(unitsSnap.docs.map(d => ({ id: d.id, ...d.data() })))

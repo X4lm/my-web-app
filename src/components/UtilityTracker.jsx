@@ -35,9 +35,10 @@ const UTILITY_TYPE_KEYS = [
   { value: 'other', tKey: 'utilities.typeOther' },
 ]
 
-export default function UtilityTracker({ propertyId }) {
+export default function UtilityTracker({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatCurrency } = useLocale()
+  const uid = ownerUid || currentUser.uid
 
   const UTILITY_TYPES = UTILITY_TYPE_KEYS.map(u => ({ value: u.value, label: t(u.tKey) }))
   const UTILITY_LABELS = Object.fromEntries(UTILITY_TYPES.map(u => [u.value, u.label]))
@@ -48,7 +49,7 @@ export default function UtilityTracker({ propertyId }) {
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
 
-  const colPath = `users/${currentUser.uid}/properties/${propertyId}/utilities`
+  const colPath = `users/${uid}/properties/${propertyId}/utilities`
 
   const [form, setForm] = useState({
     unitNumber: '', utilityType: 'dewa', accountNumber: '',

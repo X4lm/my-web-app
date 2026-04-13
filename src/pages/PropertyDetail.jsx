@@ -31,6 +31,7 @@ import { ArrowLeft, Building2, MapPin, Calendar, Ruler, DollarSign, FileText, Sh
 import { diffFields, hasUnits } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { canAccess, canEdit, FEATURES } from '@/utils/permissions'
+import { lookupPropertyOwner } from '@/services/propertyIndex'
 
 export default function PropertyDetail() {
   const { id } = useParams()
@@ -44,16 +45,30 @@ export default function PropertyDetail() {
   const [editOpen, setEditOpen] = useState(false)
   const [editSaving, setEditSaving] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [ownerUid, setOwnerUid] = useState(null)
+  const isOwnerRole = role === 'admin' || role === 'owner'
 
   const tabFromUrl = searchParams.get('tab')
   const sectionFromUrl = searchParams.get('section')
 
+  // Resolve the owner UID for this property
   useEffect(() => {
+    if (isOwnerRole) {
+      setOwnerUid(currentUser.uid)
+    } else {
+      lookupPropertyOwner(id).then(info => {
+        setOwnerUid(info?.ownerUid || currentUser.uid)
+      }).catch(() => setOwnerUid(currentUser.uid))
+    }
+  }, [id, isOwnerRole, currentUser.uid])
+
+  useEffect(() => {
+    if (!ownerUid) return
     const unsub = onSnapshot(
-      doc(db, 'users', currentUser.uid, 'properties', id),
+      doc(db, 'users', ownerUid, 'properties', id),
       (snap) => {
         if (snap.exists()) {
-          setProperty({ id: snap.id, ...snap.data() })
+          setProperty({ id: snap.id, ...snap.data(), _ownerUid: ownerUid })
         } else {
           setProperty(null)
         }
@@ -65,7 +80,7 @@ export default function PropertyDetail() {
       }
     )
     return unsub
-  }, [currentUser.uid, id])
+  }, [ownerUid, id])
 
   // Scroll to Documents & Permits section when coming from a property-level alert
   useEffect(() => {
@@ -87,10 +102,10 @@ export default function PropertyDetail() {
         marketValue: 'Market Value', titleDeedNumber: 'Title Deed',
         insuranceExpiry: 'Insurance Expiry', municipalityPermitExpiry: 'Municipality Permit Expiry',
       })
-      await updateDoc(doc(db, 'users', currentUser.uid, 'properties', id), {
+      await updateDoc(doc(db, 'users', ownerUid, 'properties', id), {
         ...data, updatedAt: serverTimestamp(), updatedBy: authorName,
       })
-      await addDoc(collection(db, 'users', currentUser.uid, 'properties', id, 'logs'), {
+      await addDoc(collection(db, 'users', ownerUid, 'properties', id, 'logs'), {
         action: 'property_updated',
         author: authorName,
         details: changes.length > 0 ? `Changed ${changes.map(c => c.field).join(', ')}` : 'Property details updated',
@@ -327,74 +342,74 @@ export default function PropertyDetail() {
 
           {isBuilding && (
             <TabsContent value="units">
-              <UnitsTab propertyId={id} propertyType={property.type} propertyName={property.name} />
+              <UnitsTab propertyId={id} propertyType={property.type} propertyName={property.name} ownerUid={ownerUid} />
             </TabsContent>
           )}
 
           <TabsContent value="maintenance">
-            <MaintenanceTab propertyId={id} section={sectionFromUrl} />
+            <MaintenanceTab propertyId={id} section={sectionFromUrl} ownerUid={ownerUid} />
           </TabsContent>
 
           <TabsContent value="work-orders">
-            <WorkOrdersTab propertyId={id} />
+            <WorkOrdersTab propertyId={id} ownerUid={ownerUid} />
           </TabsContent>
 
           <TabsContent value="financials">
-            <FinancialsTab propertyId={id} property={property} />
+            <FinancialsTab propertyId={id} property={property} ownerUid={ownerUid} />
           </TabsContent>
 
           <TabsContent value="inspection">
-            <InspectionTab propertyId={id} />
+            <InspectionTab propertyId={id} ownerUid={ownerUid} />
           </TabsContent>
 
           <TabsContent value="comms">
-            <CommunicationLog propertyId={id} />
+            <CommunicationLog propertyId={id} ownerUid={ownerUid} />
           </TabsContent>
 
           {isBuilding && (
             <TabsContent value="announcements">
-              <AnnouncementsTab propertyId={id} />
+              <AnnouncementsTab propertyId={id} ownerUid={ownerUid} />
             </TabsContent>
           )}
 
           <TabsContent value="documents">
-            <DocumentsTab propertyId={id} />
+            <DocumentsTab propertyId={id} ownerUid={ownerUid} />
           </TabsContent>
 
           {isBuilding && (
             <TabsContent value="utilities">
-              <UtilityTracker propertyId={id} />
+              <UtilityTracker propertyId={id} ownerUid={ownerUid} />
             </TabsContent>
           )}
 
           {isBuilding && (
             <TabsContent value="move-out">
-              <MoveOutWorkflow propertyId={id} />
+              <MoveOutWorkflow propertyId={id} ownerUid={ownerUid} />
             </TabsContent>
           )}
 
           {isBuilding && (
             <TabsContent value="bulk">
-              <BulkOperations propertyId={id} property={property} />
+              <BulkOperations propertyId={id} property={property} ownerUid={ownerUid} />
             </TabsContent>
           )}
 
           <TabsContent value="reports">
-            <OwnerReportGenerator propertyId={id} property={property} />
+            <OwnerReportGenerator propertyId={id} property={property} ownerUid={ownerUid} />
           </TabsContent>
 
           <TabsContent value="team">
-            <TeamTab propertyId={id} property={property} />
+            <TeamTab propertyId={id} property={property} ownerUid={ownerUid} />
           </TabsContent>
 
           <TabsContent value="logs">
-            <LogsTab propertyId={id} />
+            <LogsTab propertyId={id} ownerUid={ownerUid} />
           </TabsContent>
 
           {isBuilding && (
             <TabsContent value="3d-model">
               <Suspense fallback={<p className="text-sm text-muted-foreground py-12 text-center">{t('property.loading3d')}</p>}>
-                <Building3DViewer propertyId={id} property={property} />
+                <Building3DViewer propertyId={id} property={property} ownerUid={ownerUid} />
               </Suspense>
             </TabsContent>
           )}

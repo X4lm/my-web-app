@@ -37,9 +37,10 @@ const CATEGORY_LABELS = {
   other: 'Other',
 }
 
-export default function FinancialsTab({ propertyId, property }) {
+export default function FinancialsTab({ propertyId, property, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatCurrency, formatDate, getCurrencyCode } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [expenses, setExpenses] = useState([])
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
@@ -51,9 +52,9 @@ export default function FinancialsTab({ propertyId, property }) {
   const [editingCheque, setEditingCheque] = useState(null)
   const [chequeSaving, setChequeSaving] = useState(false)
 
-  const colPath = `users/${currentUser.uid}/properties/${propertyId}/expenses`
-  const unitsPath = `users/${currentUser.uid}/properties/${propertyId}/units`
-  const chequePath = `users/${currentUser.uid}/properties/${propertyId}/cheques`
+  const colPath = `users/${uid}/properties/${propertyId}/expenses`
+  const unitsPath = `users/${uid}/properties/${propertyId}/units`
+  const chequePath = `users/${uid}/properties/${propertyId}/cheques`
 
   // Listen to expenses
   useEffect(() => {
@@ -125,7 +126,7 @@ export default function FinancialsTab({ propertyId, property }) {
   })
 
   // ── CRUD ──
-  const logPath = `users/${currentUser.uid}/properties/${propertyId}/logs`
+  const logPath = `users/${uid}/properties/${propertyId}/logs`
   const authorName = currentUser.displayName || currentUser.email || 'Unknown'
 
   async function handleSave(data) {

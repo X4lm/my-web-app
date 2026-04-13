@@ -44,9 +44,10 @@ const DIRECTION_OPTIONS = [
   { value: 'incoming', tKey: 'comms.incoming' },
 ]
 
-export default function CommunicationLog({ propertyId }) {
+export default function CommunicationLog({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDateTime } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -54,7 +55,7 @@ export default function CommunicationLog({ propertyId }) {
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
 
-  const colPath = `users/${currentUser.uid}/properties/${propertyId}/communications`
+  const colPath = `users/${uid}/properties/${propertyId}/communications`
 
   const [form, setForm] = useState({
     contactName: '', channel: 'phone', direction: 'outgoing',

@@ -85,9 +85,10 @@ const CONDITION_COLORS = {
   na: 'text-muted-foreground',
 }
 
-export default function InspectionTab({ propertyId }) {
+export default function InspectionTab({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDate, formatDateTime } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [data, setData] = useState({})
   const [notes, setNotes] = useState({})
   const [lastInspection, setLastInspection] = useState(null)
@@ -96,7 +97,7 @@ export default function InspectionTab({ propertyId }) {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  const docPath = `users/${currentUser.uid}/properties/${propertyId}`
+  const docPath = `users/${uid}/properties/${propertyId}`
 
   // Load previous inspections
   useEffect(() => {

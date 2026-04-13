@@ -17,9 +17,10 @@ const ACTION_CONFIG = {
   expense_deleted: { labelKey: 'logs.expenseDeleted', icon: Pencil, variant: 'destructive' },
 }
 
-export default function LogsTab({ propertyId }) {
+export default function LogsTab({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDateTime } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -27,7 +28,7 @@ export default function LogsTab({ propertyId }) {
     if (!currentUser || !propertyId) return
 
     const q = query(
-      collection(db, 'users', currentUser.uid, 'properties', propertyId, 'logs'),
+      collection(db, 'users', uid, 'properties', propertyId, 'logs'),
       orderBy('timestamp', 'desc'),
       limit(50)
     )
@@ -41,7 +42,7 @@ export default function LogsTab({ propertyId }) {
     })
 
     return unsub
-  }, [currentUser, propertyId])
+  }, [uid, propertyId])
 
   if (loading) {
     return <p className="text-sm text-muted-foreground py-12 text-center">{t('logs.loading')}</p>

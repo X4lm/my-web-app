@@ -17,16 +17,17 @@ import {
   Layers, TrendingUp, FileDown, FileUp, Loader2, CheckCircle2,
 } from 'lucide-react'
 
-export default function BulkOperations({ propertyId, property }) {
+export default function BulkOperations({ propertyId, property, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatCurrency } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [rentDialogOpen, setRentDialogOpen] = useState(false)
   const [increasePercent, setIncreasePercent] = useState('5')
   const [processing, setProcessing] = useState(false)
   const [result, setResult] = useState(null)
   const [exporting, setExporting] = useState(false)
 
-  const basePath = `users/${currentUser.uid}/properties/${propertyId}`
+  const basePath = `users/${uid}/properties/${propertyId}`
 
   async function applyBulkRentIncrease() {
     const pct = Number(increasePercent)

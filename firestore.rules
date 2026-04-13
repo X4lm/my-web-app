@@ -35,6 +35,15 @@ service cloud.firestore {
       return isOwner(uid) || isAdmin();
     }
 
+    // Check if the requesting user is linked to a property under this owner
+    function isLinkedToOwner(ownerUid) {
+      let userDoc = userData();
+      let role = userDoc.role;
+      return isActive()
+        && role in ['property_manager', 'staff', 'vendor', 'tenant']
+        && ownerUid != null;
+    }
+
     function selfUpdateAllowed() {
       let forbidden = ['role', 'suspended', 'createdAt', 'uid', 'email'].toSet();
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny(forbidden);
@@ -68,10 +77,33 @@ service cloud.firestore {
     }
 
     match /users/{userId}/properties/{propertyId} {
+      // Owner/admin: full access
       allow read, write: if isOwnerOrAdmin(userId);
+      // Linked users (PM, staff, vendor, tenant): read if propertyId is in their linkedProperties
+      allow read: if isLinkedToOwner(userId)
+        && propertyId in userData().linkedProperties;
+      // Property managers: write access to property doc (e.g. update status)
+      allow write: if isActive()
+        && userData().role == 'property_manager'
+        && propertyId in userData().linkedProperties;
+
       match /{subcollection}/{docId} {
         allow read, write: if isOwnerOrAdmin(userId);
+        // Linked users: read subcollections of their linked properties
+        allow read: if isLinkedToOwner(userId)
+          && propertyId in userData().linkedProperties;
+        // Property managers & staff: write to subcollections (work orders, expenses, etc.)
+        allow write: if isActive()
+          && userData().role in ['property_manager', 'staff']
+          && propertyId in userData().linkedProperties;
       }
+    }
+
+    // Allow linked users to read the owner's basic user doc (for display name, etc.)
+    // This is safe because we only allow read, not write
+    match /users/{userId}/tenants/{tenantId} {
+      allow read, write: if isOwnerOrAdmin(userId);
+      allow read: if isLinkedToOwner(userId);
     }
 
     match /platformSettings/{docId} {

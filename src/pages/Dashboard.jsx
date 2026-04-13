@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useDataPath } from '@/hooks/useDataPath'
 import { hasUnits } from '@/lib/utils'
 
 export default function Dashboard() {
@@ -33,6 +34,7 @@ export default function Dashboard() {
   }
   const navigate = useNavigate()
   const { t, formatCurrency, formatDate } = useLocale()
+  const { getOwnerUid } = useDataPath()
   const { properties, allAlerts, loading } = usePropertyAlerts()
   const [allUnits, setAllUnits] = useState([])
   const [recentExpenses, setRecentExpenses] = useState([])
@@ -54,7 +56,8 @@ export default function Dashboard() {
     const unitsByProp = {}
 
     buildings.forEach(p => {
-      const q = query(collection(db, 'users', currentUser.uid, 'properties', p.id, 'units'))
+      const uid = getOwnerUid(p)
+      const q = query(collection(db, 'users', uid, 'properties', p.id, 'units'))
       const unsub = onSnapshot(q, (snap) => {
         unitsByProp[p.id] = snap.docs.map(d => ({ id: d.id, propertyId: p.id, propertyName: p.name, ...d.data() }))
         const all = Object.values(unitsByProp).flat()
@@ -75,8 +78,9 @@ export default function Dashboard() {
     const expensesByProp = {}
 
     properties.forEach(p => {
+      const uid = getOwnerUid(p)
       const q = query(
-        collection(db, 'users', currentUser.uid, 'properties', p.id, 'expenses'),
+        collection(db, 'users', uid, 'properties', p.id, 'expenses'),
         orderBy('date', 'desc'),
         limit(5)
       )

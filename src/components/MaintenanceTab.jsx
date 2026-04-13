@@ -23,9 +23,10 @@ const ICON_MAP = {
   Home, Bug, Users, Dumbbell, Car,
 }
 
-export default function MaintenanceTab({ propertyId, section }) {
+export default function MaintenanceTab({ propertyId, section, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDate } = useLocale()
+  const uid = ownerUid || currentUser.uid
   const [data, setData] = useState({})
   const [originalData, setOriginalData] = useState({})
   const [meta, setMeta] = useState({})
@@ -36,7 +37,7 @@ export default function MaintenanceTab({ propertyId, section }) {
   const [enabledOptional, setEnabledOptional] = useState({})
   const [dirtyKeys, setDirtyKeys] = useState(new Set())
 
-  const docPath = `users/${currentUser.uid}/properties/${propertyId}`
+  const docPath = `users/${uid}/properties/${propertyId}`
 
   useEffect(() => {
     async function load() {

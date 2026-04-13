@@ -44,9 +44,10 @@ const DOC_CATEGORY_KEYS = [
   { value: 'other', tKey: 'docs.catOther' },
 ]
 
-export default function DocumentsTab({ propertyId }) {
+export default function DocumentsTab({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDateTime } = useLocale()
+  const uid = ownerUid || currentUser.uid
 
   const DOC_CATEGORIES = DOC_CATEGORY_KEYS.map(c => ({ value: c.value, label: t(c.tKey) }))
   const CATEGORY_LABELS = Object.fromEntries(DOC_CATEGORIES.map(c => [c.value, c.label]))
@@ -63,7 +64,7 @@ export default function DocumentsTab({ propertyId }) {
     name: '', category: 'other', expiryDate: '', notes: '', unitNumber: '',
   })
 
-  const colPath = `users/${currentUser.uid}/properties/${propertyId}/documents`
+  const colPath = `users/${uid}/properties/${propertyId}/documents`
 
   useEffect(() => {
     const q = query(collection(db, colPath), orderBy('createdAt', 'desc'))
@@ -88,7 +89,7 @@ export default function DocumentsTab({ propertyId }) {
     setUploading(true)
     try {
       const storage = getStorage(app)
-      const storagePath = `${currentUser.uid}/properties/${propertyId}/documents/${Date.now()}_${file.name}`
+      const storagePath = `${uid}/properties/${propertyId}/documents/${Date.now()}_${file.name}`
       const storageRef = ref(storage, storagePath)
       await uploadBytes(storageRef, file)
       const url = await getDownloadURL(storageRef)
