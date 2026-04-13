@@ -52,6 +52,12 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ─── User subcollections (settings, vendors, auditLogs, etc.) ──
+    match /users/{userId}/{subcol}/{docId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isAdmin();
+    }
+
     // ─── Invitations ─────────────────────────────────────────────────
     // Read uses isSignedIn() not isActive() so new signups can check invitations
     match /invitations/{invitationId} {
