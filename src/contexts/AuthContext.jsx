@@ -128,6 +128,7 @@ export function AuthProvider({ children }) {
     // ── Existing user ──────────────────────────────────────────────────────
     if (snap.exists()) {
       const data = snap.data()
+      console.log('[Auth] Existing user loaded:', { uid: user.uid, email: user.email, role: data.role, linkedProperties: data.linkedProperties })
 
       if (data.suspended) {
         await signOut(auth)
@@ -138,11 +139,14 @@ export function AuthProvider({ children }) {
       // Auto-repair: if user is 'owner' with no linked properties,
       // check if they have invitations that should slot them into the right role
       const hasNoProperties = !data.linkedProperties || data.linkedProperties.length === 0
+      console.log('[Auth] Repair check:', { role: data.role, hasNoProperties, willRepair: data.role === 'owner' && hasNoProperties })
       if (data.role === 'owner' && hasNoProperties) {
         try {
           // Check both pending AND accepted invitations (covers cases where
           // InvitationChecker accepted the invite but didn't update the user doc)
+          console.log('[Auth] Checking invitations for:', user.email)
           const resolved = await resolveInvitations(user.email, true)
+          console.log('[Auth] Invitation resolution result:', resolved)
           if (resolved) {
             const updates = {
               role: resolved.role,
@@ -155,6 +159,7 @@ export function AuthProvider({ children }) {
             }
             await updateDoc(ref, updates)
             const updatedProfile = { id: snap.id, ...data, ...updates, lastLogin: new Date() }
+            console.log('[Auth] Profile repaired:', { role: updatedProfile.role, linkedProperties: updatedProfile.linkedProperties })
             setUserProfile(updatedProfile)
             return updatedProfile
           }
@@ -170,12 +175,14 @@ export function AuthProvider({ children }) {
     }
 
     // ── New user (no Firestore doc yet) ────────────────────────────────────
+    console.log('[Auth] New user, checking invitations for:', user.email)
     let role = ROLES.OWNER
     let linkedProperties = []
     let extras = {}
 
     try {
       const resolved = await resolveInvitations(user.email, false)
+      console.log('[Auth] New user invitation result:', resolved)
       if (resolved) {
         role = resolved.role
         linkedProperties = resolved.linkedProperties
@@ -185,7 +192,7 @@ export function AuthProvider({ children }) {
         }
       }
     } catch (err) {
-      console.warn('New user invitation check failed:', err)
+      console.warn('[Auth] New user invitation check failed:', err)
     }
 
     const newProfile = {
