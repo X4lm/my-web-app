@@ -153,6 +153,35 @@ export async function getPendingInvitationsForEmail(email) {
 }
 
 /**
+ * Get all invitations for a given email (all statuses)
+ */
+export async function getAllInvitationsForEmail(email) {
+  const q = query(
+    collection(db, 'invitations'),
+    where('inviteeEmail', '==', email.toLowerCase()),
+  )
+  const snap = await getDocs(q)
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => {
+      const ta = a.createdAt?.toMillis?.() || 0
+      const tb = b.createdAt?.toMillis?.() || 0
+      return tb - ta
+    })
+}
+
+/**
+ * Re-accept a previously declined invitation
+ */
+export async function reacceptInvitation(invitationId) {
+  const ref = doc(db, 'invitations', invitationId)
+  await updateDoc(ref, {
+    status: INVITE_STATUS.ACCEPTED,
+    acceptedAt: serverTimestamp(),
+  })
+}
+
+/**
  * Get all invitations sent by a specific user
  */
 export async function getInvitationsBySender(uid) {

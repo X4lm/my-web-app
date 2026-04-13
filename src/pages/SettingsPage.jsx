@@ -12,6 +12,7 @@ import { updateProfile, sendPasswordResetEmail } from 'firebase/auth'
 import { auth, db } from '@/firebase/config'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { Link } from 'react-router-dom'
+import MyInvitations from '@/components/MyInvitations'
 
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
@@ -77,6 +78,8 @@ export default function SettingsPage() {
             </form>
           </CardContent>
         </Card>
+
+        <MyInvitations />
 
         <Separator />
 
