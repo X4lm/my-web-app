@@ -48,9 +48,7 @@ export function usePropertyAlerts() {
     }
 
     // ─── Non-owner path: load linked properties via propertyIndex ───────
-    console.log('[Alerts] Non-owner path. Role:', role, 'LinkedProperties:', linkedProperties)
     if (linkedProperties.length === 0) {
-      console.log('[Alerts] No linked properties, showing empty')
       setProperties([])
       setLoading(false)
       return
@@ -63,14 +61,11 @@ export function usePropertyAlerts() {
         const results = []
 
         for (const propId of linkedProperties) {
-          console.log('[Alerts] Looking up owner for property:', propId)
           const ownerInfo = await lookupPropertyOwner(propId)
-          console.log('[Alerts] Owner info:', ownerInfo)
-          if (!ownerInfo?.ownerUid) { console.warn('[Alerts] No owner found for property:', propId); continue }
+          if (!ownerInfo?.ownerUid) continue
 
           const propRef = doc(db, 'users', ownerInfo.ownerUid, 'properties', propId)
           const propSnap = await getDoc(propRef)
-          console.log('[Alerts] Property doc exists:', propSnap.exists(), 'for', propId)
           if (propSnap.exists()) {
             results.push({
               id: propSnap.id,
