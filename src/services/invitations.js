@@ -55,9 +55,11 @@ export async function createInvitation({
   }
 
   // Check for existing pending invitation for same email + property + role
+  // Must include inviterUid in query to satisfy Firestore security rules
   const existing = await getDocs(
     query(
       collection(db, 'invitations'),
+      where('inviterUid', '==', inviterUid),
       where('inviteeEmail', '==', inviteeEmail.toLowerCase()),
       where('propertyId', '==', propertyId),
       where('role', '==', role),

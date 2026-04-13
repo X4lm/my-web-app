@@ -52,10 +52,17 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ─── User subcollections (settings, vendors, auditLogs, etc.) ──
-    match /users/{userId}/{subcol}/{docId} {
+    // ─── User-owned subcollections (settings, vendors, auditLogs, etc.) ──
+    match /users/{userId}/settings/{docId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
-      allow read, write: if isAdmin();
+    }
+    match /users/{userId}/vendors/{docId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isAdmin();
+    }
+    match /users/{userId}/auditLogs/{docId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isAdmin();
     }
 
     // ─── Invitations ─────────────────────────────────────────────────
