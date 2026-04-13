@@ -7,41 +7,34 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function userData() {
+    function userDoc() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
     function getUserRole() {
-      return userData().role;
+      let data = userDoc();
+      return data != null ? data.role : 'owner';
     }
 
-    function isNotSuspended() {
-      return userData().suspended != true;
+    function isSuspended() {
+      let data = userDoc();
+      return data != null && data.suspended == true;
     }
 
     function isActive() {
-      return isSignedIn() && isNotSuspended();
+      return isSignedIn() && !isSuspended();
     }
 
     function isAdmin() {
       return isActive() && getUserRole() == 'admin';
     }
 
-    function isOwner(uid) {
+    function isOwnerOf(uid) {
       return isActive() && request.auth.uid == uid;
     }
 
     function isOwnerOrAdmin(uid) {
-      return isOwner(uid) || isAdmin();
-    }
-
-    // Check if the requesting user is linked to a property under this owner
-    function isLinkedToOwner(ownerUid) {
-      let userDoc = userData();
-      let role = userDoc.role;
-      return isActive()
-        && role in ['property_manager', 'staff', 'vendor', 'tenant']
-        && ownerUid != null;
+      return isOwnerOf(uid) || isAdmin();
     }
 
     function selfUpdateAllowed() {
@@ -49,89 +42,107 @@ service cloud.firestore {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny(forbidden);
     }
 
+    // ─── User profiles ───────────────────────────────────────────────
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && request.resource.data.role == 'owner';
-      allow update: if (isOwner(userId) && selfUpdateAllowed()) || isAdmin();
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (
+        (request.auth.uid == userId && selfUpdateAllowed()) || isAdmin()
+      );
       allow delete: if isAdmin();
     }
 
+    // ─── Invitations ─────────────────────────────────────────────────
+    // Read uses isSignedIn() not isActive() so new signups can check invitations
     match /invitations/{invitationId} {
-      allow read: if isActive() && (
+      allow read: if isSignedIn() && (
         resource.data.inviterUid == request.auth.uid ||
         resource.data.inviteeEmail == request.auth.token.email ||
         isAdmin()
       );
       allow create: if isActive() &&
         getUserRole() in ['admin', 'owner', 'property_manager'] &&
-        request.resource.data.inviterUid == request.auth.uid &&
-        (getUserRole() == 'admin' ||
-         request.resource.data.role in ['property_manager', 'staff', 'vendor', 'tenant']);
-      allow update: if isActive() && (
+        request.resource.data.inviterUid == request.auth.uid;
+      allow update: if isSignedIn() && (
         resource.data.inviterUid == request.auth.uid ||
         resource.data.inviteeEmail == request.auth.token.email ||
         isAdmin()
-      ) && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['inviterUid', 'role', 'propertyId']);
+      );
       allow delete: if isAdmin();
     }
 
+    // ─── Properties & subcollections ─────────────────────────────────
     match /users/{userId}/properties/{propertyId} {
       // Owner/admin: full access
       allow read, write: if isOwnerOrAdmin(userId);
-      // Linked users (PM, staff, vendor, tenant): read if propertyId is in their linkedProperties
-      allow read: if isLinkedToOwner(userId)
-        && propertyId in userData().linkedProperties;
-      // Property managers: write access to property doc (e.g. update status)
+
+      // Linked users (PM, staff, vendor, tenant): read if property is in their linkedProperties
+      allow read: if isActive()
+        && getUserRole() in ['property_manager', 'staff', 'vendor', 'tenant']
+        && propertyId in userDoc().linkedProperties;
+
+      // Property managers: write access to property doc
       allow write: if isActive()
-        && userData().role == 'property_manager'
-        && propertyId in userData().linkedProperties;
+        && getUserRole() == 'property_manager'
+        && propertyId in userDoc().linkedProperties;
 
       match /{subcollection}/{docId} {
         allow read, write: if isOwnerOrAdmin(userId);
-        // Linked users: read subcollections of their linked properties
-        allow read: if isLinkedToOwner(userId)
-          && propertyId in userData().linkedProperties;
-        // Property managers & staff: write to subcollections (work orders, expenses, etc.)
+
+        // Linked users: read subcollections
+        allow read: if isActive()
+          && getUserRole() in ['property_manager', 'staff', 'vendor', 'tenant']
+          && propertyId in userDoc().linkedProperties;
+
+        // Property managers & staff: write to subcollections
         allow write: if isActive()
-          && userData().role in ['property_manager', 'staff']
-          && propertyId in userData().linkedProperties;
+          && getUserRole() in ['property_manager', 'staff']
+          && propertyId in userDoc().linkedProperties;
       }
     }
 
-    // Allow linked users to read the owner's basic user doc (for display name, etc.)
-    // This is safe because we only allow read, not write
+    // ─── Tenants collection ──────────────────────────────────────────
     match /users/{userId}/tenants/{tenantId} {
       allow read, write: if isOwnerOrAdmin(userId);
-      allow read: if isLinkedToOwner(userId);
+      allow read: if isActive()
+        && getUserRole() in ['property_manager', 'staff'];
     }
 
+    // ─── Mail (Firebase Trigger Email extension) ─────────────────────
+    match /mail/{mailId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if false;
+    }
+
+    // ─── Platform settings ───────────────────────────────────────────
     match /platformSettings/{docId} {
-      allow read: if isActive();
+      allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
+    // ─── Property index (lookup property → owner) ────────────────────
     match /propertyIndex/{propertyId} {
-      allow read: if isActive();
-      allow write: if isAdmin() || (isActive() && getUserRole() in ['owner']);
+      allow read: if isSignedIn();
+      allow write: if isActive() && getUserRole() in ['admin', 'owner'];
     }
 
+    // ─── Analytics ───────────────────────────────────────────────────
     match /analytics/{docId} {
-      allow create: if isActive() && request.resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow read: if isAdmin();
       allow update, delete: if false;
     }
 
+    // ─── Login events ────────────────────────────────────────────────
     match /loginEvents/{docId} {
-      allow create: if isActive() && request.resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow read: if isAdmin();
       allow update, delete: if false;
     }
 
-    // ─── Data Requests (PDPL compliance) ──────────────────────────────
+    // ─── Data Requests (PDPL compliance) ─────────────────────────────
     match /dataRequests/{requestId} {
-      allow create: if isActive() &&
-        request.resource.data.userId == request.auth.uid;
+      allow create: if isActive() && request.resource.data.userId == request.auth.uid;
       allow read: if isActive() && (
         resource.data.userId == request.auth.uid || isAdmin()
       );
@@ -139,6 +150,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ─── Deny everything else ────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }
