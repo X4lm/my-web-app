@@ -1,17 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, NavLink } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth, ROLES } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { Button } from '@/components/ui/button'
 import WeatherWidget from '@/components/WeatherWidget'
+import ChatWithDev from '@/components/ChatWithDev'
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog } from 'lucide-react'
+import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog, MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { getSidebarItems } from '@/utils/permissions'
+import { listenToAllThreads } from '@/services/supportChat'
 
 const NAV_GROUPS = [
   {
@@ -48,10 +50,11 @@ const ALL_NAV_ITEMS = [
 ]
 
 const ADMIN_NAV_ITEMS = [
-  { id: 'admin',           to: '/admin',           key: 'nav.admin',          icon: ShieldCheck },
-  { id: 'admin_users',     to: '/admin/users',     key: 'nav.adminUsers',     icon: Users },
-  { id: 'admin_analytics', to: '/admin/analytics', key: 'nav.adminAnalytics', icon: BarChart3 },
-  { id: 'admin_settings',  to: '/admin/settings',  key: 'nav.adminSettings',  icon: Cog },
+  { id: 'admin',              to: '/admin',              key: 'nav.admin',             icon: ShieldCheck },
+  { id: 'admin_users',        to: '/admin/users',        key: 'nav.adminUsers',        icon: Users },
+  { id: 'admin_analytics',    to: '/admin/analytics',    key: 'nav.adminAnalytics',    icon: BarChart3 },
+  { id: 'admin_support_chat', to: '/admin/support-chat', key: 'nav.adminSupportChat',  icon: MessageCircle },
+  { id: 'admin_settings',     to: '/admin/settings',     key: 'nav.adminSettings',     icon: Cog },
 ]
 
 export default function Header() {
@@ -60,10 +63,21 @@ export default function Header() {
   const { t } = useLocale()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [adminUnread, setAdminUnread] = useState(0)
 
   const role = userProfile?.role || 'owner'
   const allowed = getSidebarItems(role)
   const adminItems = ADMIN_NAV_ITEMS.filter(item => allowed.includes(item.id))
+
+  // Admin-only: track total unread across all support threads (for mobile nav badge)
+  useEffect(() => {
+    if (role !== ROLES.ADMIN) return
+    const unsub = listenToAllThreads(threads => {
+      const total = threads.reduce((s, t) => s + (t.unreadForAdmin || 0), 0)
+      setAdminUnread(total)
+    })
+    return unsub
+  }, [role])
 
   const initials = currentUser?.displayName
     ? currentUser.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -100,9 +114,11 @@ export default function Header() {
           {/* Spacer for desktop */}
           <div className="hidden md:block" />
 
-          {/* Right side: weather + theme toggle + user menu */}
+          {/* Right side: weather + chat + theme toggle + user menu */}
           <div className="flex items-center gap-3">
             <WeatherWidget />
+
+            <ChatWithDev />
 
             <Button
               variant="ghost"
@@ -212,7 +228,7 @@ export default function Header() {
                 <div className="pt-4 pb-1 px-3">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('nav.adminSection')}</p>
                 </div>
-                {adminItems.map(({ to, key, icon: Icon }) => (
+                {adminItems.map(({ id, to, key, icon: Icon }) => (
                   <NavLink
                     key={to}
                     to={to}
@@ -227,7 +243,12 @@ export default function Header() {
                     }
                   >
                     <Icon className="w-4 h-4" />
-                    {t(key)}
+                    <span className="flex-1">{t(key)}</span>
+                    {id === 'admin_support_chat' && adminUnread > 0 && (
+                      <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-[10px] font-semibold text-white flex items-center justify-center">
+                        {adminUnread > 99 ? '99+' : adminUnread}
+                      </span>
+                    )}
                   </NavLink>
                 ))}
               </>

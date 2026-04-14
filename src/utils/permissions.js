@@ -26,6 +26,7 @@ export const FEATURES = {
   ADMIN_USERS:      'admin_users',
   ADMIN_ANALYTICS:  'admin_analytics',
   ADMIN_SETTINGS:   'admin_settings',
+  ADMIN_SUPPORT_CHAT: 'admin_support_chat',
 
   // Property detail tabs
   TAB_OVERVIEW:       'tab_overview',
@@ -209,7 +210,7 @@ export const SIDEBAR_ITEMS = {
     'dashboard', 'properties', 'alerts', 'logs', 'team', 'tenants',
     'messages', 'cheques', 'portfolio', 'settings',
     // Admin section
-    'admin', 'admin_users', 'admin_analytics', 'admin_settings',
+    'admin', 'admin_users', 'admin_analytics', 'admin_settings', 'admin_support_chat',
   ],
   owner: [
     'dashboard', 'properties', 'alerts', 'logs', 'team', 'tenants',

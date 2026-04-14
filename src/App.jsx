@@ -20,6 +20,7 @@ const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'))
 const AdminUsersPage = lazy(() => import('@/pages/AdminUsersPage'))
 const AdminAnalyticsPage = lazy(() => import('@/pages/AdminAnalyticsPage'))
 const AdminSettingsPage = lazy(() => import('@/pages/AdminSettingsPage'))
+const AdminSupportChatPage = lazy(() => import('@/pages/AdminSupportChatPage'))
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
 
 function PrivateRoute({ children }) {
@@ -74,6 +75,7 @@ export default function App() {
         <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
         <Route path="/admin/analytics" element={<AdminRoute><AdminAnalyticsPage /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
+        <Route path="/admin/support-chat" element={<AdminRoute><AdminSupportChatPage /></AdminRoute>} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

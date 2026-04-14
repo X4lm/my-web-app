@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog } from 'lucide-react'
+import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog, MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth, ROLES } from '@/contexts/AuthContext'
 import { getSidebarItems } from '@/utils/permissions'
+import { listenToAllThreads } from '@/services/supportChat'
 
 const NAV_GROUPS = [
   {
@@ -40,10 +42,11 @@ const ALL_NAV_ITEMS = [
 ]
 
 const ADMIN_NAV_ITEMS = [
-  { id: 'admin',           to: '/admin',           key: 'nav.admin',          icon: ShieldCheck },
-  { id: 'admin_users',     to: '/admin/users',     key: 'nav.adminUsers',     icon: Users },
-  { id: 'admin_analytics', to: '/admin/analytics', key: 'nav.adminAnalytics', icon: BarChart3 },
-  { id: 'admin_settings',  to: '/admin/settings',  key: 'nav.adminSettings',  icon: Cog },
+  { id: 'admin',              to: '/admin',              key: 'nav.admin',             icon: ShieldCheck },
+  { id: 'admin_users',        to: '/admin/users',        key: 'nav.adminUsers',        icon: Users },
+  { id: 'admin_analytics',    to: '/admin/analytics',    key: 'nav.adminAnalytics',    icon: BarChart3 },
+  { id: 'admin_support_chat', to: '/admin/support-chat', key: 'nav.adminSupportChat',  icon: MessageCircle },
+  { id: 'admin_settings',     to: '/admin/settings',     key: 'nav.adminSettings',     icon: Cog },
 ]
 
 export default function Sidebar() {
@@ -51,8 +54,19 @@ export default function Sidebar() {
   const { userProfile } = useAuth()
   const role = userProfile?.role || 'owner'
   const allowed = getSidebarItems(role)
+  const [adminUnread, setAdminUnread] = useState(0)
 
   const adminItems = ADMIN_NAV_ITEMS.filter(item => allowed.includes(item.id))
+
+  // Admin-only: track total unread across all support threads
+  useEffect(() => {
+    if (role !== ROLES.ADMIN) return
+    const unsub = listenToAllThreads(threads => {
+      const total = threads.reduce((s, t) => s + (t.unreadForAdmin || 0), 0)
+      setAdminUnread(total)
+    })
+    return unsub
+  }, [role])
 
   return (
     <aside className="hidden md:flex md:w-60 md:flex-col md:fixed md:inset-y-0 border-e border-sidebar-border bg-sidebar">
@@ -121,7 +135,7 @@ export default function Sidebar() {
             <div className="pt-4 pb-1 px-3">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('nav.adminSection')}</p>
             </div>
-            {adminItems.map(({ to, key, icon: Icon }) => (
+            {adminItems.map(({ id, to, key, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -135,7 +149,12 @@ export default function Sidebar() {
                 }
               >
                 <Icon className="w-4 h-4" />
-                {t(key)}
+                <span className="flex-1">{t(key)}</span>
+                {id === 'admin_support_chat' && adminUnread > 0 && (
+                  <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-[10px] font-semibold text-white flex items-center justify-center">
+                    {adminUnread > 99 ? '99+' : adminUnread}
+                  </span>
+                )}
               </NavLink>
             ))}
           </>

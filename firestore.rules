@@ -153,6 +153,29 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ─── Support chat (user ↔ admin) ─────────────────────────────────
+    // Each user has one thread doc at supportChats/{userId} with messages subcollection.
+    // Users can read/write their own thread; admin can read/write all.
+    match /supportChats/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId
+        && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+        // A user may only post messages tagged from='user'; admin may only post from='admin'.
+        allow create: if isSignedIn() && (
+          (request.auth.uid == userId
+            && request.resource.data.from == 'user'
+            && request.resource.data.senderUid == request.auth.uid)
+          || (isAdmin() && request.resource.data.from == 'admin')
+        );
+        allow update, delete: if isAdmin();
+      }
+    }
+
     // ─── Data Requests (PDPL compliance) ─────────────────────────────
     match /dataRequests/{requestId} {
       allow create: if isActive() && request.resource.data.userId == request.auth.uid;
