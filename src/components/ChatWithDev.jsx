@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { MessageCircle, Send, X, Loader2 } from 'lucide-react'
 import { useAuth, ROLES } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { logError } from '@/utils/logger'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +15,7 @@ import {
 export default function ChatWithDev() {
   const { currentUser, userProfile } = useAuth()
   const { t } = useLocale()
+  const { theme } = useTheme()
   const [open, setOpen] = useState(false)
   const [thread, setThread] = useState(null)
   const [messages, setMessages] = useState([])
@@ -135,19 +137,19 @@ export default function ChatWithDev() {
         >
           <div className="bg-popover text-popover-foreground border rounded-lg shadow-xl overflow-hidden flex flex-col h-[70vh] max-h-[520px]">
             {/* Header */}
-            <div className="flex items-center justify-between gap-2 px-4 py-3 border-b bg-emerald-600 text-white">
+            <div className="flex items-center justify-between gap-2 px-4 py-3 border-b bg-primary text-primary-foreground">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-primary-foreground/15 flex items-center justify-center shrink-0">
                   <MessageCircle className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold leading-tight">{t('chat.withDev')}</p>
-                  <p className="text-[11px] text-white/80 leading-tight">{t('chat.typicalReply')}</p>
+                  <p className="text-[11px] text-primary-foreground/70 leading-tight">{t('chat.typicalReply')}</p>
                 </div>
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="p-1 rounded-md hover:bg-white/10"
+                className="p-1 rounded-md hover:bg-primary-foreground/10"
                 aria-label={t('common.cancel')}
               >
                 <X className="w-4 h-4" />
@@ -155,7 +157,14 @@ export default function ChatWithDev() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2 bg-muted/30">
+            <div
+              className="flex-1 overflow-y-auto px-3 py-3 space-y-2 bg-muted/30"
+              style={{
+                backgroundImage: `url(${import.meta.env.BASE_URL}${theme === 'dark' ? 'chat-bg-dark.jpg' : 'chat-bg-light.jpg'})`,
+                backgroundRepeat: 'repeat',
+                backgroundSize: '250px',
+              }}
+            >
               {messages.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center px-4 gap-2">
                   <MessageCircle className="w-8 h-8 text-muted-foreground/40" />
@@ -170,12 +179,12 @@ export default function ChatWithDev() {
                       <div
                         className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
                           mine
-                            ? 'bg-emerald-600 text-white rounded-br-sm'
+                            ? 'bg-primary text-primary-foreground rounded-br-sm'
                             : 'bg-background border rounded-bl-sm'
                         }`}
                       >
                         <p>{m.text}</p>
-                        <p className={`text-[10px] mt-0.5 ${mine ? 'text-white/70' : 'text-muted-foreground'} text-end`}>
+                        <p className={`text-[10px] mt-0.5 ${mine ? 'text-primary-foreground/70' : 'text-muted-foreground'} text-end`}>
                           {formatTime(m.createdAt)}
                         </p>
                       </div>
@@ -200,7 +209,7 @@ export default function ChatWithDev() {
               <Button
                 type="submit"
                 size="icon"
-                className="h-9 w-9 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+                className="h-9 w-9 rounded-full shrink-0"
                 disabled={!draft.trim() || sending}
                 aria-label={t('chat.send')}
               >
