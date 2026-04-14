@@ -6,6 +6,7 @@ import { lookupPropertyOwner } from '@/services/propertyIndex'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
+import PlatformAnnouncement from '@/components/PlatformAnnouncement'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -167,6 +168,8 @@ export default function TenantDashboard() {
             {t('dashboard.welcomeBack')}, {currentUser?.displayName || 'there'}.
           </p>
         </div>
+
+        <PlatformAnnouncement />
 
         {/* Unit Info Cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

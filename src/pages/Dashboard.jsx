@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useDataPath } from '@/hooks/useDataPath'
 import { hasUnits } from '@/lib/utils'
+import PlatformAnnouncement from '@/components/PlatformAnnouncement'
 
 export default function Dashboard() {
   const { currentUser, userProfile } = useAuth()
@@ -148,6 +149,8 @@ export default function Dashboard() {
             {t('dashboard.welcomeBack')}, {currentUser?.displayName || 'there'}.
           </p>
         </div>
+
+        <PlatformAnnouncement />
 
         {/* Onboarding card */}
         {!loading && totalProps === 0 && !onboardingDismissed && (
