@@ -118,7 +118,7 @@ export function buildPriorityQueue({
 
   // ─── Work orders — open / overdue ──────────────────────────────────────
   for (const wo of workOrders) {
-    const openStatuses = new Set(['open', 'in_progress', 'on_hold'])
+    const openStatuses = new Set(['open', 'attended', 'in_progress', 'on_hold'])
     if (!openStatuses.has(wo.status)) continue
     const d = wo.dueDate ? daysUntil(wo.dueDate) : null
     const isHighPriority = wo.priority === 'urgent' || wo.priority === 'high'

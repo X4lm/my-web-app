@@ -34,8 +34,12 @@ const PRIORITY = {
   urgent: { tKey: 'workOrders.priorityUrgent', variant: 'destructive' },
 }
 
+// Status flow: open (pending) -> attended (staff acknowledged) ->
+// in_progress (actively working) -> completed. on_hold / cancelled are
+// terminal exits.
 const STATUS = {
   open: { tKey: 'workOrders.statusOpen', variant: 'warning' },
+  attended: { tKey: 'workOrders.statusAttended', variant: 'secondary' },
   in_progress: { tKey: 'workOrders.statusInProgress', variant: 'default' },
   on_hold: { tKey: 'workOrders.statusOnHold', variant: 'secondary' },
   completed: { tKey: 'workOrders.statusCompleted', variant: 'success' },

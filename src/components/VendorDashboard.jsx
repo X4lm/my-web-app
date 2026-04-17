@@ -15,9 +15,10 @@ import {
   Loader2, Building2, ChevronDown,
 } from 'lucide-react'
 
-const STATUS_OPTIONS = ['open', 'in_progress', 'on_hold', 'completed', 'cancelled']
+const STATUS_OPTIONS = ['open', 'attended', 'in_progress', 'on_hold', 'completed', 'cancelled']
 const STATUS_VARIANT = {
   open: 'secondary',
+  attended: 'outline',
   in_progress: 'warning',
   on_hold: 'outline',
   completed: 'success',
