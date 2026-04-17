@@ -65,9 +65,12 @@ const TEMPERATURE_UNITS = {
   fahrenheit: { label: '\u00B0F' },
 }
 
+// UAE-first app — default to AED / DD/MM/YYYY (common in the Gulf).
+// Users in other regions can change in Settings; Firestore per-user settings
+// override these defaults once loaded.
 const DEFAULTS = {
-  currency: 'USD',
-  dateFormat: 'MM/DD/YYYY',
+  currency: 'AED',
+  dateFormat: 'DD/MM/YYYY',
   financialYearStart: '1', // January
   language: 'en',
   calendar: 'gregorian',

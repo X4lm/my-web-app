@@ -160,7 +160,10 @@ export function buildPriorityQueue({
   }
 
   // ─── Lease / maintenance alerts from usePropertyAlerts ─────────────────
+  // Skip section==='Property' (insurance / permit) — those are already added
+  // from the property scan above; otherwise we get duplicate rows in the UI.
   for (const a of alerts) {
+    if (a.section === 'Property') continue
     const d = daysUntil(a.date)
     if (d === null) continue
     if (d > 60) continue
@@ -235,21 +238,21 @@ export function computeHealthScore({
   const maintAlerts = alerts.filter(a => a.section === 'Maintenance')
   const overdueM = maintAlerts.filter(a => a.level === 'overdue').length
   if (overdueM === 0) breakdown.maintenance = 20
-  else if (overdueM <= 2) breakdown.maintenance = 12
-  else breakdown.maintenance = 4
+  else if (overdueM === 1) breakdown.maintenance = 10
+  else if (overdueM === 2) breakdown.maintenance = 4
+  else breakdown.maintenance = 0
 
-  // Document expiry (no docs overdue or critical)
+  // Document expiry — Property-level docs (insurance / permit) hit HARD when
+  // overdue because losing a trade license or insurance is operationally severe.
+  const propertyDocsOverdue = alerts.filter(a => a.section === 'Property' && a.level === 'overdue').length
   const expiredDocs = documents.filter(d => {
     const days = daysUntil(d.expiryDate)
     return days !== null && days < 0
   }).length
-  const criticalDocs = documents.filter(d => {
-    const days = daysUntil(d.expiryDate)
-    return days !== null && days >= 0 && days <= 30
-  }).length
-  if (expiredDocs === 0 && criticalDocs === 0) breakdown.documents = 10
-  else if (expiredDocs === 0) breakdown.documents = 6
-  else breakdown.documents = 2
+  const totalOverdueDocs = propertyDocsOverdue + expiredDocs
+  if (totalOverdueDocs === 0) breakdown.documents = 10
+  else if (totalOverdueDocs === 1) breakdown.documents = 3
+  else breakdown.documents = 0
 
   // Tenant turnover — low turnover = higher score (approximated via lease overdue count)
   const overdueLease = alerts.filter(a => a.section === 'Lease' && a.level === 'overdue').length
@@ -257,11 +260,11 @@ export function computeHealthScore({
   else if (overdueLease <= 1) breakdown.turnover = 6
   else breakdown.turnover = 2
 
-  // Alert-free — small deduction per open alert
+  // Alert-free — heavier deduction per open alert (was too forgiving)
   const openAlerts = alerts.filter(a => a.level === 'overdue').length
   if (openAlerts === 0) breakdown.alerts = 10
-  else if (openAlerts <= 2) breakdown.alerts = 6
-  else if (openAlerts <= 5) breakdown.alerts = 3
+  else if (openAlerts === 1) breakdown.alerts = 5
+  else if (openAlerts === 2) breakdown.alerts = 2
   else breakdown.alerts = 0
 
   const score = Object.values(breakdown).reduce((s, n) => s + n, 0)

@@ -32,12 +32,15 @@ import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCirc
 import { canEdit, FEATURES } from '@/utils/permissions'
 import { upsertPropertyIndex } from '@/services/propertyIndex'
 
+const OWNER_ROLES = new Set(['admin', 'owner'])
+
 export default function Properties() {
   const { currentUser, userProfile } = useAuth()
   const { t, formatCurrency } = useLocale()
   const role = userProfile?.role || 'owner'
-  const [properties, setProperties] = useState([])
-  const [loading, setLoading] = useState(true)
+  const isOwnerRole = OWNER_ROLES.has(role)
+  const [ownProperties, setOwnProperties] = useState([])
+  const [ownLoading, setOwnLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
@@ -45,22 +48,32 @@ export default function Properties() {
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
   const navigate = useNavigate()
-  const { alertsByProperty } = usePropertyAlerts()
+  // usePropertyAlerts handles linked-property lookup for non-owner roles via propertyIndex.
+  const { properties: alertsProperties, alertsByProperty, loading: alertsLoading } = usePropertyAlerts()
+
+  // For owner/admin, keep the real-time onSnapshot so adds/edits reflect instantly.
+  // For PM/staff/etc, use usePropertyAlerts (which walks through propertyIndex).
+  const properties = isOwnerRole ? ownProperties : alertsProperties
+  const loading = isOwnerRole ? ownLoading : alertsLoading
   const { units: allUnits, cheques: allCheques, documents: allDocs } = usePortfolioAggregates(properties)
 
   useEffect(() => {
+    if (!isOwnerRole) {
+      setOwnLoading(false)
+      return
+    }
     const q = query(
       collection(db, 'users', currentUser.uid, 'properties'),
       orderBy('createdAt', 'desc')
     )
     const unsub = onSnapshot(q, (snap) => {
-      setProperties(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-      setLoading(false)
+      setOwnProperties(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setOwnLoading(false)
     }, () => {
-      setLoading(false)
+      setOwnLoading(false)
     })
     return unsub
-  }, [currentUser.uid])
+  }, [currentUser.uid, isOwnerRole])
 
   const filtered = properties.filter(p => {
     if (statusFilter !== 'all' && p.status !== statusFilter) return false
