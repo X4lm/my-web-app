@@ -592,6 +592,11 @@ export default function LandingPage() {
   const BODY_FONT = isRTL ? '"Noto Sans Arabic", "Inter", sans-serif' : '"Inter", "Plus Jakarta Sans", sans-serif'
   const HEAD_FONT = isRTL ? '"Noto Sans Arabic", "Plus Jakarta Sans", sans-serif' : '"Plus Jakarta Sans", "Inter", sans-serif'
 
+  // Arabic has tall ascenders + diacritics (e.g. دائماً) and negative letter-spacing
+  // squeezes letter shapes; Latin-tuned tracking/leading breaks Arabic. When RTL,
+  // override to normal tracking and roomier line-height.
+  const arHead = isRTL ? { letterSpacing: 'normal', lineHeight: 1.45, wordSpacing: '0.05em' } : {}
+
   return (
     <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#0A0E27] text-white overflow-x-hidden relative" style={{ fontFamily: BODY_FONT }}>
       {/* Ambient radial gradients for depth */}
@@ -726,7 +731,7 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="text-4xl sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] font-bold leading-[1.02] tracking-tight text-white"
-                style={{ fontFamily: HEAD_FONT, letterSpacing: isRTL ? 'normal' : '-0.025em' }}
+                style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.025em', ...arHead }}
               >
                 {tx('heroTitle1')}
                 <span className="bg-gradient-to-r from-[#E8C97A] via-[#D4A853] to-[#B8913D] bg-clip-text text-transparent">{tx('heroTitle2')}</span>
@@ -917,7 +922,7 @@ export default function LandingPage() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-14 lg:mb-16 max-w-3xl mx-auto" variants={fadeUp} custom={0}>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em', ...arHead }}>
               {tx('problemTitle1')}
               <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">{tx('problemTitle2')}</span>
             </h2>
@@ -958,7 +963,7 @@ export default function LandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-14 lg:mb-16 max-w-3xl mx-auto" variants={fadeUp}>
             <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('featLabel')}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em', ...arHead }}>
               {tx('featTitle1')}
               <span className="bg-gradient-to-r from-[#E8C97A] to-[#D4A853] bg-clip-text text-transparent">{tx('featTitle2')}</span>
             </h2>
@@ -1071,7 +1076,7 @@ export default function LandingPage() {
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-14 lg:mb-20" variants={fadeUp}>
             <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('howLabel')}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>{tx('howTitle')}</h2>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em', ...arHead }}>{tx('howTitle')}</h2>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-10 md:gap-6 relative">
@@ -1116,7 +1121,7 @@ export default function LandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-14 lg:mb-16" variants={fadeUp}>
             <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('typesLabel')}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>{tx('typesTitle')}</h2>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em', ...arHead }}>{tx('typesTitle')}</h2>
           </motion.div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -1156,7 +1161,7 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div variants={slideInLeft}>
               <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('maintLabel')}</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-6 leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-6 leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em', ...arHead }}>
                 {tx('maintTitle')}
               </h2>
               <p className="text-white/60 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
@@ -1223,7 +1228,7 @@ export default function LandingPage() {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-14 lg:mb-16 max-w-2xl mx-auto" variants={fadeUp}>
             <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('secLabel')}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>{tx('secTitle')}</h2>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em', ...arHead }}>{tx('secTitle')}</h2>
             <p className="mt-5 text-white/55 text-base sm:text-lg leading-relaxed">{tx('secSub')}</p>
           </motion.div>
 
@@ -1263,7 +1268,7 @@ export default function LandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-14 lg:mb-16" variants={fadeUp}>
             <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('testLabel')}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1] max-w-3xl mx-auto" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>{tx('testTitle')}</h2>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1] max-w-3xl mx-auto" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em', ...arHead }}>{tx('testTitle')}</h2>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-5">
@@ -1325,7 +1330,7 @@ export default function LandingPage() {
             }} />
 
             <div className="relative p-10 sm:p-14 lg:p-20 text-center">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-5 leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-5 leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em', ...arHead }}>
                 {tx('ctaTitle')}
               </h2>
               <p className="text-white/60 max-w-xl mx-auto mb-9 leading-relaxed text-base sm:text-lg">
