@@ -1,14 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 
-/* ─── CONSTANTS ─── */
-const GOLD = '#D4A853'
-const GOLD_LIGHT = '#E8C97A'
-const NAVY = '#0B1120'
-const NAVY_LIGHT = '#111827'
-const NAVY_CARD = '#151E2F'
+/* ─── PALETTE — Premium Dark + Gold ───
+ * UI/UX Pro Max skill: "Luxury/Premium Brand" (#1C1917 + gold accent) combined
+ * with "Consulting Authority" navy. Modern SaaS dark aesthetic — think Linear,
+ * Vercel, Ramp, Mercury. Suited to UAE luxury real estate positioning.
+ *   Background (deep navy):    #0A0E27
+ *   Surface (elevated):        #111827
+ *   Surface (card glass):      rgba(255,255,255,0.04)
+ *   Border subtle:             rgba(255,255,255,0.08)
+ *   Gold (accent/CTA):         #D4A853
+ *   Gold light (hover):        #E8C97A
+ *   Text primary:              #F8FAFC
+ *   Text muted:                rgba(255,255,255,0.55)
+ */
 
 /* ─── LANDING PAGE TRANSLATIONS ─── */
 const L = {
@@ -223,13 +230,6 @@ const fadeUp = {
 const fadeIn = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.8 } },
-}
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.85 },
-  visible: (i = 0) => ({
-    opacity: 1, scale: 1,
-    transition: { duration: 0.6, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] },
-  }),
 }
 const slideInLeft = {
   hidden: { opacity: 0, x: -60 },
@@ -475,184 +475,39 @@ function ResidentialIcon({ className = 'w-12 h-12' }) {
   )
 }
 
-/* ─── HERO BUILDING SVG ─── */
-function HeroBuilding({ tx = (k) => k }) {
-  return (
-    <div className="relative w-full max-w-lg mx-auto">
-      <svg viewBox="0 0 500 400" fill="none" className="w-full h-auto">
-        {/* Background glow */}
-        <defs>
-          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={GOLD} stopOpacity="0.15" />
-            <stop offset="100%" stopColor={GOLD} stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="buildingGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#1E293B" />
-            <stop offset="100%" stopColor="#0F172A" />
-          </linearGradient>
-          <linearGradient id="buildingGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#1E293B" />
-            <stop offset="100%" stopColor="#0B1120" />
-          </linearGradient>
-          <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={GOLD} />
-            <stop offset="100%" stopColor={GOLD_LIGHT} />
-          </linearGradient>
-        </defs>
-
-        <ellipse cx="250" cy="350" rx="220" ry="30" fill="url(#glow)" />
-
-        {/* Main tall building */}
-        <motion.g
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-        >
-          <rect x="180" y="60" width="140" height="290" rx="3" fill="url(#buildingGrad)" stroke="#1E293B" strokeWidth="1" />
-          {/* Windows */}
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(row =>
-            [0, 1, 2, 3].map(col => (
-              <motion.rect
-                key={`w-${row}-${col}`}
-                x={195 + col * 30}
-                y={80 + row * 28}
-                width="14"
-                height="12"
-                rx="1"
-                fill={GOLD}
-                opacity={0.15 + Math.random() * 0.55}
-                animate={{ opacity: [0.15 + Math.random() * 0.4, 0.3 + Math.random() * 0.5, 0.15 + Math.random() * 0.4] }}
-                transition={{ duration: 3 + Math.random() * 4, repeat: Infinity, ease: 'easeInOut' }}
-              />
-            ))
-          )}
-          {/* Door */}
-          <rect x="232" y="320" width="36" height="30" rx="2" fill="#0B1120" stroke={GOLD} strokeWidth="0.5" opacity="0.6" />
-          {/* Roof accent */}
-          <rect x="180" y="57" width="140" height="4" rx="2" fill="url(#goldGrad)" opacity="0.7" />
-        </motion.g>
-
-        {/* Left building */}
-        <motion.g
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
-        >
-          <rect x="80" y="140" width="100" height="210" rx="3" fill="url(#buildingGrad2)" stroke="#1E293B" strokeWidth="1" />
-          {[0, 1, 2, 3, 4, 5, 6].map(row =>
-            [0, 1, 2].map(col => (
-              <motion.rect
-                key={`wl-${row}-${col}`}
-                x={93 + col * 28}
-                y={158 + row * 26}
-                width="12"
-                height="10"
-                rx="1"
-                fill={GOLD}
-                opacity={0.1 + Math.random() * 0.5}
-                animate={{ opacity: [0.1 + Math.random() * 0.3, 0.3 + Math.random() * 0.45, 0.1 + Math.random() * 0.3] }}
-                transition={{ duration: 4 + Math.random() * 3, repeat: Infinity, ease: 'easeInOut' }}
-              />
-            ))
-          )}
-          <rect x="80" y="137" width="100" height="4" rx="2" fill="url(#goldGrad)" opacity="0.5" />
-        </motion.g>
-
-        {/* Right building */}
-        <motion.g
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.7, ease: 'easeOut' }}
-        >
-          <rect x="320" y="110" width="110" height="240" rx="3" fill="url(#buildingGrad2)" stroke="#1E293B" strokeWidth="1" />
-          {[0, 1, 2, 3, 4, 5, 6, 7].map(row =>
-            [0, 1, 2].map(col => (
-              <motion.rect
-                key={`wr-${row}-${col}`}
-                x={335 + col * 30}
-                y={128 + row * 26}
-                width="14"
-                height="10"
-                rx="1"
-                fill={GOLD}
-                opacity={0.1 + Math.random() * 0.5}
-                animate={{ opacity: [0.15 + Math.random() * 0.35, 0.3 + Math.random() * 0.5, 0.15 + Math.random() * 0.35] }}
-                transition={{ duration: 3 + Math.random() * 4, repeat: Infinity, ease: 'easeInOut' }}
-              />
-            ))
-          )}
-          <rect x="320" y="107" width="110" height="4" rx="2" fill="url(#goldGrad)" opacity="0.5" />
-        </motion.g>
-
-        {/* Ground line */}
-        <line x1="50" y1="350" x2="450" y2="350" stroke="#1E293B" strokeWidth="1" />
-      </svg>
-
-      {/* Floating stat cards */}
-      <motion.div
-        className="absolute -left-4 top-8 sm:left-0 bg-white/[0.07] backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3 shadow-2xl"
-        initial={{ opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 1.2, duration: 0.8 }}
-      >
-        <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider">{tx('statUnits')}</p>
-        <p className="text-xl font-bold text-white mt-0.5"><Counter end={10000} suffix="+" /></p>
-      </motion.div>
-
-      <motion.div
-        className="absolute -right-4 top-24 sm:right-0 bg-white/[0.07] backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3 shadow-2xl"
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 1.5, duration: 0.8 }}
-      >
-        <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider">{tx('statAlerts')}</p>
-        <p className="text-xl font-bold text-white mt-0.5"><Counter end={98} suffix="%" /></p>
-      </motion.div>
-
-      <motion.div
-        className="absolute right-8 bottom-8 sm:right-12 bg-white/[0.07] backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3 shadow-2xl"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.8, duration: 0.8 }}
-      >
-        <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider">{tx('statTime')}</p>
-        <p className="text-xl font-bold text-white mt-0.5"><Counter end={40} suffix="%" /></p>
-      </motion.div>
-    </div>
-  )
-}
-
-/* ─── GOLD BUTTON ─── */
+/* ─── BUTTONS — Premium gold CTA, glass secondary ─── */
 function GoldButton({ children, onClick, size = 'default', className = '' }) {
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ scale: 1.03, boxShadow: `0 0 30px ${GOLD}40` }}
-      whileTap={{ scale: 0.98 }}
-      className={`inline-flex items-center justify-center gap-1.5 sm:gap-2 font-semibold rounded-lg transition-all duration-300 ${
-        size === 'lg' ? 'px-5 py-3 sm:px-8 sm:py-4 text-xs sm:text-base' : 'px-4 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm'
-      } bg-gradient-to-r from-[#D4A853] to-[#E8C97A] text-[#0B1120] hover:from-[#E8C97A] hover:to-[#D4A853] shadow-lg shadow-[#D4A853]/20 ${className}`}
+      whileHover={{ y: -1 }}
+      whileTap={{ y: 0 }}
+      transition={{ duration: 0.2 }}
+      className={`cursor-pointer inline-flex items-center justify-center gap-1.5 sm:gap-2 font-semibold rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E27] focus-visible:ring-[#D4A853] ${
+        size === 'lg' ? 'px-6 py-3.5 sm:px-8 sm:py-4 text-sm sm:text-base' : 'px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm'
+      } bg-gradient-to-b from-[#E8C97A] to-[#D4A853] text-[#0A0E27] hover:from-[#F0D68C] hover:to-[#E8C97A] shadow-[0_8px_24px_-8px_rgba(212,168,83,0.5)] hover:shadow-[0_12px_32px_-8px_rgba(212,168,83,0.7)] ${className}`}
     >
       {children}
     </motion.button>
   )
 }
 
-function SecondaryButton({ children, onClick, className = '' }) {
+function GlassButton({ children, onClick, className = '' }) {
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.98 }}
-      className={`inline-flex items-center justify-center gap-1.5 sm:gap-2 font-semibold rounded-lg px-4 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm border border-white/20 text-white/90 hover:bg-white/[0.06] hover:border-white/30 transition-all duration-300 ${className}`}
+      whileHover={{ y: -1 }}
+      whileTap={{ y: 0 }}
+      transition={{ duration: 0.2 }}
+      className={`cursor-pointer inline-flex items-center justify-center gap-1.5 sm:gap-2 font-semibold rounded-lg px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm border border-white/15 bg-white/[0.04] backdrop-blur text-white/90 hover:bg-white/[0.08] hover:border-white/25 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0E27] focus-visible:ring-white/40 ${className}`}
     >
       {children}
     </motion.button>
   )
 }
 
-/* ─── FEATURE CARD ─── */
-function FeatureCard({ icon: Icon, title, description, index }) {
+/* ─── FEATURE CARD — Glassmorphism surface with gold icon ─── */
+function FeatureCard({ icon: Icon, title, description, index, className = '', children }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-40px' })
   return (
@@ -661,15 +516,21 @@ function FeatureCard({ icon: Icon, title, description, index }) {
       custom={index}
       initial="hidden"
       animate={isInView ? 'visible' : 'hidden'}
-      variants={scaleIn}
-      whileHover={{ y: -6, transition: { duration: 0.3 } }}
-      className="group relative bg-white/[0.04] backdrop-blur border border-white/[0.06] rounded-2xl p-6 hover:border-[#D4A853]/30 hover:bg-white/[0.06] transition-all duration-500"
+      variants={fadeUp}
+      className={`group relative bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.08] rounded-2xl p-6 sm:p-7 hover:border-[#D4A853]/40 hover:from-white/[0.08] transition-all duration-300 overflow-hidden ${className}`}
     >
-      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#D4A853]/20 to-[#D4A853]/5 flex items-center justify-center mb-4 group-hover:from-[#D4A853]/30 group-hover:to-[#D4A853]/10 transition-all duration-500">
-        <Icon className="w-5 h-5 text-[#D4A853]" />
+      {/* soft glow on hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" aria-hidden="true">
+        <div className="absolute -top-20 -end-20 w-60 h-60 bg-[#D4A853]/10 rounded-full blur-3xl" />
       </div>
-      <h3 className="text-white font-semibold text-base mb-2">{title}</h3>
-      <p className="text-white/50 text-sm leading-relaxed">{description}</p>
+      <div className="relative">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#D4A853]/25 to-[#D4A853]/5 border border-[#D4A853]/15 flex items-center justify-center mb-5">
+          <Icon className="w-5 h-5 text-[#D4A853]" />
+        </div>
+        <h3 className="text-white font-semibold text-base sm:text-lg mb-2 tracking-tight">{title}</h3>
+        <p className="text-white/55 text-sm leading-relaxed">{description}</p>
+        {children}
+      </div>
     </motion.div>
   )
 }
@@ -726,17 +587,28 @@ export default function LandingPage() {
     { label: tx('navContact'), id: 'footer' },
   ]
 
+  // Typography — modern geometric sans, no display serif. Plus Jakarta Sans gives
+  // a premium SaaS feel (Linear/Vercel school). Inter for data-dense copy.
+  const BODY_FONT = isRTL ? '"Noto Sans Arabic", "Inter", sans-serif' : '"Inter", "Plus Jakarta Sans", sans-serif'
+  const HEAD_FONT = isRTL ? '"Noto Sans Arabic", "Plus Jakarta Sans", sans-serif' : '"Plus Jakarta Sans", "Inter", sans-serif'
+
   return (
-    <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#0B1120] text-white overflow-x-hidden" style={{ fontFamily: isRTL ? '"Noto Sans Arabic", "Inter", sans-serif' : '"Plus Jakarta Sans", "Inter", sans-serif' }}>
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#0A0E27] text-white overflow-x-hidden relative" style={{ fontFamily: BODY_FONT }}>
+      {/* Ambient radial gradients for depth */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <div className="absolute top-0 -start-1/4 w-[800px] h-[800px] bg-[#D4A853]/[0.04] rounded-full blur-[140px]" />
+        <div className="absolute top-1/3 end-0 w-[600px] h-[600px] bg-[#D4A853]/[0.025] rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-1/3 w-[700px] h-[700px] bg-[#6366F1]/[0.025] rounded-full blur-[140px]" />
+      </div>
 
       {/* ════════ NAV ════════ */}
       <motion.nav
         initial={{ y: -80 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-[#0B1120]/80 backdrop-blur-xl border-b border-white/[0.06] shadow-xl shadow-black/20'
+            ? 'bg-[#0A0E27]/75 backdrop-blur-xl border-b border-white/[0.06]'
             : 'bg-transparent'
         }`}
       >
@@ -744,10 +616,10 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16 sm:h-18">
             {/* Logo */}
             <div className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-[#D4A853] to-[#E8C97A]">
-                <BuildingIcon className="w-4.5 h-4.5 text-[#0B1120]" />
+              <div className="relative flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-[#E8C97A] to-[#D4A853] shadow-[0_0_20px_-4px_rgba(212,168,83,0.6)]">
+                <BuildingIcon className="w-5 h-5 text-[#0A0E27]" />
               </div>
-              <span className="text-lg font-bold tracking-tight text-white">Bait to Maintain</span>
+              <span className="text-lg font-bold tracking-tight text-white" style={{ fontFamily: HEAD_FONT }}>Bait to Maintain</span>
             </div>
 
             {/* Desktop links */}
@@ -756,7 +628,7 @@ export default function LandingPage() {
                 <button
                   key={link.id}
                   onClick={() => scrollTo(link.id)}
-                  className="text-sm text-white/60 hover:text-white font-medium transition-colors duration-300"
+                  className="cursor-pointer text-sm text-white/60 hover:text-white font-medium transition-colors duration-200"
                 >
                   {link.label}
                 </button>
@@ -767,7 +639,7 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center gap-3">
               <button
                 onClick={toggleLang}
-                className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-all duration-300"
+                className="cursor-pointer px-3 py-1.5 text-xs font-semibold rounded-lg border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-all duration-200"
               >
                 {lang === 'en' ? 'العربية' : 'English'}
               </button>
@@ -778,13 +650,14 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 md:hidden">
               <button
                 onClick={toggleLang}
-                className="px-2.5 py-1.5 text-[10px] font-semibold rounded-md border border-white/15 text-white/70 hover:text-white transition-all"
+                className="cursor-pointer px-2.5 py-1.5 text-[10px] font-semibold rounded-md border border-white/15 text-white/70 hover:text-white transition-colors duration-200"
               >
                 {lang === 'en' ? 'AR' : 'EN'}
               </button>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-white/70 hover:text-white"
+                className="cursor-pointer p-2 text-white/70 hover:text-white"
+                aria-label="Toggle menu"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   {mobileMenuOpen
@@ -804,14 +677,14 @@ export default function LandingPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-[#0B1120]/95 backdrop-blur-xl border-b border-white/[0.06] overflow-hidden"
+              className="md:hidden bg-[#0A0E27]/95 backdrop-blur-xl border-b border-white/[0.06] overflow-hidden"
             >
               <div className="px-6 py-4 space-y-3">
                 {navLinks.map(link => (
                   <button
                     key={link.id}
                     onClick={() => scrollTo(link.id)}
-                    className="block w-full text-left text-sm text-white/60 hover:text-white font-medium py-2"
+                    className="cursor-pointer block w-full text-start text-sm text-white/70 hover:text-white font-medium py-2 transition-colors duration-200"
                   >
                     {link.label}
                   </button>
@@ -825,60 +698,55 @@ export default function LandingPage() {
         </AnimatePresence>
       </motion.nav>
 
-      {/* ════════ HERO ════════ */}
-      <section className="relative lg:min-h-screen flex items-center pt-24 pb-8 sm:pt-28 sm:pb-12 overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#D4A853]/[0.04] rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[#D4A853]/[0.03] rounded-full blur-[100px]" />
-          {/* Grid pattern */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
-          }} />
-        </div>
+      {/* ════════ HERO — Premium dark with gold accent + glass product card ════════ */}
+      <section className="relative flex items-center pt-28 pb-16 sm:pt-32 sm:pb-20 lg:pt-36 lg:pb-28">
+        {/* Hero-local grain/pattern for depth */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
+          maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 70%)',
+        }} />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-            {/* Left copy */}
-            <div className="text-center lg:text-left">
+          <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+            {/* Left copy (7 cols) */}
+            <div className="text-center lg:text-start lg:col-span-7">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4A853]/10 border border-[#D4A853]/20 mb-6"
+                transition={{ duration: 0.5, delay: 0.05 }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4A853]/10 border border-[#D4A853]/20 mb-7"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#D4A853] animate-pulse" />
-                <span className="text-[#D4A853] text-xs font-semibold uppercase tracking-wider">{tx('badge')}</span>
+                <span className="text-[#E8C97A] text-[11px] font-semibold uppercase tracking-[0.14em]">{tx('badge')}</span>
               </motion.div>
 
               <motion.h1
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-3xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.1] tracking-tight"
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="text-4xl sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] font-bold leading-[1.02] tracking-tight text-white"
+                style={{ fontFamily: HEAD_FONT, letterSpacing: isRTL ? 'normal' : '-0.025em' }}
               >
                 {tx('heroTitle1')}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A853] to-[#E8C97A]">
-                  {tx('heroTitle2')}
-                </span>
+                <span className="bg-gradient-to-r from-[#E8C97A] via-[#D4A853] to-[#B8913D] bg-clip-text text-transparent">{tx('heroTitle2')}</span>
                 {tx('heroTitle3')}
               </motion.h1>
 
               <motion.p
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.4 }}
-                className="mt-5 text-base sm:text-lg text-white/50 leading-relaxed max-w-xl mx-auto lg:mx-0"
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="mt-6 text-base sm:text-lg text-white/60 leading-relaxed max-w-xl mx-auto lg:mx-0"
               >
                 {tx('heroSub')}
               </motion.p>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.6 }}
-                className="mt-8 flex flex-row gap-3 sm:gap-4 justify-center lg:justify-start"
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="mt-9 flex flex-row flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start"
               >
                 <GoldButton onClick={() => navigate('/signup')} size="lg">
                   {tx('getStarted')}
@@ -886,61 +754,129 @@ export default function LandingPage() {
                     <path d="M5 12h14" /><path d={isRTL ? 'M12 5l-7 7 7 7' : 'M12 5l7 7-7 7'} />
                   </svg>
                 </GoldButton>
-                <SecondaryButton onClick={() => scrollTo('how-it-works')}>
+                <GlassButton onClick={() => scrollTo('how-it-works')}>
                   {tx('seeHow')}
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 5v14" /><path d="M19 12l-7 7-7-7" />
                   </svg>
-                </SecondaryButton>
+                </GlassButton>
+              </motion.div>
+
+              {/* Trust strip — animated stat row */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.55 }}
+                className="mt-12 grid grid-cols-3 gap-4 sm:gap-8 max-w-xl mx-auto lg:mx-0 pt-8 border-t border-white/[0.08]"
+              >
+                {[
+                  { n: <><Counter end={1200} />+</>, l: tx('statUnits') },
+                  { n: <><Counter end={98} />%</>, l: 'Uptime' },
+                  { n: <><Counter end={40} />%</>, l: tx('statTime') },
+                ].map((s, i) => (
+                  <div key={i} className="text-center lg:text-start">
+                    <div className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: HEAD_FONT }}>{s.n}</div>
+                    <div className="text-[11px] text-white/45 mt-1 uppercase tracking-wider">{s.l}</div>
+                  </div>
+                ))}
               </motion.div>
             </div>
 
-            {/* Right visual */}
+            {/* Right: glassmorphism product preview (5 cols) */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.4 }}
-              className="hidden lg:block"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="hidden lg:block lg:col-span-5"
             >
-              <HeroBuilding tx={tx} />
+              <div className="relative">
+                {/* Gold glow behind card */}
+                <div className="absolute -inset-4 bg-gradient-to-br from-[#D4A853]/20 via-transparent to-[#6366F1]/10 rounded-3xl blur-3xl" aria-hidden="true" />
+
+                {/* Glass card */}
+                <div className="relative rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden">
+                  {/* Header bar */}
+                  <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06] bg-white/[0.02]">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-[11px] text-[#D4A853] font-semibold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D4A853] animate-pulse" /> Live
+                    </span>
+                  </div>
+
+                  {/* Dashboard mock */}
+                  <div className="p-5 sm:p-6 space-y-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Portfolio</h4>
+                        <p className="text-white text-lg font-semibold mt-0.5" style={{ fontFamily: HEAD_FONT }}>Dubai Marina</p>
+                      </div>
+                      <span className="text-[11px] text-[#D4A853] px-2.5 py-1 rounded-md bg-[#D4A853]/10 border border-[#D4A853]/15 font-semibold">+12.4%</span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {[
+                        { n: <Counter end={247} />, l: 'Units' },
+                        { n: <><Counter end={98} />%</>, l: 'Occupied' },
+                        { n: <Counter end={12} />, l: 'Alerts' },
+                      ].map((s, i) => (
+                        <div key={i} className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-3">
+                          <div className="text-xl font-bold text-white" style={{ fontFamily: HEAD_FONT }}>{s.n}</div>
+                          <div className="text-[10px] text-white/40 mt-0.5 uppercase tracking-wider">{s.l}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bar chart */}
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-white/40 mb-2">
+                        <span>Revenue (12 mo)</span>
+                        <span className="text-[#D4A853]">AED 2.4M</span>
+                      </div>
+                      <div className="flex items-end gap-1 h-20">
+                        {[32, 48, 38, 62, 44, 72, 58, 88, 68, 54, 82, 78].map((h, i) => (
+                          <div key={i} className="flex-1 rounded-sm bg-gradient-to-t from-[#D4A853]/80 via-[#D4A853]/60 to-[#D4A853]/20" style={{ height: `${h}%` }} />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Alert rows */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-red-500/20 bg-red-500/[0.08]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                        <span className="text-xs text-red-200 font-medium">{tx('alertOverdue')}</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-amber-500/20 bg-amber-500/[0.08]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        <span className="text-xs text-amber-200 font-medium">{tx('alertUpcoming')}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ════════ PROBLEM ════════ */}
-      <Section id="problem" className="py-16 sm:py-24 lg:py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div className="text-center mb-16" variants={fadeUp} custom={0}>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
+      {/* ════════ PROBLEM — dark glass pain-point cards ════════ */}
+      <Section id="problem" className="py-20 sm:py-24 lg:py-32 relative">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div className="text-center mb-14 lg:mb-16 max-w-3xl mx-auto" variants={fadeUp} custom={0}>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>
               {tx('problemTitle1')}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">
-                {tx('problemTitle2')}
-              </span>
+              <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">{tx('problemTitle2')}</span>
             </h2>
           </motion.div>
 
-          <div className="grid sm:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-5">
             {[
-              {
-                icon: AlertIcon,
-                title: tx('painTitle1'),
-                desc: tx('painDesc1'),
-                color: 'from-red-500/20 to-red-500/5',
-              },
-              {
-                icon: ChartIcon,
-                title: tx('painTitle2'),
-                desc: tx('painDesc2'),
-                color: 'from-orange-500/20 to-orange-500/5',
-              },
-              {
-                icon: UsersIcon,
-                title: tx('painTitle3'),
-                desc: tx('painDesc3'),
-                color: 'from-amber-500/20 to-amber-500/5',
-              },
+              { icon: AlertIcon, title: tx('painTitle1'), desc: tx('painDesc1'), accent: 'from-red-500/25 to-red-500/5', tint: 'text-red-400' },
+              { icon: ChartIcon, title: tx('painTitle2'), desc: tx('painDesc2'), accent: 'from-orange-500/25 to-orange-500/5', tint: 'text-orange-400' },
+              { icon: UsersIcon, title: tx('painTitle3'), desc: tx('painDesc3'), accent: 'from-amber-500/25 to-amber-500/5', tint: 'text-amber-400' },
             ].map((item, i) => {
               const ref = useRef(null)
               const isInView = useInView(ref, { once: true, margin: '-40px' })
@@ -952,13 +888,13 @@ export default function LandingPage() {
                   initial="hidden"
                   animate={isInView ? 'visible' : 'hidden'}
                   variants={fadeUp}
-                  className="relative bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 text-center"
+                  className="relative bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.08] rounded-2xl p-7 sm:p-8 hover:border-white/20 transition-colors duration-300"
                 >
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mx-auto mb-4`}>
-                    <item.icon className="w-6 h-6 text-white/70" />
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.accent} border border-white/[0.08] flex items-center justify-center mb-5`}>
+                    <item.icon className={`w-5 h-5 ${item.tint}`} />
                   </div>
-                  <h3 className="text-white font-semibold text-lg mb-2">{item.title}</h3>
-                  <p className="text-white/45 text-sm leading-relaxed">{item.desc}</p>
+                  <h3 className="text-white font-semibold text-lg mb-2 tracking-tight" style={{ fontFamily: HEAD_FONT }}>{item.title}</h3>
+                  <p className="text-white/55 text-sm leading-relaxed">{item.desc}</p>
                 </motion.div>
               )
             })}
@@ -966,45 +902,133 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* ════════ SOLUTION / FEATURES ════════ */}
-      <Section id="features" className="py-16 sm:py-24 lg:py-32 relative">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-[#D4A853]/[0.03] rounded-full blur-[150px] -translate-y-1/2" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('featLabel')}</p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-              {tx('featTitle1')}<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A853] to-[#E8C97A]">{tx('featTitle2')}</span>
+      {/* ════════ FEATURES — Bento grid (Apple / Linear-style modular layout) ════════ */}
+      <Section id="features" className="py-20 sm:py-24 lg:py-32 relative">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div className="text-center mb-14 lg:mb-16 max-w-3xl mx-auto" variants={fadeUp}>
+            <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('featLabel')}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>
+              {tx('featTitle1')}
+              <span className="bg-gradient-to-r from-[#E8C97A] to-[#D4A853] bg-clip-text text-transparent">{tx('featTitle2')}</span>
             </h2>
-            <p className="mt-4 text-white/45 max-w-2xl mx-auto">{tx('featSub')}</p>
+            <p className="mt-5 text-white/55 text-base sm:text-lg leading-relaxed">{tx('featSub')}</p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <FeatureCard index={0} icon={LayoutIcon} title={tx('feat1Title')} description={tx('feat1Desc')} />
-            <FeatureCard index={1} icon={WrenchIcon} title={tx('feat2Title')} description={tx('feat2Desc')} />
-            <FeatureCard index={2} icon={UsersIcon} title={tx('feat3Title')} description={tx('feat3Desc')} />
-            <FeatureCard index={3} icon={ChartIcon} title={tx('feat4Title')} description={tx('feat4Desc')} />
-            <FeatureCard index={4} icon={CubeIcon} title={tx('feat5Title')} description={tx('feat5Desc')} />
-            <FeatureCard index={5} icon={AlertIcon} title={tx('feat6Title')} description={tx('feat6Desc')} />
+          {/* 4-col 3-row bento grid (desktop), stacked on mobile */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-3 gap-4 sm:gap-5 auto-rows-fr">
+            {/* 1. Dashboard — hero bento (2×2) with inline chart preview */}
+            <FeatureCard
+              index={0}
+              icon={LayoutIcon}
+              title={tx('feat1Title')}
+              description={tx('feat1Desc')}
+              className="lg:col-span-2 lg:row-span-2"
+            >
+              <div className="mt-6 rounded-xl border border-white/[0.08] bg-[#0A0E27]/60 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-white/40 font-semibold">Occupancy</span>
+                  <span className="text-[11px] text-[#D4A853] font-semibold">98%</span>
+                </div>
+                <div className="flex items-end gap-1.5 h-16">
+                  {[42, 56, 48, 68, 54, 78, 64, 88, 74, 60, 84, 92].map((h, i) => (
+                    <div key={i} className="flex-1 rounded-sm bg-gradient-to-t from-[#D4A853]/70 to-[#D4A853]/30" style={{ height: `${h}%` }} />
+                  ))}
+                </div>
+                <div className="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-white/[0.06]">
+                  <div><div className="text-white font-bold text-sm" style={{ fontFamily: HEAD_FONT }}>247</div><div className="text-[10px] text-white/40 uppercase tracking-wider">Units</div></div>
+                  <div><div className="text-white font-bold text-sm" style={{ fontFamily: HEAD_FONT }}>AED 2.4M</div><div className="text-[10px] text-white/40 uppercase tracking-wider">Revenue</div></div>
+                  <div><div className="text-white font-bold text-sm" style={{ fontFamily: HEAD_FONT }}>12</div><div className="text-[10px] text-white/40 uppercase tracking-wider">Alerts</div></div>
+                </div>
+              </div>
+            </FeatureCard>
+
+            {/* 2. 3D Building — tall (1×2) with mini visual */}
+            <FeatureCard
+              index={1}
+              icon={CubeIcon}
+              title={tx('feat5Title')}
+              description={tx('feat5Desc')}
+              className="lg:col-span-1 lg:row-span-2"
+            >
+              <div className="mt-6 rounded-xl border border-white/[0.08] bg-[#0A0E27]/60 p-4 flex items-center justify-center aspect-square">
+                <svg viewBox="0 0 120 120" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  {/* Simple isometric building */}
+                  <defs>
+                    <linearGradient id="bldgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#D4A853" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#D4A853" stopOpacity="0.05" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M60 20 L95 38 L95 88 L60 106 L25 88 L25 38 Z" fill="url(#bldgGrad)" stroke="#D4A853" strokeOpacity="0.5" />
+                  <path d="M25 38 L60 56 L95 38" stroke="#D4A853" strokeOpacity="0.5" />
+                  <path d="M60 56 L60 106" stroke="#D4A853" strokeOpacity="0.5" />
+                  {/* Windows */}
+                  {[0, 1, 2].map(row => (
+                    <g key={row}>
+                      <rect x={32 + row * 0.5} y={46 + row * 14} width="10" height="8" fill="#D4A853" fillOpacity={0.5 - row * 0.1} />
+                      <rect x={46} y={53 + row * 14} width="10" height="8" fill="#D4A853" fillOpacity={0.6 - row * 0.1} />
+                      <rect x={66} y={53 + row * 14} width="10" height="8" fill="#D4A853" fillOpacity={0.3 - row * 0.05} />
+                      <rect x={80} y={46 + row * 14} width="10" height="8" fill="#D4A853" fillOpacity={0.4 - row * 0.1} />
+                    </g>
+                  ))}
+                </svg>
+              </div>
+            </FeatureCard>
+
+            {/* 3. Alerts — small (1×1) */}
+            <FeatureCard
+              index={2}
+              icon={AlertIcon}
+              title={tx('feat6Title')}
+              description={tx('feat6Desc')}
+              className="lg:col-span-1 lg:row-span-1"
+            />
+
+            {/* 4. Maintenance — small (1×1) */}
+            <FeatureCard
+              index={3}
+              icon={WrenchIcon}
+              title={tx('feat2Title')}
+              description={tx('feat2Desc')}
+              className="lg:col-span-1 lg:row-span-1"
+            />
+
+            {/* 5. Unit Mgmt — wide (2×1) */}
+            <FeatureCard
+              index={4}
+              icon={UsersIcon}
+              title={tx('feat3Title')}
+              description={tx('feat3Desc')}
+              className="lg:col-span-2 lg:row-span-1"
+            />
+
+            {/* 6. Financial — wide (2×1) */}
+            <FeatureCard
+              index={5}
+              icon={ChartIcon}
+              title={tx('feat4Title')}
+              description={tx('feat4Desc')}
+              className="lg:col-span-2 lg:row-span-1"
+            />
           </div>
         </div>
       </Section>
 
-      {/* ════════ HOW IT WORKS ════════ */}
-      <Section id="how-it-works" className="py-16 sm:py-24 lg:py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.015] to-transparent pointer-events-none" />
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('howLabel')}</p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{tx('howTitle')}</h2>
+      {/* ════════ HOW IT WORKS — Premium numbered timeline ════════ */}
+      <Section id="how-it-works" className="py-20 sm:py-24 lg:py-32 relative">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div className="text-center mb-14 lg:mb-20" variants={fadeUp}>
+            <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('howLabel')}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>{tx('howTitle')}</h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+          <div className="grid md:grid-cols-3 gap-10 md:gap-6 relative">
+            {/* Connector line with gold gradient (desktop) */}
+            <div className="hidden md:block absolute top-8 left-[14%] right-[14%] h-px bg-gradient-to-r from-transparent via-[#D4A853]/30 to-transparent" aria-hidden="true" />
             {[
-              { step: 1, title: tx('step1Title'), desc: tx('step1Desc'), icon: BuildingIcon },
-              { step: 2, title: tx('step2Title'), desc: tx('step2Desc'), icon: WrenchIcon },
-              { step: 3, title: tx('step3Title'), desc: tx('step3Desc'), icon: ZapIcon },
+              { step: '01', title: tx('step1Title'), desc: tx('step1Desc'), icon: BuildingIcon },
+              { step: '02', title: tx('step2Title'), desc: tx('step2Desc'), icon: WrenchIcon },
+              { step: '03', title: tx('step3Title'), desc: tx('step3Desc'), icon: ZapIcon },
             ].map((item, i) => {
               const ref = useRef(null)
               const isInView = useInView(ref, { once: true, margin: '-40px' })
@@ -1018,21 +1042,16 @@ export default function LandingPage() {
                   variants={fadeUp}
                   className="text-center relative"
                 >
-                  <div className="relative mx-auto mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4A853]/20 to-[#D4A853]/5 border border-[#D4A853]/20 flex items-center justify-center mx-auto">
-                      <item.icon className="w-7 h-7 text-[#D4A853]" />
+                  <div className="relative mx-auto mb-6 w-fit">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4A853]/25 to-[#D4A853]/5 border border-[#D4A853]/25 flex items-center justify-center mx-auto relative z-10 backdrop-blur">
+                      <item.icon className="w-6 h-6 text-[#D4A853]" />
                     </div>
-                    <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-[#D4A853] flex items-center justify-center">
-                      <span className="text-xs font-bold text-[#0B1120]">{item.step}</span>
+                    <div className="absolute -top-2 -end-2 px-2 py-0.5 rounded-full bg-gradient-to-b from-[#E8C97A] to-[#D4A853] z-10 shadow-[0_4px_12px_-2px_rgba(212,168,83,0.6)]">
+                      <span className="text-[10px] font-bold text-[#0A0E27] tracking-wider">{item.step}</span>
                     </div>
                   </div>
-                  <h3 className="text-white font-semibold text-lg mb-2">{item.title}</h3>
-                  <p className="text-white/45 text-sm leading-relaxed">{item.desc}</p>
-                  {i < 2 && (
-                    <div className="hidden md:block absolute top-8 -right-6 lg:-right-8 text-white/10">
-                      <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-                    </div>
-                  )}
+                  <h3 className="text-white font-semibold text-xl mb-3 tracking-tight" style={{ fontFamily: HEAD_FONT }}>{item.title}</h3>
+                  <p className="text-white/55 text-sm leading-relaxed max-w-xs mx-auto">{item.desc}</p>
                 </motion.div>
               )
             })}
@@ -1040,15 +1059,15 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* ════════ PROPERTY TYPES ════════ */}
-      <Section className="py-16 sm:py-24 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('typesLabel')}</p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{tx('typesTitle')}</h2>
+      {/* ════════ PROPERTY TYPES — Glass tiles with gold illustrations ════════ */}
+      <Section className="py-20 sm:py-24 lg:py-32 relative">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div className="text-center mb-14 lg:mb-16" variants={fadeUp}>
+            <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('typesLabel')}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>{tx('typesTitle')}</h2>
           </motion.div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {[
               { icon: ResidentialIcon, label: tx('type1') },
               { icon: VillaIcon, label: tx('type2') },
@@ -1064,14 +1083,14 @@ export default function LandingPage() {
                   custom={i}
                   initial="hidden"
                   animate={isInView ? 'visible' : 'hidden'}
-                  variants={scaleIn}
-                  whileHover={{ y: -6 }}
-                  className="group bg-white/[0.03] border border-white/[0.06] rounded-2xl p-8 text-center hover:border-[#D4A853]/30 hover:bg-white/[0.05] transition-all duration-500 cursor-default"
+                  variants={fadeUp}
+                  whileHover={{ y: -4 }}
+                  className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.08] rounded-2xl p-8 sm:p-10 text-center hover:border-[#D4A853]/30 hover:from-white/[0.08] transition-all duration-300 cursor-default"
                 >
-                  <div className="text-[#D4A853]/70 group-hover:text-[#D4A853] transition-colors duration-500 flex justify-center mb-4">
+                  <div className="text-[#D4A853]/80 group-hover:text-[#D4A853] transition-colors duration-300 flex justify-center mb-4">
                     <item.icon />
                   </div>
-                  <h3 className="text-white font-semibold text-sm">{item.label}</h3>
+                  <h3 className="text-white font-semibold text-sm tracking-tight" style={{ fontFamily: HEAD_FONT }}>{item.label}</h3>
                 </motion.div>
               )
             })}
@@ -1079,52 +1098,45 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* ════════ MAINTENANCE SHOWCASE ════════ */}
-      <Section className="py-16 sm:py-24 lg:py-32 relative">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-[#D4A853]/[0.025] rounded-full blur-[150px] -translate-y-1/2" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      {/* ════════ MAINTENANCE SHOWCASE — Split layout with glass cards ════════ */}
+      <Section className="py-20 sm:py-24 lg:py-32 relative">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div variants={slideInLeft}>
-              <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('maintLabel')}</p>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-6">
+              <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('maintLabel')}</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-6 leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>
                 {tx('maintTitle')}
               </h2>
-              <p className="text-white/45 leading-relaxed mb-8">
+              <p className="text-white/60 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
                 {tx('maintSub')}
               </p>
 
-              {/* Alert examples */}
+              {/* Alert badges */}
               <div className="flex flex-wrap gap-3">
                 <motion.span
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/25 text-red-400 text-xs font-semibold"
+                  animate={{ opacity: [0.85, 1, 0.85] }}
+                  transition={{ duration: 2.4, repeat: Infinity }}
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/25 text-red-300 text-xs font-semibold"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                   {tx('alertOverdue')}
                 </motion.span>
-                <motion.span
-                  animate={{ scale: [1, 1.03, 1] }}
-                  transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/25 text-amber-400 text-xs font-semibold"
-                >
+                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-semibold">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                   {tx('alertUpcoming')}
-                </motion.span>
+                </span>
               </div>
             </motion.div>
 
             <motion.div variants={slideInRight}>
-              <div className="space-y-3">
+              <div className="grid sm:grid-cols-2 gap-3">
                 {[
-                  { icon: DropletIcon, label: tx('maint1'), detail: tx('maint1d'), color: 'text-blue-400' },
-                  { icon: ThermometerIcon, label: tx('maint2'), detail: tx('maint2d'), color: 'text-cyan-400' },
-                  { icon: ArrowUpIcon, label: tx('maint3'), detail: tx('maint3d'), color: 'text-violet-400' },
-                  { icon: FlameIcon, label: tx('maint4'), detail: tx('maint4d'), color: 'text-red-400' },
-                  { icon: ZapIcon, label: tx('maint5'), detail: tx('maint5d'), color: 'text-yellow-400' },
-                  { icon: WrenchIcon, label: tx('maint6'), detail: tx('maint6d'), color: 'text-emerald-400' },
+                  { icon: DropletIcon, label: tx('maint1'), detail: tx('maint1d'), color: 'text-blue-300', bg: 'from-blue-500/15 to-blue-500/5' },
+                  { icon: ThermometerIcon, label: tx('maint2'), detail: tx('maint2d'), color: 'text-cyan-300', bg: 'from-cyan-500/15 to-cyan-500/5' },
+                  { icon: ArrowUpIcon, label: tx('maint3'), detail: tx('maint3d'), color: 'text-violet-300', bg: 'from-violet-500/15 to-violet-500/5' },
+                  { icon: FlameIcon, label: tx('maint4'), detail: tx('maint4d'), color: 'text-red-300', bg: 'from-red-500/15 to-red-500/5' },
+                  { icon: ZapIcon, label: tx('maint5'), detail: tx('maint5d'), color: 'text-yellow-300', bg: 'from-yellow-500/15 to-yellow-500/5' },
+                  { icon: WrenchIcon, label: tx('maint6'), detail: tx('maint6d'), color: 'text-emerald-300', bg: 'from-emerald-500/15 to-emerald-500/5' },
                 ].map((item, i) => {
                   const ref = useRef(null)
                   const isInView = useInView(ref, { once: true, margin: '-20px' })
@@ -1136,14 +1148,14 @@ export default function LandingPage() {
                       initial="hidden"
                       animate={isInView ? 'visible' : 'hidden'}
                       variants={fadeUp}
-                      className="flex items-center gap-4 bg-white/[0.03] border border-white/[0.06] rounded-xl px-5 py-4 hover:border-white/[0.12] transition-all duration-300"
+                      className="flex items-start gap-3 bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.08] rounded-xl p-4 hover:border-white/15 transition-colors duration-300"
                     >
-                      <div className={`${item.color} flex-shrink-0`}>
-                        <item.icon className="w-5 h-5" />
+                      <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${item.bg} border border-white/[0.06] flex items-center justify-center flex-shrink-0`}>
+                        <item.icon className={`w-4 h-4 ${item.color}`} />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-white font-medium text-sm">{item.label}</p>
-                        <p className="text-white/40 text-xs">{item.detail}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-white font-semibold text-sm tracking-tight">{item.label}</p>
+                        <p className="text-white/45 text-xs leading-relaxed mt-0.5">{item.detail}</p>
                       </div>
                     </motion.div>
                   )
@@ -1154,17 +1166,16 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* ════════ SECURITY ════════ */}
-      <Section id="security" className="py-16 sm:py-24 lg:py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent pointer-events-none" />
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('secLabel')}</p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{tx('secTitle')}</h2>
-            <p className="mt-4 text-white/45 max-w-xl mx-auto">{tx('secSub')}</p>
+      {/* ════════ SECURITY — 4-up glass trust badges ════════ */}
+      <Section id="security" className="py-20 sm:py-24 lg:py-32 relative">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div className="text-center mb-14 lg:mb-16 max-w-2xl mx-auto" variants={fadeUp}>
+            <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('secLabel')}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>{tx('secTitle')}</h2>
+            <p className="mt-5 text-white/55 text-base sm:text-lg leading-relaxed">{tx('secSub')}</p>
           </motion.div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {[
               { icon: ShieldCheckIcon, label: tx('sec1'), desc: tx('sec1d') },
               { icon: LockIcon, label: tx('sec2'), desc: tx('sec2d') },
@@ -1180,14 +1191,14 @@ export default function LandingPage() {
                   custom={i}
                   initial="hidden"
                   animate={isInView ? 'visible' : 'hidden'}
-                  variants={scaleIn}
-                  className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 text-center hover:border-[#D4A853]/20 transition-all duration-500"
+                  variants={fadeUp}
+                  className="bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.08] rounded-2xl p-6 lg:p-7 text-center hover:border-[#D4A853]/25 transition-colors duration-300"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-[#D4A853]/10 flex items-center justify-center mx-auto mb-4">
-                    <item.icon className="w-6 h-6 text-[#D4A853]" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#D4A853]/20 to-[#D4A853]/5 border border-[#D4A853]/15 flex items-center justify-center mx-auto mb-4">
+                    <item.icon className="w-5 h-5 text-[#D4A853]" />
                   </div>
-                  <h3 className="text-white font-semibold text-sm mb-1">{item.label}</h3>
-                  <p className="text-white/40 text-xs">{item.desc}</p>
+                  <h3 className="text-white font-semibold text-sm mb-1 tracking-tight">{item.label}</h3>
+                  <p className="text-white/45 text-xs leading-relaxed">{item.desc}</p>
                 </motion.div>
               )
             })}
@@ -1195,31 +1206,19 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* ════════ TESTIMONIALS ════════ */}
-      <Section className="py-16 sm:py-24 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div className="text-center mb-16" variants={fadeUp}>
-            <p className="text-[#D4A853] text-sm font-semibold uppercase tracking-wider mb-3">{tx('testLabel')}</p>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{tx('testTitle')}</h2>
+      {/* ════════ TESTIMONIALS — Glass cards with gold stars ════════ */}
+      <Section className="py-20 sm:py-24 lg:py-32 relative">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div className="text-center mb-14 lg:mb-16" variants={fadeUp}>
+            <p className="text-[#D4A853] text-xs font-semibold uppercase tracking-[0.24em] mb-4">{tx('testLabel')}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1] max-w-3xl mx-auto" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>{tx('testTitle')}</h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-5">
             {[
-              {
-                name: tx('test1Name'),
-                role: tx('test1Role'),
-                quote: tx('test1Quote'),
-              },
-              {
-                name: tx('test2Name'),
-                role: tx('test2Role'),
-                quote: tx('test2Quote'),
-              },
-              {
-                name: tx('test3Name'),
-                role: tx('test3Role'),
-                quote: tx('test3Quote'),
-              },
+              { name: tx('test1Name'), role: tx('test1Role'), quote: tx('test1Quote') },
+              { name: tx('test2Name'), role: tx('test2Role'), quote: tx('test2Quote') },
+              { name: tx('test3Name'), role: tx('test3Role'), quote: tx('test3Quote') },
             ].map((t, i) => {
               const ref = useRef(null)
               const isInView = useInView(ref, { once: true, margin: '-40px' })
@@ -1231,9 +1230,9 @@ export default function LandingPage() {
                   initial="hidden"
                   animate={isInView ? 'visible' : 'hidden'}
                   variants={fadeUp}
-                  className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 hover:border-white/[0.12] transition-all duration-500"
+                  className="bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.08] rounded-2xl p-7 hover:border-[#D4A853]/25 transition-colors duration-300"
                 >
-                  {/* Stars */}
+                  {/* Gold stars */}
                   <div className="flex gap-0.5 mb-4">
                     {[...Array(5)].map((_, j) => (
                       <svg key={j} className="w-4 h-4 text-[#D4A853]" viewBox="0 0 20 20" fill="currentColor">
@@ -1241,14 +1240,14 @@ export default function LandingPage() {
                       </svg>
                     ))}
                   </div>
-                  <p className="text-white/60 text-sm leading-relaxed mb-6 italic">"{t.quote}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4A853]/30 to-[#D4A853]/10 flex items-center justify-center text-[#D4A853] font-bold text-sm">
+                  <p className="text-white/80 text-[15px] leading-relaxed mb-6">"{t.quote}"</p>
+                  <div className="flex items-center gap-3 pt-4 border-t border-white/[0.06]">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E8C97A]/40 to-[#D4A853]/15 border border-[#D4A853]/25 flex items-center justify-center text-[#E8C97A] font-bold text-sm" style={{ fontFamily: HEAD_FONT }}>
                       {t.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </div>
                     <div>
-                      <p className="text-white font-semibold text-sm">{t.name}</p>
-                      <p className="text-white/40 text-xs">{t.role}</p>
+                      <p className="text-white font-semibold text-sm tracking-tight">{t.name}</p>
+                      <p className="text-white/45 text-xs">{t.role}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -1258,21 +1257,26 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* ════════ FINAL CTA ════════ */}
-      <Section className="py-16 sm:py-24 lg:py-32">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ════════ FINAL CTA — Gold gradient block with deep glow ════════ */}
+      <Section className="py-20 sm:py-24 lg:py-32 relative">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            variants={scaleIn}
-            className="relative bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.08] rounded-2xl sm:rounded-3xl p-8 sm:p-12 lg:p-16 text-center overflow-hidden"
+            variants={fadeUp}
+            className="relative rounded-3xl border border-[#D4A853]/20 bg-gradient-to-br from-[#D4A853]/[0.1] via-[#0A0E27] to-[#0A0E27] overflow-hidden"
           >
-            {/* Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-[#D4A853]/[0.08] rounded-full blur-[80px] pointer-events-none" />
+            {/* Glow orb */}
+            <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#D4A853]/25 rounded-full blur-[120px] pointer-events-none" />
+            {/* Grid pattern */}
+            <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
+              backgroundImage: 'linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)',
+              backgroundSize: '48px 48px',
+            }} />
 
-            <div className="relative">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            <div className="relative p-10 sm:p-14 lg:p-20 text-center">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-5 leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>
                 {tx('ctaTitle')}
               </h2>
-              <p className="text-white/45 max-w-lg mx-auto mb-8 leading-relaxed">
+              <p className="text-white/60 max-w-xl mx-auto mb-9 leading-relaxed text-base sm:text-lg">
                 {tx('ctaSub')}
               </p>
               <GoldButton onClick={() => navigate('/signup')} size="lg">
@@ -1286,19 +1290,19 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* ════════ FOOTER ════════ */}
-      <footer id="footer" className="border-t border-white/[0.06] py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+      {/* ════════ FOOTER — Minimal dark ════════ */}
+      <footer id="footer" className="relative border-t border-white/[0.06] py-10 sm:py-12">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Logo & tagline */}
-            <div className="text-center md:text-left">
+            <div className="text-center md:text-start">
               <div className="flex items-center gap-2.5 justify-center md:justify-start">
-                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-[#D4A853] to-[#E8C97A]">
-                  <BuildingIcon className="w-4 h-4 text-[#0B1120]" />
+                <div className="flex items-center justify-center w-7 h-7 rounded-md bg-gradient-to-br from-[#E8C97A] to-[#D4A853]">
+                  <BuildingIcon className="w-4 h-4 text-[#0A0E27]" />
                 </div>
-                <span className="text-base font-bold tracking-tight text-white">Bait to Maintain</span>
+                <span className="text-base font-bold tracking-tight text-white" style={{ fontFamily: HEAD_FONT }}>Bait to Maintain</span>
               </div>
-              <p className="text-white/30 text-xs mt-2">{tx('footerTagline')}</p>
+              <p className="text-white/40 text-xs mt-2">{tx('footerTagline')}</p>
             </div>
 
             {/* Links */}
@@ -1312,21 +1316,21 @@ export default function LandingPage() {
                 <button
                   key={item.label}
                   onClick={item.action || undefined}
-                  className="text-white/40 hover:text-white/70 transition-colors duration-300"
+                  className="cursor-pointer text-white/50 hover:text-white transition-colors duration-200"
                 >
                   {item.label}
                 </button>
               ))}
               <Link
                 to="/privacy"
-                className="text-white/40 hover:text-white/70 transition-colors duration-300"
+                className="text-white/50 hover:text-white transition-colors duration-200"
               >
                 {tx('footerPrivacy')}
               </Link>
             </div>
 
             {/* Copyright */}
-            <p className="text-white/25 text-xs text-center md:text-right">
+            <p className="text-white/30 text-xs text-center md:text-end">
               &copy; {new Date().getFullYear()} Bait to Maintain. All rights reserved.
             </p>
           </div>
