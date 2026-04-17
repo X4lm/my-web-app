@@ -862,9 +862,60 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ════════ PROBLEM — dark glass pain-point cards ════════ */}
-      <Section id="problem" className="py-20 sm:py-24 lg:py-32 relative">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ════════ PROBLEM — dark glass pain-point cards + floating alert backdrop ════════ */}
+      <Section id="problem" className="py-20 sm:py-24 lg:py-32 relative overflow-hidden">
+        {/* Floating alert pills — the chaos a property manager juggles */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          {[
+            { en: 'Overdue: Water Tank Cleaning',        ar: 'متأخر: تنظيف خزان المياه',           c: 'red',   style: { top: '6%',  insetInlineStart: '4%'  }, dur: 7.2, delay: 0.0 },
+            { en: 'Upcoming: AC Service in 5 days',      ar: 'قادم: خدمة تكييف خلال 5 أيام',        c: 'amber', style: { top: '10%', insetInlineEnd:   '6%'  }, dur: 8.4, delay: 0.6 },
+            { en: 'Rent Late — Unit 404',                ar: 'إيجار متأخر — وحدة 404',             c: 'red',   style: { top: '22%', insetInlineStart: '62%' }, dur: 9.1, delay: 1.1 },
+            { en: 'Lease Expires: 14 days',              ar: 'ينتهي العقد: 14 يوم',                c: 'amber', style: { top: '26%', insetInlineStart: '28%' }, dur: 8.0, delay: 1.8 },
+            { en: 'Ejari Renewal Required',              ar: 'تجديد إيجاري مطلوب',                  c: 'blue',  style: { top: '46%', insetInlineStart: '2%'  }, dur: 9.6, delay: 0.3 },
+            { en: 'Pool Cleaning Overdue',               ar: 'تنظيف المسبح متأخر',                  c: 'red',   style: { top: '52%', insetInlineEnd:   '3%'  }, dur: 7.8, delay: 0.9 },
+            { en: 'Elevator Inspection Due',             ar: 'فحص المصعد مستحق',                    c: 'amber', style: { top: '70%', insetInlineEnd:   '8%'  }, dur: 8.7, delay: 1.4 },
+            { en: 'Fire Safety Check Missed',            ar: 'فاتك فحص السلامة من الحريق',          c: 'red',   style: { top: '82%', insetInlineStart: '8%'  }, dur: 9.2, delay: 0.5 },
+            { en: 'Trade License Expired',               ar: 'انتهت الرخصة التجارية',                c: 'red',   style: { top: '86%', insetInlineEnd:   '30%' }, dur: 7.5, delay: 1.7 },
+            { en: 'Generator Service: 3 days',           ar: 'خدمة المولد: 3 أيام',                 c: 'amber', style: { top: '62%', insetInlineStart: '40%' }, dur: 8.9, delay: 2.2 },
+            { en: 'Noise Complaint: Unit 302',           ar: 'شكوى ضوضاء: وحدة 302',                c: 'amber', style: { top: '38%', insetInlineEnd:   '38%' }, dur: 9.4, delay: 0.8 },
+            { en: 'Smoke Detector Battery Low',          ar: 'بطارية كاشف الدخان منخفضة',           c: 'blue',  style: { top: '18%', insetInlineEnd:   '40%' }, dur: 7.9, delay: 2.0 },
+            { en: 'Parking Permit Expired',              ar: 'انتهى تصريح وقوف السيارة',             c: 'red',   style: { top: '74%', insetInlineStart: '25%' }, dur: 8.3, delay: 1.2 },
+            { en: 'Municipality Fee Due',                ar: 'رسوم البلدية مستحقة',                  c: 'amber', style: { top: '58%', insetInlineEnd:   '44%' }, dur: 9.0, delay: 2.5 },
+          ].map((p, i) => {
+            const palette = {
+              red:   { bg: 'bg-red-500/[0.08]',   border: 'border-red-500/20',   text: 'text-red-300/70',   dot: 'bg-red-400/70'   },
+              amber: { bg: 'bg-amber-500/[0.08]', border: 'border-amber-500/20', text: 'text-amber-300/70', dot: 'bg-amber-400/70' },
+              blue:  { bg: 'bg-blue-500/[0.08]',  border: 'border-blue-500/20',  text: 'text-blue-300/70',  dot: 'bg-blue-400/70'  },
+            }[p.c]
+            return (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{
+                  opacity: [0.35, 0.65, 0.35],
+                  y: [0, -14, 0],
+                  x: [0, i % 2 === 0 ? 6 : -6, 0],
+                }}
+                transition={{
+                  duration: p.dur,
+                  repeat: Infinity,
+                  delay: p.delay,
+                  ease: 'easeInOut',
+                }}
+                style={{ ...p.style, filter: 'blur(0.4px)' }}
+                className={`absolute inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg backdrop-blur-sm border text-xs font-semibold whitespace-nowrap ${palette.bg} ${palette.border} ${palette.text}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${palette.dot}`} />
+                {isRTL ? p.ar : p.en}
+              </motion.span>
+            )
+          })}
+        </div>
+
+        {/* Soft radial dim around center so cards remain readable above the chaos */}
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(10,14,39,0.65)_0%,rgba(10,14,39,0.2)_55%,transparent_100%)]" aria-hidden="true" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-14 lg:mb-16 max-w-3xl mx-auto" variants={fadeUp} custom={0}>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1]" style={{ fontFamily: HEAD_FONT, letterSpacing: '-0.02em' }}>
               {tx('problemTitle1')}
@@ -888,7 +939,7 @@ export default function LandingPage() {
                   initial="hidden"
                   animate={isInView ? 'visible' : 'hidden'}
                   variants={fadeUp}
-                  className="relative bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.08] rounded-2xl p-7 sm:p-8 hover:border-white/20 transition-colors duration-300"
+                  className="relative bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.08] rounded-2xl p-7 sm:p-8 hover:border-white/20 transition-colors duration-300 backdrop-blur-md"
                 >
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.accent} border border-white/[0.08] flex items-center justify-center mb-5`}>
                     <item.icon className={`w-5 h-5 ${item.tint}`} />
