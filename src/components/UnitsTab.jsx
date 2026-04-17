@@ -131,11 +131,40 @@ export default function UnitsTab({ propertyId, propertyType, propertyName, owner
   async function handleSave(data) {
     setSaving(true)
     try {
+      let unitId = editing?.id
       if (editing) {
         await updateDoc(doc(db, basePath, editing.id), { ...data, updatedAt: serverTimestamp() })
       } else {
-        await addDoc(collection(db, basePath), { ...data, createdAt: serverTimestamp() })
+        const ref = await addDoc(collection(db, basePath), { ...data, createdAt: serverTimestamp() })
+        unitId = ref.id
       }
+
+      // Auto-create a pending tenant invitation so linkedProperties gets
+      // populated on the tenant's next login (via AuthContext.resolveInvitations).
+      // Skip if: no email, no change since last save, or duplicate already exists.
+      const email = (data.tenantEmail || '').trim().toLowerCase()
+      const prevEmail = (editing?.tenantEmail || '').trim().toLowerCase()
+      if (email && email !== prevEmail) {
+        try {
+          await createInvitation({
+            inviterUid: currentUser.uid,
+            inviterName: currentUser.displayName || currentUser.email,
+            inviteeEmail: email,
+            propertyId,
+            propertyName: propertyName || '',
+            unitId,
+            unitNumber: data.unitNumber,
+            role: 'tenant',
+            inviterRole: userProfile?.role || 'owner',
+          })
+        } catch (err) {
+          // DUPLICATE_INVITE is fine (tenant already linked/invited) — don't break the save
+          if (err.message !== 'DUPLICATE_INVITE') {
+            logError('[UnitsTab] Auto tenant invite error:', err)
+          }
+        }
+      }
+
       setDialogOpen(false)
       setEditing(null)
     } catch (err) {

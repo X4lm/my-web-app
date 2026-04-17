@@ -128,10 +128,25 @@ export default function WorkOrdersTab({ propertyId, ownerUid }) {
         estimatedCost: form.estimatedCost ? Number(form.estimatedCost) : '',
         assignedVendorUid: form.assignedVendorUid || null,
       }
+      const by = currentUser.displayName || currentUser.email || 'Unknown'
       if (editing) {
-        await updateDoc(doc(db, colPath, editing.id), { ...data, updatedAt: serverTimestamp() })
+        // If status changed, append a history entry so the manager can see
+        // who moved the ticket and when. Stored as a plain array because
+        // serverTimestamp() can't live inside an array element.
+        const patch = { ...data, updatedAt: serverTimestamp() }
+        if (editing.status !== data.status) {
+          const entry = { from: editing.status, to: data.status, at: new Date().toISOString(), by }
+          patch.statusHistory = [...(editing.statusHistory || []), entry]
+        }
+        await updateDoc(doc(db, colPath, editing.id), patch)
       } else {
-        await addDoc(collection(db, colPath), { ...data, createdAt: serverTimestamp() })
+        // Seed history with the initial status on creation.
+        const entry = { from: null, to: data.status, at: new Date().toISOString(), by }
+        await addDoc(collection(db, colPath), {
+          ...data,
+          statusHistory: [entry],
+          createdAt: serverTimestamp(),
+        })
       }
       setDialogOpen(false)
       setEditing(null)
@@ -357,6 +372,32 @@ export default function WorkOrdersTab({ propertyId, ownerUid }) {
               <Label>{t('workOrders.reportedBy')}</Label>
               <Input value={form.reportedBy} onChange={e => set('reportedBy', e.target.value)} placeholder={t('workOrders.reportedByPlaceholder')} maxLength={200} />
             </div>
+
+            {/* Status trail — shown only when editing so manager sees who moved the ticket */}
+            {editing && (editing.statusHistory || []).length > 0 && (
+              <div className="space-y-2 pt-2 border-t">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t('workOrders.statusTrail')}</Label>
+                <ol className="space-y-1.5 text-xs">
+                  {editing.statusHistory.map((h, i) => {
+                    const toLabel = t(STATUS[h.to]?.tKey || h.to)
+                    const fromLabel = h.from ? t(STATUS[h.from]?.tKey || h.from) : null
+                    const when = h.at ? new Date(h.at).toLocaleString() : '—'
+                    return (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium">
+                            {fromLabel ? `${fromLabel} → ${toLabel}` : toLabel}
+                          </p>
+                          <p className="text-muted-foreground">{h.by} · {when}</p>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ol>
+              </div>
+            )}
+
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>{t('common.cancel')}</Button>
               <Button type="submit" disabled={saving}>
