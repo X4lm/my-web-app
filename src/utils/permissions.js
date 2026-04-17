@@ -21,6 +21,9 @@ export const FEATURES = {
   MESSAGES:         'messages',
   CHEQUES:          'cheques',
   PORTFOLIO:        'portfolio',
+  PRIORITY:         'priority',
+  DOC_EXPIRY:       'doc_expiry',
+  ATLAS:            'atlas',
   SETTINGS:         'settings',
   ADMIN:            'admin',
   ADMIN_USERS:      'admin_users',
@@ -83,7 +86,7 @@ const ACCESS = {
   owner: new Set([
     FEATURES.DASHBOARD, FEATURES.PROPERTIES, FEATURES.PROPERTY_DETAIL,
     FEATURES.ALERTS, FEATURES.LOGS, FEATURES.TEAM, FEATURES.TENANTS, FEATURES.MESSAGES,
-    FEATURES.CHEQUES, FEATURES.PORTFOLIO, FEATURES.SETTINGS,
+    FEATURES.CHEQUES, FEATURES.PORTFOLIO, FEATURES.PRIORITY, FEATURES.DOC_EXPIRY, FEATURES.ATLAS, FEATURES.SETTINGS,
     // All tabs
     FEATURES.TAB_OVERVIEW, FEATURES.TAB_UNITS, FEATURES.TAB_MAINTENANCE,
     FEATURES.TAB_WORK_ORDERS, FEATURES.TAB_FINANCIALS, FEATURES.TAB_INSPECTION,
@@ -103,7 +106,7 @@ const ACCESS = {
   property_manager: new Set([
     FEATURES.DASHBOARD, FEATURES.PROPERTIES, FEATURES.PROPERTY_DETAIL,
     FEATURES.ALERTS, FEATURES.LOGS, FEATURES.TEAM, FEATURES.TENANTS, FEATURES.MESSAGES,
-    FEATURES.CHEQUES, FEATURES.SETTINGS,
+    FEATURES.CHEQUES, FEATURES.PRIORITY, FEATURES.DOC_EXPIRY, FEATURES.ATLAS, FEATURES.SETTINGS,
     // All tabs except bulk ops
     FEATURES.TAB_OVERVIEW, FEATURES.TAB_UNITS, FEATURES.TAB_MAINTENANCE,
     FEATURES.TAB_WORK_ORDERS, FEATURES.TAB_FINANCIALS, FEATURES.TAB_INSPECTION,
@@ -206,17 +209,17 @@ const INVITE_MAP = {
 
 export const SIDEBAR_ITEMS = {
   admin: [
-    'dashboard', 'properties', 'alerts', 'logs', 'team', 'tenants',
+    'dashboard', 'priority', 'properties', 'atlas', 'alerts', 'doc_expiry', 'logs', 'team', 'tenants',
     'messages', 'cheques', 'portfolio', 'settings',
     // Admin section
     'admin', 'admin_users', 'admin_analytics', 'admin_settings', 'admin_support_chat',
   ],
   owner: [
-    'dashboard', 'properties', 'alerts', 'logs', 'team', 'tenants',
+    'dashboard', 'priority', 'properties', 'atlas', 'alerts', 'doc_expiry', 'logs', 'team', 'tenants',
     'messages', 'cheques', 'portfolio', 'settings',
   ],
   property_manager: [
-    'dashboard', 'properties', 'alerts', 'logs', 'team', 'tenants',
+    'dashboard', 'priority', 'properties', 'atlas', 'alerts', 'doc_expiry', 'logs', 'team', 'tenants',
     'messages', 'cheques', 'settings',
   ],
   staff: [

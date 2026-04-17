@@ -16,6 +16,9 @@ const TenantsPage = lazy(() => import('@/pages/TenantsPage'))
 const MessagesPage = lazy(() => import('@/pages/MessagesPage'))
 const ChequeCalendarPage = lazy(() => import('@/pages/ChequeCalendarPage'))
 const PortfolioPage = lazy(() => import('@/pages/PortfolioPage'))
+const PriorityPage = lazy(() => import('@/pages/PriorityPage'))
+const DocumentsExpiryPage = lazy(() => import('@/pages/DocumentsExpiryPage'))
+const AtlasPage = lazy(() => import('@/pages/AtlasPage'))
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'))
 const AdminUsersPage = lazy(() => import('@/pages/AdminUsersPage'))
 const AdminAnalyticsPage = lazy(() => import('@/pages/AdminAnalyticsPage'))
@@ -70,6 +73,9 @@ export default function App() {
         <Route path="/templates" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
         <Route path="/cheques" element={<PrivateRoute><ChequeCalendarPage /></PrivateRoute>} />
         <Route path="/portfolio" element={<PrivateRoute><PortfolioPage /></PrivateRoute>} />
+        <Route path="/today" element={<PrivateRoute><PriorityPage /></PrivateRoute>} />
+        <Route path="/documents" element={<PrivateRoute><DocumentsExpiryPage /></PrivateRoute>} />
+        <Route path="/atlas" element={<PrivateRoute><AtlasPage /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />

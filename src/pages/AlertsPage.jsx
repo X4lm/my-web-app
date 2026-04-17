@@ -1,10 +1,13 @@
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
+import { usePortfolioAggregates } from '@/hooks/usePortfolioAggregates'
 import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
 import AlertsPanel from '@/components/AlertsPanel'
+import ExpenseAnomaliesCard from '@/components/ExpenseAnomaliesCard'
 
 export default function AlertsPage() {
-  const { allAlerts, loading } = usePropertyAlerts()
+  const { properties, allAlerts, loading } = usePropertyAlerts()
+  const { expenses } = usePortfolioAggregates(properties)
   const { t } = useLocale()
 
   return (
@@ -16,6 +19,8 @@ export default function AlertsPage() {
             {t('alerts.subtitle')}
           </p>
         </div>
+
+        <ExpenseAnomaliesCard expenses={expenses} />
 
         {loading ? (
           <p className="text-sm text-muted-foreground py-12 text-center">{t('alerts.loading')}</p>

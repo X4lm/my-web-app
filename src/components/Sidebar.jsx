@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog, MessageCircle } from 'lucide-react'
+import { LayoutDashboard, Building2, Settings, Home, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog, MessageCircle, ListTodo, Map } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useAuth, ROLES } from '@/contexts/AuthContext'
@@ -12,8 +12,11 @@ const NAV_GROUPS = [
     // Main - no header needed
     items: [
       { id: 'dashboard',   to: '/dashboard',   key: 'nav.dashboard',   icon: LayoutDashboard },
+      { id: 'priority',    to: '/today',       key: 'nav.priority',    icon: ListTodo },
       { id: 'properties',  to: '/properties',  key: 'nav.properties',  icon: Building2 },
+      { id: 'atlas',       to: '/atlas',       key: 'nav.atlas',       icon: Map },
       { id: 'alerts',      to: '/alerts',      key: 'nav.alerts',      icon: AlertCircle },
+      { id: 'doc_expiry',  to: '/documents',   key: 'nav.docExpiry',   icon: FileText },
     ],
   },
   {

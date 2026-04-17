@@ -5,11 +5,12 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { Button } from '@/components/ui/button'
 import WeatherWidget from '@/components/WeatherWidget'
 import ChatWithDev from '@/components/ChatWithDev'
+import CommandPalette from '@/components/CommandPalette'
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog, MessageCircle } from 'lucide-react'
+import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog, MessageCircle, ListTodo, Map } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { getSidebarItems } from '@/utils/permissions'
@@ -20,8 +21,11 @@ const NAV_GROUPS = [
     // Main - no header needed
     items: [
       { id: 'dashboard',   to: '/dashboard',   key: 'nav.dashboard',   icon: LayoutDashboard },
+      { id: 'priority',    to: '/today',       key: 'nav.priority',    icon: ListTodo },
       { id: 'properties',  to: '/properties',  key: 'nav.properties',  icon: Building2 },
+      { id: 'atlas',       to: '/atlas',       key: 'nav.atlas',       icon: Map },
       { id: 'alerts',      to: '/alerts',      key: 'nav.alerts',      icon: AlertCircle },
+      { id: 'doc_expiry',  to: '/documents',   key: 'nav.docExpiry',   icon: FileText },
     ],
   },
   {
@@ -114,8 +118,10 @@ export default function Header() {
           {/* Spacer for desktop */}
           <div className="hidden md:block" />
 
-          {/* Right side: weather + chat + theme toggle + user menu */}
+          {/* Right side: search + weather + chat + theme toggle + user menu */}
           <div className="flex items-center gap-3">
+            <CommandPalette />
+
             <WeatherWidget />
 
             <ChatWithDev />

@@ -6,6 +6,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { hasUnits, TYPE_LABELS } from '@/lib/utils'
 import AppLayout from '@/components/AppLayout'
+import CashflowTimelineCard from '@/components/CashflowTimelineCard'
+import OccupancyForecastCard from '@/components/OccupancyForecastCard'
+import { usePortfolioAggregates } from '@/hooks/usePortfolioAggregates'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -27,6 +30,7 @@ export default function PortfolioPage() {
   const [propertyData, setPropertyData] = useState({})
   const [generating, setGenerating] = useState(false)
   const [vatRate, setVatRate] = useState(DEFAULT_VAT_RATE)
+  const { cheques: allCheques, expenses: allExpenses, units: allUnits } = usePortfolioAggregates(properties)
 
   useEffect(() => {
     getDoc(doc(db, 'platformSettings', 'general')).then(snap => {
@@ -210,6 +214,12 @@ export default function PortfolioPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Cashflow + Forecast */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <CashflowTimelineCard cheques={allCheques} expenses={allExpenses} />
+          <OccupancyForecastCard units={allUnits} />
+        </div>
 
         {/* Property P&L table */}
         <Card>

@@ -23,6 +23,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useNavigate } from 'react-router-dom'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
+import { usePortfolioAggregates } from '@/hooks/usePortfolioAggregates'
+import { computeHealthScore } from '@/utils/visibility'
+import PropertyHealthBadge from '@/components/PropertyHealthBadge'
 import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCircle } from 'lucide-react'
 
 
@@ -43,6 +46,7 @@ export default function Properties() {
   const [saving, setSaving] = useState(false)
   const navigate = useNavigate()
   const { alertsByProperty } = usePropertyAlerts()
+  const { units: allUnits, cheques: allCheques, documents: allDocs } = usePortfolioAggregates(properties)
 
   useEffect(() => {
     const q = query(
@@ -214,6 +218,7 @@ export default function Properties() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-14">{t('health.title')}</TableHead>
                     <TableHead>{t('properties.property')}</TableHead>
                     <TableHead className="hidden sm:table-cell">{t('common.type')}</TableHead>
                     <TableHead className="hidden md:table-cell">{t('common.address')}</TableHead>
@@ -223,8 +228,17 @@ export default function Properties() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map(p => (
+                  {filtered.map(p => {
+                    const pUnits = allUnits.filter(u => u.propertyId === p.id)
+                    const pCheques = allCheques.filter(c => c.propertyId === p.id)
+                    const pDocs = allDocs.filter(d => d.propertyId === p.id)
+                    const pAlerts = alertsByProperty[p.id] || []
+                    const health = computeHealthScore({ property: p, units: pUnits, alerts: pAlerts, cheques: pCheques, documents: pDocs })
+                    return (
                     <TableRow key={p.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/properties/${p.id}`)}>
+                      <TableCell>
+                        <PropertyHealthBadge score={health.score} grade={health.grade} tone={health.tone} size="sm" />
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{p.name}</span>
@@ -293,7 +307,7 @@ export default function Properties() {
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )})}
                 </TableBody>
               </Table>
               </div>
