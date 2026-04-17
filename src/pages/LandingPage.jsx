@@ -619,16 +619,16 @@ export default function LandingPage() {
               <div className="relative flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-[#E8C97A] to-[#D4A853] shadow-[0_0_20px_-4px_rgba(212,168,83,0.6)]">
                 <BuildingIcon className="w-5 h-5 text-[#0A0E27]" />
               </div>
-              <span className="text-lg font-bold tracking-tight text-white" style={{ fontFamily: HEAD_FONT }}>Bait to Maintain</span>
+              <span className="text-lg font-bold tracking-tight text-white whitespace-nowrap" style={{ fontFamily: HEAD_FONT }}>Bait to Maintain</span>
             </div>
 
             {/* Desktop links */}
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden lg:flex items-center gap-8">
               {navLinks.map(link => (
                 <button
                   key={link.id}
                   onClick={() => scrollTo(link.id)}
-                  className="cursor-pointer text-sm text-white/60 hover:text-white font-medium transition-colors duration-200"
+                  className="cursor-pointer text-sm text-white/60 hover:text-white font-medium transition-colors duration-200 whitespace-nowrap"
                 >
                   {link.label}
                 </button>
@@ -636,18 +636,18 @@ export default function LandingPage() {
             </div>
 
             {/* CTA + Lang */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-3">
               <button
                 onClick={toggleLang}
-                className="cursor-pointer px-3 py-1.5 text-xs font-semibold rounded-lg border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-all duration-200"
+                className="cursor-pointer px-3 py-1.5 text-xs font-semibold rounded-lg border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-all duration-200 whitespace-nowrap"
               >
                 {lang === 'en' ? 'العربية' : 'English'}
               </button>
-              <GoldButton onClick={() => navigate('/signup')}>{tx('getStarted')}</GoldButton>
+              <GoldButton onClick={() => navigate('/signup')} className="whitespace-nowrap">{tx('getStarted')}</GoldButton>
             </div>
 
-            {/* Mobile burger + lang */}
-            <div className="flex items-center gap-2 md:hidden">
+            {/* Mobile / tablet burger + lang */}
+            <div className="flex items-center gap-2 lg:hidden">
               <button
                 onClick={toggleLang}
                 className="cursor-pointer px-2.5 py-1.5 text-[10px] font-semibold rounded-md border border-white/15 text-white/70 hover:text-white transition-colors duration-200"
@@ -670,14 +670,14 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile / tablet menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-[#0A0E27]/95 backdrop-blur-xl border-b border-white/[0.06] overflow-hidden"
+              className="lg:hidden bg-[#0A0E27]/95 backdrop-blur-xl border-b border-white/[0.06] overflow-hidden"
             >
               <div className="px-6 py-4 space-y-3">
                 {navLinks.map(link => (
@@ -914,8 +914,9 @@ export default function LandingPage() {
             <p className="mt-5 text-white/55 text-base sm:text-lg leading-relaxed">{tx('featSub')}</p>
           </motion.div>
 
-          {/* 4-col 3-row bento grid (desktop), stacked on mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-3 gap-4 sm:gap-5 auto-rows-fr">
+          {/* 4-col 3-row bento grid (desktop), stacked on mobile, 2-col on tablet.
+              auto-rows-fr only at lg so tablet cards don't balloon to match hero card. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-3 gap-4 sm:gap-5 lg:auto-rows-fr">
             {/* 1. Dashboard — hero bento (2×2) with inline chart preview */}
             <FeatureCard
               index={0}
