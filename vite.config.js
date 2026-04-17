@@ -9,7 +9,7 @@ export default defineConfig({
     alias: {
       '@': '/src',
     },
-    dedupe: ['react', 'react-dom', 'scheduler', 'three'],
+    dedupe: ['react', 'react-dom', 'scheduler'],
   },
   build: {
     rollupOptions: {
@@ -18,7 +18,6 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           'vendor-firebase-storage': ['firebase/storage'],
-          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
         },
       },
     },

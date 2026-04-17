@@ -20,9 +20,6 @@ import UtilityTracker from '@/components/UtilityTracker'
 import BulkOperations from '@/components/BulkOperations'
 import TeamTab from '@/components/TeamTab'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
-import { lazy, Suspense } from 'react'
-
-const Building3DViewer = lazy(() => import('@/components/Building3DViewer'))
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -221,7 +218,6 @@ export default function PropertyDetail() {
                     { value: 'reports', key: 'property.reports', feature: FEATURES.TAB_REPORTS },
                     { value: 'team', key: 'team.title', feature: FEATURES.TAB_TEAM },
                     { value: 'logs', key: 'property.logs', feature: FEATURES.TAB_LOGS },
-                    ...(isBuilding ? [{ value: '3d-model', key: 'property.3dModel', feature: FEATURES.TAB_3D_MODEL }] : []),
                   ].filter(item => canAccess(role, item.feature)).map(item => (
                     <TabsTrigger
                       key={item.value}
@@ -405,14 +401,6 @@ export default function PropertyDetail() {
           <TabsContent value="logs">
             <LogsTab propertyId={id} ownerUid={ownerUid} />
           </TabsContent>
-
-          {isBuilding && (
-            <TabsContent value="3d-model">
-              <Suspense fallback={<p className="text-sm text-muted-foreground py-12 text-center">{t('property.loading3d')}</p>}>
-                <Building3DViewer propertyId={id} property={property} ownerUid={ownerUid} />
-              </Suspense>
-            </TabsContent>
-          )}
         </Tabs>
       </div>
 

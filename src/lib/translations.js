@@ -173,7 +173,6 @@ const translations = {
     'property.maintenance': 'Maintenance',
     'property.financials': 'Financials',
     'property.logs': 'Logs',
-    'property.3dModel': '3D Model',
     'property.monthlyRent': 'Monthly Rent',
     'property.totalArea': 'Total Area',
     'property.marketValue': 'Market Value',
@@ -197,7 +196,6 @@ const translations = {
     'property.insuranceExpiry': 'Insurance Expiry',
     'property.municipalityPermitExpiry': 'Municipality Permit Expiry',
     'property.floorPlan': '2D Floor Plan',
-    'property.loading3d': 'Loading 3D viewer...',
 
     // ─── Property Form ───
     'propertyForm.editProperty': 'Edit Property',
@@ -1223,7 +1221,6 @@ const translations = {
     'property.maintenance': 'الصيانة',
     'property.financials': 'المالية',
     'property.logs': 'السجلات',
-    'property.3dModel': 'نموذج ثلاثي الأبعاد',
     'property.monthlyRent': 'الإيجار الشهري',
     'property.totalArea': 'المساحة الكلية',
     'property.marketValue': 'القيمة السوقية',
@@ -1247,7 +1244,6 @@ const translations = {
     'property.insuranceExpiry': 'انتهاء التأمين',
     'property.municipalityPermitExpiry': 'انتهاء تصريح البلدية',
     'property.floorPlan': 'مخطط الطابق ثنائي الأبعاد',
-    'property.loading3d': 'جاري تحميل العارض ثلاثي الأبعاد...',
 
     // ─── Property Form ───
     'propertyForm.editProperty': 'تعديل العقار',

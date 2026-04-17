@@ -54,8 +54,6 @@ const L = {
     feat3Desc: 'Track every tenant, lease agreement, payment status, and Ejari registration in one place.',
     feat4Title: 'Financial Overview',
     feat4Desc: 'Income vs expenses, occupancy rates, rent collection, and VAT tracking for commercial properties.',
-    feat5Title: '3D Building Viewer',
-    feat5Desc: 'Visualize which units are occupied, vacant, or have alerts with an interactive 3D model.',
     feat6Title: 'Intelligent Alert System',
     feat6Desc: 'Never miss a maintenance deadline, lease expiry, or document renewal date again.',
     // How it works
@@ -105,7 +103,7 @@ const L = {
     test2Quote: 'I used to track everything on paper and WhatsApp. Bait to Maintain replaced five different apps and gave me back my weekends.',
     test3Name: 'Omar Khalid Rahman',
     test3Role: 'Manages 23 units in Sharjah',
-    test3Quote: 'The 3D building view and instant occupancy tracking transformed how I present to property owners. Incredibly professional.',
+    test3Quote: 'The real-time occupancy dashboard and automated alerts transformed how I present to property owners. Incredibly professional.',
     // CTA
     ctaTitle: 'Ready to take control of your portfolio?',
     ctaSub: 'Join property owners who have already made the switch. Free to start. No credit card required.',
@@ -153,8 +151,6 @@ const L = {
     feat3Desc: 'تتبع كل مستأجر، عقد إيجار، حالة دفع، وتسجيل إيجاري في مكان واحد.',
     feat4Title: 'نظرة مالية شاملة',
     feat4Desc: 'الدخل مقابل المصروفات، نسب الإشغال، تحصيل الإيجارات، وتتبع ضريبة القيمة المضافة.',
-    feat5Title: 'عارض المبنى ثلاثي الأبعاد',
-    feat5Desc: 'تصور الوحدات المشغولة والشاغرة والتنبيهات من خلال نموذج تفاعلي ثلاثي الأبعاد.',
     feat6Title: 'نظام تنبيهات ذكي',
     feat6Desc: 'لا تفوت أي موعد صيانة أو انتهاء عقد إيجار أو تجديد مستند مرة أخرى.',
     // How it works
@@ -204,7 +200,7 @@ const L = {
     test2Quote: 'كنت أتتبع كل شيء على الورق والواتساب. Bait to Maintain استبدل خمسة تطبيقات مختلفة وأعاد لي عطلات نهاية الأسبوع.',
     test3Name: 'عمر خالد رحمن',
     test3Role: 'يدير 23 وحدة في الشارقة',
-    test3Quote: 'عرض المبنى ثلاثي الأبعاد وتتبع الإشغال الفوري غيّرا طريقة عرضي لأصحاب العقارات. احترافية لا تصدق.',
+    test3Quote: 'لوحة الإشغال الفورية والتنبيهات الآلية غيّرتا طريقة عرضي لأصحاب العقارات. احترافية لا تصدق.',
     // CTA
     ctaTitle: 'مستعد للسيطرة على محفظتك؟',
     ctaSub: 'انضم إلى أصحاب العقارات الذين انتقلوا بالفعل. مجاني للبدء. لا حاجة لبطاقة ائتمان.',
@@ -322,15 +318,6 @@ function UsersIcon({ className = 'w-6 h-6' }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
       <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  )
-}
-
-function CubeIcon({ className = 'w-6 h-6' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-      <polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" />
     </svg>
   )
 }
@@ -971,7 +958,8 @@ export default function LandingPage() {
           </motion.div>
 
           {/* 4-col 3-row bento grid (desktop), stacked on mobile, 2-col on tablet.
-              auto-rows-fr only at lg so tablet cards don't balloon to match hero card. */}
+              auto-rows-fr only at lg so tablet cards don't balloon to match hero card.
+              Dashboard is the 2x2 hero; four supporting tiles each span 2 cols × 1 row. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-3 gap-4 sm:gap-5 lg:auto-rows-fr">
             {/* 1. Dashboard — hero bento (2×2) with inline chart preview */}
             <FeatureCard
@@ -999,69 +987,36 @@ export default function LandingPage() {
               </div>
             </FeatureCard>
 
-            {/* 2. 3D Building — tall (1×2) with mini visual */}
+            {/* 2. Alerts — wide (2×1, top-right) */}
             <FeatureCard
               index={1}
-              icon={CubeIcon}
-              title={tx('feat5Title')}
-              description={tx('feat5Desc')}
-              className="lg:col-span-1 lg:row-span-2"
-            >
-              <div className="mt-6 rounded-xl border border-white/[0.08] bg-[#0A0E27]/60 p-4 flex items-center justify-center aspect-square">
-                <svg viewBox="0 0 120 120" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  {/* Simple isometric building */}
-                  <defs>
-                    <linearGradient id="bldgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#D4A853" stopOpacity="0.25" />
-                      <stop offset="100%" stopColor="#D4A853" stopOpacity="0.05" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M60 20 L95 38 L95 88 L60 106 L25 88 L25 38 Z" fill="url(#bldgGrad)" stroke="#D4A853" strokeOpacity="0.5" />
-                  <path d="M25 38 L60 56 L95 38" stroke="#D4A853" strokeOpacity="0.5" />
-                  <path d="M60 56 L60 106" stroke="#D4A853" strokeOpacity="0.5" />
-                  {/* Windows */}
-                  {[0, 1, 2].map(row => (
-                    <g key={row}>
-                      <rect x={32 + row * 0.5} y={46 + row * 14} width="10" height="8" fill="#D4A853" fillOpacity={0.5 - row * 0.1} />
-                      <rect x={46} y={53 + row * 14} width="10" height="8" fill="#D4A853" fillOpacity={0.6 - row * 0.1} />
-                      <rect x={66} y={53 + row * 14} width="10" height="8" fill="#D4A853" fillOpacity={0.3 - row * 0.05} />
-                      <rect x={80} y={46 + row * 14} width="10" height="8" fill="#D4A853" fillOpacity={0.4 - row * 0.1} />
-                    </g>
-                  ))}
-                </svg>
-              </div>
-            </FeatureCard>
-
-            {/* 3. Alerts — small (1×1) */}
-            <FeatureCard
-              index={2}
               icon={AlertIcon}
               title={tx('feat6Title')}
               description={tx('feat6Desc')}
-              className="lg:col-span-1 lg:row-span-1"
+              className="lg:col-span-2 lg:row-span-1"
             />
 
-            {/* 4. Maintenance — small (1×1) */}
+            {/* 3. Maintenance — wide (2×1, mid-right) */}
             <FeatureCard
-              index={3}
+              index={2}
               icon={WrenchIcon}
               title={tx('feat2Title')}
               description={tx('feat2Desc')}
-              className="lg:col-span-1 lg:row-span-1"
+              className="lg:col-span-2 lg:row-span-1"
             />
 
-            {/* 5. Unit Mgmt — wide (2×1) */}
+            {/* 4. Unit Mgmt — wide (2×1, bottom-left) */}
             <FeatureCard
-              index={4}
+              index={3}
               icon={UsersIcon}
               title={tx('feat3Title')}
               description={tx('feat3Desc')}
               className="lg:col-span-2 lg:row-span-1"
             />
 
-            {/* 6. Financial — wide (2×1) */}
+            {/* 5. Financial — wide (2×1, bottom-right) */}
             <FeatureCard
-              index={5}
+              index={4}
               icon={ChartIcon}
               title={tx('feat4Title')}
               description={tx('feat4Desc')}
