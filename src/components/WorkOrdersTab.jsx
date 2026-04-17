@@ -24,6 +24,7 @@ import {
   DropdownMenuItem, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { Plus, MoreHorizontal, Pencil, Trash2, ClipboardList, AlertCircle } from 'lucide-react'
+import StarRating from '@/components/StarRating'
 
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
@@ -372,6 +373,23 @@ export default function WorkOrdersTab({ propertyId, ownerUid }) {
               <Label>{t('workOrders.reportedBy')}</Label>
               <Input value={form.reportedBy} onChange={e => set('reportedBy', e.target.value)} placeholder={t('workOrders.reportedByPlaceholder')} maxLength={200} />
             </div>
+
+            {/* Tenant rating — shown on the edit dialog once the tenant has rated */}
+            {editing && editing.rating && (
+              <div className="space-y-2 pt-2 border-t">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t('workOrders.tenantRating')}</Label>
+                <div className="flex items-center gap-3">
+                  <StarRating value={editing.rating} size="md" />
+                  <span className="text-sm font-semibold">{editing.rating}/5</span>
+                </div>
+                {editing.ratingComment && (
+                  <p className="text-sm text-muted-foreground italic">"{editing.ratingComment}"</p>
+                )}
+                <p className="text-[11px] text-muted-foreground">
+                  {editing.ratedBy || 'Tenant'} · {editing.ratedAt ? new Date(editing.ratedAt).toLocaleString() : ''}
+                </p>
+              </div>
+            )}
 
             {/* Status trail — shown only when editing so manager sees who moved the ticket */}
             {editing && (editing.statusHistory || []).length > 0 && (

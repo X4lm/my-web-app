@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, query, where, orderBy, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, getDocs, query, where, orderBy, doc, getDoc, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { lookupPropertyOwner } from '@/services/propertyIndex'
@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
 import PlatformAnnouncement from '@/components/PlatformAnnouncement'
+import StarRating from '@/components/StarRating'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,8 @@ export default function TenantDashboard() {
   const [property, setProperty] = useState(null)
   const [announcements, setAnnouncements] = useState([])
   const [utilities, setUtilities] = useState([])
+  const [completedWOs, setCompletedWOs] = useState([])  // completed WOs pending tenant rating
+  const [ownerUid, setOwnerUid] = useState(null)
 
   // Maintenance request
   const [showRequestForm, setShowRequestForm] = useState(false)
@@ -32,6 +35,10 @@ export default function TenantDashboard() {
   const [reqDesc, setReqDesc] = useState('')
   const [reqSending, setReqSending] = useState(false)
   const [reqSent, setReqSent] = useState(false)
+
+  // Rating state — per-WO transient values
+  const [ratingDraft, setRatingDraft] = useState({})  // { [woId]: { rating, comment } }
+  const [ratingSaving, setRatingSaving] = useState({})
 
   const linkedPropertyId = userProfile?.linkedProperties?.[0]
   const linkedUnitId = userProfile?.linkedUnitId
@@ -59,6 +66,7 @@ export default function TenantDashboard() {
 
       if (!ownerUid || !propertyData) { setLoading(false); return }
       setProperty(propertyData)
+      setOwnerUid(ownerUid)
 
       // Load unit data
       if (linkedUnitId) {
@@ -95,10 +103,54 @@ export default function TenantDashboard() {
           setUtilities(unitUtils)
         } catch { /* skip */ }
       }
+
+      // Load completed work orders that THIS tenant reported — so they can rate the fix
+      try {
+        const woSnap = await getDocs(
+          collection(db, 'users', ownerUid, 'properties', linkedPropertyId, 'workOrders')
+        )
+        const tenantName = currentUser.displayName || currentUser.email
+        const mine = woSnap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(wo => wo.status === 'completed')
+          .filter(wo => !wo.rating) // only unrated
+          .filter(wo => (wo.reportedBy || '').toLowerCase() === (tenantName || '').toLowerCase()
+                     || (unitData && wo.unitNumber === unitData.unitNumber))
+          .sort((a, b) => {
+            const ta = a.updatedAt?.toMillis?.() || 0
+            const tb = b.updatedAt?.toMillis?.() || 0
+            return tb - ta
+          })
+        setCompletedWOs(mine)
+      } catch { /* skip */ }
     } catch (err) {
       logError('[TenantDashboard] Load error:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleSubmitRating(wo) {
+    const draft = ratingDraft[wo.id] || {}
+    if (!draft.rating) return
+    setRatingSaving(s => ({ ...s, [wo.id]: true }))
+    try {
+      const ref = doc(db, 'users', ownerUid, 'properties', linkedPropertyId, 'workOrders', wo.id)
+      await updateDoc(ref, {
+        rating: draft.rating,
+        ratingComment: draft.comment || '',
+        ratedAt: new Date().toISOString(),
+        ratedBy: currentUser.displayName || currentUser.email || 'Tenant',
+      })
+      // Remove from local list
+      setCompletedWOs(list => list.filter(w => w.id !== wo.id))
+      setRatingDraft(s => {
+        const n = { ...s }; delete n[wo.id]; return n
+      })
+    } catch (err) {
+      logError('[TenantDashboard] Rate error:', err)
+    } finally {
+      setRatingSaving(s => ({ ...s, [wo.id]: false }))
     }
   }
 
@@ -286,6 +338,56 @@ export default function TenantDashboard() {
             </CardContent>
           )}
         </Card>
+
+        {/* Rate recent fixes — only shows when there are completed unrated WOs */}
+        {completedWOs.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                {t('tenant.rateFixTitle')}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">{t('tenant.rateFixSubtitle')}</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {completedWOs.map(wo => {
+                const draft = ratingDraft[wo.id] || { rating: 0, comment: '' }
+                const saving = !!ratingSaving[wo.id]
+                return (
+                  <div key={wo.id} className="border rounded-md p-4 space-y-3">
+                    <div>
+                      <p className="text-sm font-medium">{wo.title}</p>
+                      {wo.unitNumber && <p className="text-xs text-muted-foreground">{t('units.unit')} {wo.unitNumber}</p>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs">{t('tenant.rateHowWas')}</Label>
+                      <StarRating
+                        value={draft.rating}
+                        onChange={(n) => setRatingDraft(s => ({ ...s, [wo.id]: { ...draft, rating: n } }))}
+                        size="md"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">{t('tenant.rateComment')}</Label>
+                      <Input
+                        value={draft.comment}
+                        onChange={(e) => setRatingDraft(s => ({ ...s, [wo.id]: { ...draft, comment: e.target.value } }))}
+                        placeholder={t('tenant.rateCommentPlaceholder')}
+                        maxLength={500}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <Button size="sm" onClick={() => handleSubmitRating(wo)} disabled={!draft.rating || saving}>
+                        {saving ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('common.saving')}</> : t('tenant.rateSubmit')}
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Announcements */}
