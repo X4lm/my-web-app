@@ -44,6 +44,24 @@ const URGENCY_WEIGHT = {
  *  Each item: { id, kind, level, title, subtitle, date, days, propertyId,
  *               propertyName, href, icon, accent }
  */
+// Map an item kind to the PropertyDetail tab that exposes it, so
+// clicking a Today item drops the user directly where the fix lives.
+// All deep-link via `?tab=` which PropertyDetail honors as the initial tab.
+const TAB_FOR_KIND = {
+  insurance:   'overview',
+  permit:      'overview',
+  cheque:      'financials',
+  work_order:  'work-orders',
+  document:    'documents',
+  lease:       'units',
+  maintenance: 'maintenance',
+}
+
+function hrefFor(item) {
+  const tab = TAB_FOR_KIND[item.kind] || 'overview'
+  return `/properties/${item.propertyId}?tab=${tab}`
+}
+
 export function buildPriorityQueue({
   properties = [],
   cheques = [],      // [{ id, propertyId, propertyName, date, amount, status, chequeNumber }]
@@ -70,7 +88,7 @@ export function buildPriorityQueue({
           days: d,
           propertyId: p.id,
           propertyName: p.name,
-          href: `/properties/${p.id}`,
+          href: `/properties/${p.id}?tab=overview`,
           accent: 'amber',
         })
       }
@@ -88,7 +106,7 @@ export function buildPriorityQueue({
           days: d,
           propertyId: p.id,
           propertyName: p.name,
-          href: `/properties/${p.id}`,
+          href: `/properties/${p.id}?tab=overview`,
           accent: 'amber',
         })
       }
@@ -134,7 +152,7 @@ export function buildPriorityQueue({
       days: d,
       propertyId: wo.propertyId,
       propertyName: wo.propertyName,
-      href: `/properties/${wo.propertyId}`,
+      href: `/properties/${wo.propertyId}?tab=work-orders`,
       accent: wo.priority === 'urgent' ? 'red' : 'amber',
     })
   }
@@ -154,7 +172,7 @@ export function buildPriorityQueue({
       days: d,
       propertyId: doc.propertyId,
       propertyName: doc.propertyName,
-      href: `/properties/${doc.propertyId}`,
+      href: `/properties/${doc.propertyId}?tab=documents`,
       accent: 'amber',
     })
   }
@@ -177,7 +195,7 @@ export function buildPriorityQueue({
       days: d,
       propertyId: a.propertyId,
       propertyName: a.propertyName,
-      href: `/properties/${a.propertyId}`,
+      href: `/properties/${a.propertyId}?tab=${a.section === 'Lease' ? 'units' : 'maintenance'}`,
       accent: a.section === 'Lease' ? 'blue' : 'amber',
     })
   }

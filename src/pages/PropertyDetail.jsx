@@ -139,7 +139,12 @@ export default function PropertyDetail() {
   }
 
   const isBuilding = hasUnits(property.type)
-  const defaultTab = tabFromUrl || 'overview'
+  // Controlled tab — kept in sync with the ?tab= query param so deep-links
+  // from the Today priority queue land on the right field-location.
+  const activeTab = tabFromUrl || 'overview'
+  function handleTabChange(next) {
+    navigate(`/properties/${id}?tab=${next}`, { replace: true })
+  }
 
   return (
     <AppLayout>
@@ -185,7 +190,7 @@ export default function PropertyDetail() {
         )}
 
         {/* Tabs */}
-        <Tabs defaultValue={defaultTab}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="flex items-center gap-2">
             <TabsList className="inline-flex w-auto">
               {canAccess(role, FEATURES.TAB_OVERVIEW) && <TabsTrigger value="overview">{t('property.overview')}</TabsTrigger>}
