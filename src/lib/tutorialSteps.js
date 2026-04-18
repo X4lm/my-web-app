@@ -5,10 +5,13 @@
  */
 export function getSteps(t) {
   return {
+    // Dashboard tour follows a clean spatial flow:
+    //   sidebar (Today, Atlas) → main content (KPI cards) → header (Search, Tutorial toggle)
+    // Left column first, then center, then top-right — no zigzag.
     dashboard: [
-      { target: '[data-tour="dashboard-kpi"]',     title: t('tut.dash.kpi.title'),     body: t('tut.dash.kpi.body'),     placement: 'bottom' },
       { target: '[data-tour="sidebar-priority"]',  title: t('tut.dash.today.title'),   body: t('tut.dash.today.body'),   placement: 'right' },
       { target: '[data-tour="sidebar-atlas"]',     title: t('tut.dash.atlas.title'),   body: t('tut.dash.atlas.body'),   placement: 'right' },
+      { target: '[data-tour="dashboard-kpi"]',     title: t('tut.dash.kpi.title'),     body: t('tut.dash.kpi.body'),     placement: 'bottom' },
       { target: '[data-tour="header-cmdk"]',       title: t('tut.dash.cmdk.title'),    body: t('tut.dash.cmdk.body'),    placement: 'bottom' },
       { target: '[data-tour="header-tutorial"]',   title: t('tut.dash.replay.title'),  body: t('tut.dash.replay.body'),  placement: 'bottom' },
     ],
@@ -17,10 +20,13 @@ export function getSteps(t) {
       { target: '[data-tour="priority-filters"]',  title: t('tut.prio.filters.title'), body: t('tut.prio.filters.body'), placement: 'bottom' },
       { target: '[data-tour="priority-list"]',     title: t('tut.prio.list.title'),    body: t('tut.prio.list.body'),    placement: 'top'    },
     ],
+    // Properties tour: walk the top bar first (search + add), then drop
+    // down to the table for the health-score column. Avoids jumping from
+    // top → table → top.
     properties: [
       { target: '[data-tour="properties-search"]', title: t('tut.props.search.title'), body: t('tut.props.search.body'), placement: 'bottom' },
-      { target: '[data-tour="properties-health"]', title: t('tut.props.health.title'), body: t('tut.props.health.body'), placement: 'right'  },
       { target: '[data-tour="properties-add"]',    title: t('tut.props.add.title'),    body: t('tut.props.add.body'),    placement: 'bottom' },
+      { target: '[data-tour="properties-health"]', title: t('tut.props.health.title'), body: t('tut.props.health.body'), placement: 'right'  },
     ],
     atlas: [
       { target: '[data-tour="atlas-groups"]',      title: t('tut.atlas.groups.title'), body: t('tut.atlas.groups.body'), placement: 'bottom' },
