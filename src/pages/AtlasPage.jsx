@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { useTutorial } from '@/hooks/useTutorial'
-import { STEPS } from '@/lib/tutorialSteps'
+import { getSteps } from '@/lib/tutorialSteps'
 import { emirateOf, EMIRATE_LABELS, EMIRATE_LABELS_AR, computeHealthScore } from '@/utils/visibility'
 import { usePortfolioAggregates } from '@/hooks/usePortfolioAggregates'
 import { cn } from '@/lib/utils'
@@ -30,7 +30,8 @@ export default function AtlasPage() {
   const { t, isRTL } = useLocale()
   const { properties, alertsByProperty, loading: alertsLoading } = usePropertyAlerts()
   const { units, cheques, documents, loading: aggLoading } = usePortfolioAggregates(properties)
-  const tutorial = useTutorial('atlas', STEPS.atlas)
+  const steps = useMemo(() => getSteps(t).atlas, [t])
+  const tutorial = useTutorial('atlas', steps)
 
   const labels = isRTL ? EMIRATE_LABELS_AR : EMIRATE_LABELS
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   collection, addDoc, updateDoc, deleteDoc,
   doc, onSnapshot, query, orderBy, serverTimestamp,
@@ -33,7 +33,7 @@ import { canEdit, FEATURES } from '@/utils/permissions'
 import { upsertPropertyIndex } from '@/services/propertyIndex'
 import TutorialBubble from '@/components/TutorialBubble'
 import { useTutorial } from '@/hooks/useTutorial'
-import { STEPS } from '@/lib/tutorialSteps'
+import { getSteps } from '@/lib/tutorialSteps'
 
 const OWNER_ROLES = new Set(['admin', 'owner'])
 
@@ -59,7 +59,8 @@ export default function Properties() {
   const properties = isOwnerRole ? ownProperties : alertsProperties
   const loading = isOwnerRole ? ownLoading : alertsLoading
   const { units: allUnits, cheques: allCheques, documents: allDocs } = usePortfolioAggregates(properties)
-  const tutorial = useTutorial('properties', STEPS.properties)
+  const steps = useMemo(() => getSteps(t).properties, [t])
+  const tutorial = useTutorial('properties', steps)
 
   useEffect(() => {
     if (!isOwnerRole) {

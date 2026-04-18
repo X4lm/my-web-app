@@ -17,33 +17,33 @@ const FILTERS = [
   { id: '90',      key: 'docExpiry.filter.90',      test: (d) => d !== null && d >= 0 && d <= 90 },
 ]
 
-const CATEGORY_LABELS = {
-  title_deed: 'Title Deed',
-  lease_agreement: 'Lease Agreement',
-  ejari: 'Ejari',
-  insurance: 'Insurance',
-  municipality_permit: 'Municipality Permit',
-  noc: 'NOC',
-  dewa: 'DEWA',
-  chiller: 'Chiller',
-  tenant_id: 'Tenant ID',
-  tenant_visa: 'Tenant Visa',
-  trade_license: 'Trade License',
-  salary_certificate: 'Salary Certificate',
-  maintenance_invoice: 'Maintenance Invoice',
-  inspection_report: 'Inspection Report',
-  receipt: 'Receipt',
-  other: 'Other',
+const CATEGORY_KEYS = {
+  title_deed:          'docCat.titleDeed',
+  lease_agreement:     'docCat.leaseAgreement',
+  ejari:               'docCat.ejari',
+  insurance:           'docCat.insurance',
+  municipality_permit: 'docCat.municipalityPermit',
+  noc:                 'docCat.noc',
+  dewa:                'docCat.dewa',
+  chiller:             'docCat.chiller',
+  tenant_id:           'docCat.tenantId',
+  tenant_visa:         'docCat.tenantVisa',
+  trade_license:       'docCat.tradeLicense',
+  salary_certificate:  'docCat.salaryCertificate',
+  maintenance_invoice: 'docCat.maintenanceInvoice',
+  inspection_report:   'docCat.inspectionReport',
+  receipt:             'docCat.receipt',
+  other:               'docCat.other',
 }
 
 function daysBadge(d, t) {
   if (d === null || d === undefined) return <span className="text-xs text-muted-foreground">—</span>
-  if (d < 0) return <span className="inline-block px-2 py-0.5 rounded-md bg-red-500/15 text-red-500 text-xs font-semibold">{Math.abs(d)}d overdue</span>
-  if (d === 0) return <span className="inline-block px-2 py-0.5 rounded-md bg-red-500/15 text-red-500 text-xs font-semibold">Today</span>
-  if (d <= 7)  return <span className="inline-block px-2 py-0.5 rounded-md bg-orange-500/15 text-orange-500 text-xs font-semibold">{d}d</span>
-  if (d <= 30) return <span className="inline-block px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-500 text-xs font-semibold">{d}d</span>
-  if (d <= 60) return <span className="inline-block px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-500 text-xs font-semibold">{d}d</span>
-  return <span className="text-xs text-muted-foreground">{d}d</span>
+  if (d < 0) return <span className="inline-block px-2 py-0.5 rounded-md bg-red-500/15 text-red-500 text-xs font-semibold">{Math.abs(d)}{t('docExpiry.dOverdue')}</span>
+  if (d === 0) return <span className="inline-block px-2 py-0.5 rounded-md bg-red-500/15 text-red-500 text-xs font-semibold">{t('docExpiry.today')}</span>
+  if (d <= 7)  return <span className="inline-block px-2 py-0.5 rounded-md bg-orange-500/15 text-orange-500 text-xs font-semibold">{d}{t('docExpiry.d')}</span>
+  if (d <= 30) return <span className="inline-block px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-500 text-xs font-semibold">{d}{t('docExpiry.d')}</span>
+  if (d <= 60) return <span className="inline-block px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-500 text-xs font-semibold">{d}{t('docExpiry.d')}</span>
+  return <span className="text-xs text-muted-foreground">{d}{t('docExpiry.d')}</span>
 }
 
 export default function DocumentsExpiryPage() {
@@ -76,9 +76,9 @@ export default function DocumentsExpiryPage() {
 
         {/* KPI strip */}
         <div className="grid grid-cols-3 gap-4">
-          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Tracked</p><p className="text-2xl font-bold">{enriched.length}</p></CardContent></Card>
-          <Card className="border-red-500/30"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Expired</p><p className="text-2xl font-bold text-red-500">{overdueCount}</p></CardContent></Card>
-          <Card className="border-amber-500/30"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Expiring ≤ 30d</p><p className="text-2xl font-bold text-amber-500">{soonCount}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">{t('docExpiry.tracked')}</p><p className="text-2xl font-bold">{enriched.length}</p></CardContent></Card>
+          <Card className="border-red-500/30"><CardContent className="p-4"><p className="text-xs text-muted-foreground">{t('docExpiry.expired')}</p><p className="text-2xl font-bold text-red-500">{overdueCount}</p></CardContent></Card>
+          <Card className="border-amber-500/30"><CardContent className="p-4"><p className="text-xs text-muted-foreground">{t('docExpiry.expiringSoon')}</p><p className="text-2xl font-bold text-amber-500">{soonCount}</p></CardContent></Card>
         </div>
 
         {/* Filter pills */}
@@ -99,11 +99,11 @@ export default function DocumentsExpiryPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">{visible.length} {t('atlas.properties').toLowerCase() === 'properties' ? 'documents' : 'وثائق'}</CardTitle>
+            <CardTitle className="text-base font-semibold">{visible.length} {t('docExpiry.documents')}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {loading ? (
-              <div className="p-12 text-center text-sm text-muted-foreground">Loading…</div>
+              <div className="p-12 text-center text-sm text-muted-foreground">{t('common.loading')}</div>
             ) : visible.length === 0 ? (
               <div className="p-12 text-center">
                 <FileText className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
@@ -125,7 +125,7 @@ export default function DocumentsExpiryPage() {
                     {visible.map(d => (
                       <tr key={`${d.propertyId}-${d.id}`} className="hover:bg-muted/30">
                         <td className="px-4 py-3 font-medium">{d.name || '—'}</td>
-                        <td className="px-4 py-3 text-xs text-muted-foreground">{CATEGORY_LABELS[d.category] || d.category || '—'}</td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">{CATEGORY_KEYS[d.category] ? t(CATEGORY_KEYS[d.category]) : (d.category || '—')}</td>
                         <td className="px-4 py-3">
                           <Link to={`/properties/${d.propertyId}`} className="text-xs text-primary hover:underline">
                             {d.propertyName || '—'}

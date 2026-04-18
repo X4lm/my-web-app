@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { collection, query, orderBy, onSnapshot, limit, collectionGroup } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth, ROLES } from '@/contexts/AuthContext'
@@ -8,7 +8,7 @@ import AppLayout from '@/components/AppLayout'
 import AlertsPanel from '@/components/AlertsPanel'
 import TutorialBubble from '@/components/TutorialBubble'
 import { useTutorial } from '@/hooks/useTutorial'
-import { STEPS } from '@/lib/tutorialSteps'
+import { getSteps } from '@/lib/tutorialSteps'
 import TenantDashboard from '@/components/TenantDashboard'
 import VendorDashboard from '@/components/VendorDashboard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,7 +26,9 @@ import PlatformAnnouncement from '@/components/PlatformAnnouncement'
 
 export default function Dashboard() {
   const { currentUser, userProfile } = useAuth()
-  const tutorial = useTutorial('dashboard', STEPS.dashboard)
+  const { t } = useLocale()
+  const steps = useMemo(() => getSteps(t).dashboard, [t])
+  const tutorial = useTutorial('dashboard', steps)
 
   // If user is a tenant, render the tenant-specific dashboard
   if (userProfile?.role === ROLES.TENANT) {
@@ -38,7 +40,7 @@ export default function Dashboard() {
     return <VendorDashboard />
   }
   const navigate = useNavigate()
-  const { t, formatCurrency, formatDate } = useLocale()
+  const { formatCurrency, formatDate } = useLocale()
   const { getOwnerUid } = useDataPath()
   const { properties, allAlerts, loading } = usePropertyAlerts()
   const [allUnits, setAllUnits] = useState([])

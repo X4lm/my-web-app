@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { doc, onSnapshot, updateDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
@@ -22,7 +22,7 @@ import TeamTab from '@/components/TeamTab'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
 import TutorialBubble from '@/components/TutorialBubble'
 import { useTutorial } from '@/hooks/useTutorial'
-import { STEPS } from '@/lib/tutorialSteps'
+import { getSteps } from '@/lib/tutorialSteps'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -50,7 +50,8 @@ export default function PropertyDetail() {
 
   // Tutorial must be called unconditionally (before any early return) to
   // keep hook order stable across renders.
-  const tutorial = useTutorial('property_detail', STEPS.property_detail)
+  const tutorialSteps = useMemo(() => getSteps(t).property_detail, [t])
+  const tutorial = useTutorial('property_detail', tutorialSteps)
 
   const tabFromUrl = searchParams.get('tab')
   const sectionFromUrl = searchParams.get('section')

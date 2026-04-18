@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useLocale } from '@/contexts/LocaleContext'
 
 const BUBBLE_W = 340
 const PAD = 16
@@ -41,6 +42,7 @@ function computePosition(step, viewport) {
 
 export default function TutorialBubble({ step, stepIdx, stepCount, next, back, skip, isLast, isFirst }) {
   const [pos, setPos] = useState(null)
+  const { t } = useLocale()
 
   useEffect(() => {
     if (!step) { setPos(null); return }
@@ -110,7 +112,7 @@ export default function TutorialBubble({ step, stepIdx, stepCount, next, back, s
           <button
             onClick={skip}
             className="cursor-pointer p-1 -m-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-            aria-label="Skip tutorial"
+            aria-label={t('tutorial.skip')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -134,12 +136,12 @@ export default function TutorialBubble({ step, stepIdx, stepCount, next, back, s
         {/* Controls */}
         <div className="flex items-center justify-between mt-4">
           <Button variant="ghost" size="sm" onClick={back} disabled={isFirst} className="gap-1">
-            <ChevronLeft className="w-3.5 h-3.5" /> Back
+            <ChevronLeft className="w-3.5 h-3.5" /> {t('tutorial.back')}
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={skip}>Skip</Button>
+            <Button variant="ghost" size="sm" onClick={skip}>{t('tutorial.skip')}</Button>
             <Button size="sm" onClick={next} className="gap-1">
-              {isLast ? 'Got it' : 'Next'}
+              {isLast ? t('tutorial.gotIt') : t('tutorial.next')}
               {!isLast && <ChevronRight className="w-3.5 h-3.5" />}
             </Button>
           </div>

@@ -9,7 +9,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { usePortfolioAggregates } from '@/hooks/usePortfolioAggregates'
 import { useTutorial } from '@/hooks/useTutorial'
-import { STEPS } from '@/lib/tutorialSteps'
+import { getSteps } from '@/lib/tutorialSteps'
 import { buildPriorityQueue } from '@/utils/visibility'
 import { formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -45,7 +45,8 @@ export default function PriorityPage() {
   const { properties, allAlerts, loading: alertsLoading } = usePropertyAlerts()
   const { cheques, workOrders, documents, loading: aggLoading } = usePortfolioAggregates(properties)
   const [filter, setFilter] = useState('all')
-  const tutorial = useTutorial('priority', STEPS.priority)
+  const steps = useMemo(() => getSteps(t).priority, [t])
+  const tutorial = useTutorial('priority', steps)
 
   const items = useMemo(() => {
     return buildPriorityQueue({
