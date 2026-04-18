@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import {
   collection, addDoc, updateDoc, deleteDoc,
-  doc, onSnapshot, query, orderBy, serverTimestamp,
+  doc, setDoc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { diffFields, hasUnits } from '@/lib/utils'
 import ExpenseFormDialog from '@/components/ExpenseFormDialog'
 import ChequeFormDialog from '@/components/ChequeFormDialog'
@@ -39,7 +41,9 @@ const CATEGORY_LABELS = {
 
 export default function FinancialsTab({ propertyId, property, ownerUid }) {
   const { currentUser } = useAuth()
-  const { t, formatCurrency, formatDate, getCurrencyCode } = useLocale()
+  const { t, tPlural, formatCurrency, formatDate, getCurrencyCode, settings } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const uid = ownerUid || currentUser.uid
   const [expenses, setExpenses] = useState([])
   const [units, setUnits] = useState([])
@@ -107,22 +111,34 @@ export default function FinancialsTab({ propertyId, property, ownerUid }) {
     : (property?.status === 'occupied' ? 1 : 0)
   const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0
 
-  // Current year expenses
+  // Expense-chart year (defaults to the current year). Users can flip between
+  // past years to compare — capped at 2024+ since the app is new and earlier
+  // data doesn't exist.
   const currentYear = new Date().getFullYear()
+  const [chartYear, setChartYear] = useState(currentYear)
+  const yearRange = []
+  for (let y = currentYear; y >= 2024; y--) yearRange.push(y)
+
   const yearExpenses = expenses.filter(e => e.date && e.date.startsWith(String(currentYear)))
   const totalExpenses = yearExpenses.reduce((s, e) => s + Number(e.cost || 0), 0)
 
   // Annual income = (collected rent × 12) − total expenses (simple estimate)
   const annualIncome = (collectedRent * 12) - totalExpenses
 
-  // Monthly breakdown for current year
+  // Monthly breakdown for selected year
+  const chartExpenses = expenses.filter(e => e.date && e.date.startsWith(String(chartYear)))
+  const chartTotal = chartExpenses.reduce((s, e) => s + Number(e.cost || 0), 0)
   const monthlyData = Array.from({ length: 12 }, (_, i) => {
     const month = String(i + 1).padStart(2, '0')
-    const prefix = `${currentYear}-${month}`
-    const monthExpenses = yearExpenses
+    const prefix = `${chartYear}-${month}`
+    const monthExpenses = chartExpenses
       .filter(e => e.date && e.date.startsWith(prefix))
       .reduce((s, e) => s + Number(e.cost || 0), 0)
-    return { month: i, label: new Date(currentYear, i).toLocaleString('default', { month: 'short' }), expenses: monthExpenses }
+    return {
+      month: i,
+      label: new Intl.DateTimeFormat(settings.language === 'ar' ? 'ar' : 'en', { month: 'short' }).format(new Date(chartYear, i)),
+      expenses: monthExpenses,
+    }
   })
 
   // ── CRUD ──
@@ -161,17 +177,36 @@ export default function FinancialsTab({ propertyId, property, ownerUid }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this expense?')) return
+    const ok = await confirm({
+      title: t('financials.deleteExpenseTitle'),
+      description: t('financials.deleteExpense'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
+    const snapshot = expenses.find(e => e.id === id)
     try {
-      const exp = expenses.find(e => e.id === id)
       await deleteDoc(doc(db, colPath, id))
       await addDoc(collection(db, logPath), {
         action: 'expense_deleted', author: authorName,
-        details: `Deleted expense: ${exp?.description || id}`,
+        details: `Deleted expense: ${snapshot?.description || id}`,
         timestamp: serverTimestamp(),
       })
+      if (snapshot) {
+        toast.undo(
+          t('common.deleted'),
+          async () => {
+            try {
+              const { id: _id, ...rest } = snapshot
+              await setDoc(doc(db, colPath, id), rest)
+            } catch (err) { logError('[Expense] Undo error:', err) }
+          },
+          { actionLabel: t('common.undo') },
+        )
+      }
     } catch (err) {
       logError('[Firestore] Expense delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 
@@ -197,11 +232,31 @@ export default function FinancialsTab({ propertyId, property, ownerUid }) {
   }
 
   async function handleChequeDelete(id) {
-    if (!window.confirm('Delete this cheque?')) return
+    const ok = await confirm({
+      title: t('financials.deleteChequeTitle'),
+      description: t('financials.deleteCheque'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
+    const snapshot = cheques.find(c => c.id === id)
     try {
       await deleteDoc(doc(db, chequePath, id))
+      if (snapshot) {
+        toast.undo(
+          t('common.deleted'),
+          async () => {
+            try {
+              const { id: _id, ...rest } = snapshot
+              await setDoc(doc(db, chequePath, id), rest)
+            } catch (err) { logError('[Cheque] Undo error:', err) }
+          },
+          { actionLabel: t('common.undo') },
+        )
+      }
     } catch (err) {
       logError('[Firestore] Cheque delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 
@@ -271,7 +326,7 @@ export default function FinancialsTab({ propertyId, property, ownerUid }) {
               <>
                 <div className="text-2xl font-semibold">{occupancyRate}%</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {occupiedUnits} of {totalUnits} units occupied
+                  {t('plural.unitsOf.' + (totalUnits === 1 ? 'one' : 'other'), { occupied: occupiedUnits, total: totalUnits })}
                 </p>
               </>
             ) : (
@@ -302,20 +357,39 @@ export default function FinancialsTab({ propertyId, property, ownerUid }) {
       {/* Monthly expense breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{currentYear} {t('financials.monthlyExpenses')}</CardTitle>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle className="text-base">{chartYear} {t('financials.monthlyExpenses')}</CardTitle>
+            <select
+              value={chartYear}
+              onChange={e => setChartYear(Number(e.target.value))}
+              className="h-8 rounded-md border border-input bg-transparent px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+              aria-label={t('financials.selectYear')}
+            >
+              {yearRange.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-1 h-32">
             {monthlyData.map(m => {
               const maxExp = Math.max(...monthlyData.map(d => d.expenses), 1)
               const h = m.expenses > 0 ? Math.max((m.expenses / maxExp) * 100, 4) : 0
+              const tooltip = m.expenses > 0
+                ? `${m.label} ${chartYear}: ${formatCurrency(m.expenses)}`
+                : `${m.label} ${chartYear}: ${formatCurrency(0)}`
               return (
-                <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
+                <div
+                  key={m.month}
+                  className="flex-1 flex flex-col items-center gap-1"
+                  title={tooltip}
+                >
                   <div className="w-full flex items-end justify-center" style={{ height: '100px' }}>
                     <div
-                      className="w-full max-w-[28px] bg-primary/80 rounded-t"
+                      className="w-full max-w-[28px] bg-primary/80 hover:bg-primary rounded-t transition-colors"
                       style={{ height: `${h}%` }}
-                      title={formatCurrency(m.expenses)}
+                      aria-label={tooltip}
                     />
                   </div>
                   <span className="text-[10px] text-muted-foreground">{m.label}</span>
@@ -324,8 +398,8 @@ export default function FinancialsTab({ propertyId, property, ownerUid }) {
             })}
           </div>
           <div className="flex justify-between mt-3 text-sm">
-            <span className="text-muted-foreground">Total {currentYear} expenses:</span>
-            <span className="font-semibold">{formatCurrency(totalExpenses)}</span>
+            <span className="text-muted-foreground">{t('financials.totalLabel')} {chartYear}:</span>
+            <span className="font-semibold">{formatCurrency(chartTotal)}</span>
           </div>
         </CardContent>
       </Card>

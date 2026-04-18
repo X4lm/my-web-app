@@ -4,7 +4,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { buildOccupancyForecast } from '@/utils/visibility'
 
 export default function OccupancyForecastCard({ units = [] }) {
-  const { t } = useLocale()
+  const { t, tPlural } = useLocale()
   const data = useMemo(() => buildOccupancyForecast({ units }), [units])
 
   if (data.length === 0) {
@@ -32,7 +32,7 @@ export default function OccupancyForecastCard({ units = [] }) {
                   <div
                     className={`w-full rounded-t-md ${tone} ${isNow ? 'opacity-100' : 'opacity-70'} transition-all`}
                     style={{ height: `${Math.max(h, 6)}px` }}
-                    title={`${m.occupied}/${m.total} units`}
+                    title={t('plural.unitsOf.' + (m.total === 1 ? 'one' : 'other'), { occupied: m.occupied, total: m.total })}
                   />
                 </div>
                 <div className={`text-[10px] uppercase tracking-wider ${isNow ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>

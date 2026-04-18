@@ -1,17 +1,20 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   collection, query, where, orderBy, onSnapshot, getDocs,
-  addDoc, updateDoc, deleteDoc, doc, serverTimestamp,
+  addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { canEdit, FEATURES } from '@/utils/permissions'
 import { createInvitation, revokeInvitation, INVITE_STATUS } from '@/services/invitations'
 import AppLayout from '@/components/AppLayout'
 import { Button } from '@/components/ui/button'
+import EmptyState from '@/components/ui/empty-state'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -93,26 +96,17 @@ const EMPTY_TENANT = {
 }
 
 const INVITE_STATUS_BADGE = {
-  [INVITE_STATUS.PENDING]: { label: 'Invite Pending', className: 'border-amber-400 text-amber-600 bg-amber-50' },
-  [INVITE_STATUS.ACCEPTED]: { label: 'App Access', className: 'border-green-400 text-green-600 bg-green-50' },
-  [INVITE_STATUS.DECLINED]: { label: 'Invite Declined', className: 'border-red-400 text-red-600 bg-red-50' },
-  [INVITE_STATUS.REVOKED]: { label: 'Invite Revoked', className: 'border-gray-400 text-gray-500 bg-gray-50' },
-}
-
-function fmtDate(d) {
-  if (!d) return '—'
-  return new Date(d + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
-function fmtTimestamp(ts) {
-  if (!ts) return '—'
-  const d = ts.toDate ? ts.toDate() : new Date(ts)
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+  [INVITE_STATUS.PENDING]: { labelKey: 'tenants.invitePending', className: 'border-amber-400 text-amber-600 bg-amber-50' },
+  [INVITE_STATUS.ACCEPTED]: { labelKey: 'tenants.appAccess', className: 'border-green-400 text-green-600 bg-green-50' },
+  [INVITE_STATUS.DECLINED]: { labelKey: 'tenants.inviteDeclined', className: 'border-red-400 text-red-600 bg-red-50' },
+  [INVITE_STATUS.REVOKED]: { labelKey: 'tenants.inviteRevoked', className: 'border-gray-400 text-gray-500 bg-gray-50' },
 }
 
 export default function TenantsPage() {
   const { currentUser, userProfile } = useAuth()
-  const { t, formatCurrency } = useLocale()
+  const { t, formatCurrency, formatDate: fmtDate, formatDateTime: fmtTimestamp } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const { properties } = usePropertyAlerts()
   const role = userProfile?.role || 'owner'
   const canEditTenants = canEdit(role, FEATURES.TENANTS) || canEdit(role, FEATURES.INVITE_MEMBER)
@@ -290,12 +284,35 @@ export default function TenantsPage() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this tenant record? This cannot be undone.')) return
+    const ok = await confirm({
+      title: t('tenants.deleteTitle'),
+      description: t('tenants.deleteConfirm'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
+    const snapshot = tenants.find(x => x.id === id)
+    if (!snapshot) return
     try {
       await deleteDoc(doc(db, colPath, id))
       if (viewTenant?.id === id) setViewTenant(null)
+      // Offer undo: setDoc rewrites the same ID with the original data.
+      toast.undo(
+        t('common.deleted'),
+        async () => {
+          try {
+            const { id: _id, ...rest } = snapshot
+            await setDoc(doc(db, colPath, id), rest)
+          } catch (err) {
+            logError('[Tenants] Undo restore error:', err)
+            toast.error(t('common.error'))
+          }
+        },
+        { actionLabel: t('common.undo') },
+      )
     } catch (err) {
       logError('[Tenants] Delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 
@@ -348,11 +365,18 @@ export default function TenantsPage() {
   }
 
   async function handleRevoke(invitationId) {
-    if (!window.confirm('Revoke this invitation?')) return
+    const ok = await confirm({
+      title: t('tenants.revokeTitle'),
+      description: t('tenants.revokeConfirm'),
+      confirmLabel: t('common.confirm'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await revokeInvitation(invitationId)
     } catch (err) {
       logError('[Tenants] Revoke error:', err)
+      toast.error(t('common.error') || 'Failed to revoke invitation.')
     }
   }
 
@@ -398,7 +422,7 @@ export default function TenantsPage() {
                 {leaseStatusBadge(tenant.leaseStatus)}
                 {invite && (
                   <Badge variant="outline" className={INVITE_STATUS_BADGE[invite.status]?.className}>
-                    {INVITE_STATUS_BADGE[invite.status]?.label}
+                    {t(INVITE_STATUS_BADGE[invite.status]?.labelKey)}
                   </Badge>
                 )}
               </div>
@@ -555,12 +579,12 @@ export default function TenantsPage() {
                   className="pl-9"
                 />
               </div>
-              <select value={filterProperty} onChange={e => setFilterProperty(e.target.value)} className={SELECT_CLASS + ' sm:w-48'}>
-                <option value="all">All Properties</option>
+              <select value={filterProperty} onChange={e => setFilterProperty(e.target.value)} className={SELECT_CLASS + ' sm:w-48'} aria-label={t('tenants.filterByProperty')}>
+                <option value="all">{t('tenants.allProperties')}</option>
                 {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
-              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={SELECT_CLASS + ' sm:w-40'}>
-                <option value="all">All Statuses</option>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={SELECT_CLASS + ' sm:w-40'} aria-label={t('tenants.filterByStatus')}>
+                <option value="all">{t('tenants.allStatuses')}</option>
                 {LEASE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
               </select>
             </div>
@@ -571,31 +595,26 @@ export default function TenantsPage() {
         <Card>
           <CardContent className="p-0">
             {loading ? (
-              <p className="text-sm text-muted-foreground py-12 text-center">Loading tenants...</p>
+              <p className="text-sm text-muted-foreground py-12 text-center">{t('tenants.loading')}</p>
             ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Users className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                <h3 className="text-sm font-medium">{search || filterProperty !== 'all' || filterStatus !== 'all' ? 'No tenants match your filters' : 'No tenants yet'}</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {search ? 'Try a different search term' : 'Add tenant records with their personal information, lease details, and documents.'}
-                </p>
-                {!search && canEditTenants && (
-                  <Button onClick={openAdd} size="sm" className="mt-4">
-                    <Plus className="w-4 h-4" /> Add Tenant
-                  </Button>
-                )}
-              </div>
+              <EmptyState
+                icon={Users}
+                title={search || filterProperty !== 'all' || filterStatus !== 'all' ? t('tenants.noMatches') : t('tenants.noTenantsYet')}
+                description={search ? t('tenants.tryDifferentSearch') : t('tenants.getStarted')}
+                action={!search && canEditTenants ? openAdd : undefined}
+                actionLabel={!search && canEditTenants ? t('tenants.addTenant') : undefined}
+              />
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Tenant</TableHead>
-                      <TableHead>Property / Unit</TableHead>
-                      <TableHead className="hidden sm:table-cell">Phone</TableHead>
-                      <TableHead>Lease</TableHead>
-                      <TableHead className="hidden md:table-cell">Rent</TableHead>
-                      <TableHead className="hidden lg:table-cell">Status</TableHead>
+                      <TableHead>{t('common.tenant')}</TableHead>
+                      <TableHead>{t('tenants.propertyUnit')}</TableHead>
+                      <TableHead className="hidden sm:table-cell">{t('common.phone')}</TableHead>
+                      <TableHead>{t('tenants.lease')}</TableHead>
+                      <TableHead className="hidden md:table-cell">{t('common.rent')}</TableHead>
+                      <TableHead className="hidden lg:table-cell">{t('common.status')}</TableHead>
                       <TableHead className="w-10" />
                     </TableRow>
                   </TableHeader>
@@ -634,8 +653,13 @@ export default function TenantsPage() {
                             <div className="flex items-center gap-1.5">
                               {leaseStatusBadge(tenant.leaseStatus)}
                               {invite && (
-                                <Badge variant="outline" className={INVITE_STATUS_BADGE[invite.status]?.className + ' text-[10px] px-1.5'}>
-                                  {invite.status === INVITE_STATUS.ACCEPTED ? '✓ App' : '⏳'}
+                                <Badge
+                                  variant="outline"
+                                  className={INVITE_STATUS_BADGE[invite.status]?.className + ' text-[10px] px-1.5'}
+                                  aria-label={t(INVITE_STATUS_BADGE[invite.status]?.labelKey)}
+                                  title={t(INVITE_STATUS_BADGE[invite.status]?.labelKey)}
+                                >
+                                  {invite.status === INVITE_STATUS.ACCEPTED ? '✓' : '⏳'}
                                 </Badge>
                               )}
                             </div>

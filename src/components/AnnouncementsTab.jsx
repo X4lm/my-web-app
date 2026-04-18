@@ -7,6 +7,8 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,6 +36,8 @@ const PRIORITY_MAP = Object.fromEntries(PRIORITY_OPTIONS.map(p => [p.value, p]))
 export default function AnnouncementsTab({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDateTime } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const uid = ownerUid || currentUser.uid
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
@@ -104,11 +108,17 @@ export default function AnnouncementsTab({ propertyId, ownerUid }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm(t('announce.deleteConfirm') || 'Delete this announcement?')) return
+    const ok = await confirm({
+      description: t('announce.deleteConfirm'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
       logError('[Firestore] Announcement delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 

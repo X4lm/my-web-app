@@ -1,20 +1,27 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { AlertCircle, AlertTriangle, Bell } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
 
-function getRelativeTime(alert) {
+function getRelativeTime(alert, tPlural) {
   const now = Date.now()
   const d = new Date(alert.date + 'T00:00:00').getTime()
   const days = Math.abs(Math.floor((now - d) / 86400000))
   if (alert.level === 'overdue') {
-    if (days >= 365) return `${Math.floor(days / 365)}y ${Math.floor((days % 365) / 30)}m overdue`
-    if (days >= 30) return `${Math.floor(days / 30)} months overdue`
-    return `${days} day${days !== 1 ? 's' : ''} overdue`
+    if (days >= 30) {
+      const months = Math.floor(days / 30)
+      return tPlural(months, 'plural.monthsOverdue.one', 'plural.monthsOverdue.other')
+    }
+    return tPlural(days, 'plural.daysOverdue.one', 'plural.daysOverdue.other')
   }
-  if (days >= 30) return `Due in ${Math.floor(days / 30)} months`
-  return `Due in ${days} day${days !== 1 ? 's' : ''}`
+  if (days >= 30) {
+    const months = Math.floor(days / 30)
+    return tPlural(months, 'plural.dueInMonths.one', 'plural.dueInMonths.other')
+  }
+  return tPlural(days, 'plural.dueInDays.one', 'plural.dueInDays.other')
 }
 
 function getAlertUrl(alert) {
@@ -26,7 +33,8 @@ function getAlertUrl(alert) {
 
 export default function AlertsPanel({ alerts, title, maxItems = 10 }) {
   const navigate = useNavigate()
-  const { t, formatDate } = useLocale()
+  const { t, tPlural, formatDate } = useLocale()
+  const [expanded, setExpanded] = useState(false)
   const displayTitle = title || t('alerts.allAlerts')
 
   if (!alerts || alerts.length === 0) {
@@ -46,7 +54,10 @@ export default function AlertsPanel({ alerts, title, maxItems = 10 }) {
 
   const overdue = alerts.filter(a => a.level === 'overdue')
   const upcoming = alerts.filter(a => a.level === 'upcoming')
-  const sorted = [...overdue, ...upcoming].slice(0, maxItems)
+  const ordered = [...overdue, ...upcoming]
+  const visibleCount = expanded ? ordered.length : maxItems
+  const sorted = ordered.slice(0, visibleCount)
+  const hiddenCount = Math.max(0, ordered.length - maxItems)
 
   return (
     <Card>
@@ -84,7 +95,7 @@ export default function AlertsPanel({ alerts, title, maxItems = 10 }) {
                   {alert.section} &middot; {alert.field}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {getRelativeTime(alert)}
+                  {getRelativeTime(alert, tPlural)}
                 </p>
               </div>
               <div className="text-right shrink-0">
@@ -99,10 +110,19 @@ export default function AlertsPanel({ alerts, title, maxItems = 10 }) {
             </div>
           ))}
         </div>
-        {alerts.length > maxItems && (
-          <p className="text-xs text-muted-foreground text-center mt-3">
-            + {alerts.length - maxItems} {t('alerts.moreAlerts')}
-          </p>
+        {hiddenCount > 0 && (
+          <div className="mt-3 text-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+              onClick={() => setExpanded(e => !e)}
+            >
+              {expanded
+                ? t('alerts.showLess')
+                : t('alerts.showMore', { n: hiddenCount })}
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>

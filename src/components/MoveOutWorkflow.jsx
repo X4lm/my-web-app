@@ -7,6 +7,8 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -38,6 +40,8 @@ const CHECKLIST_ITEM_KEYS = [
 export default function MoveOutWorkflow({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDate, formatCurrency } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const uid = ownerUid || currentUser.uid
 
   const CHECKLIST_ITEMS = CHECKLIST_ITEM_KEYS.map(c => ({ ...c, label: t(c.tKey) }))
@@ -107,13 +111,19 @@ export default function MoveOutWorkflow({ propertyId, ownerUid }) {
     if (!mo) return
     const amt = Number(amount)
     if (isNaN(amt) || amt <= 0 || amt > 99999999.99) {
-      alert('Invalid deduction amount')
+      toast.error(t('moveOut.invalidAmount'))
       return
     }
     const existingDeductions = mo.deductions || []
     const existingTotal = existingDeductions.reduce((s, d) => s + d.amount, 0)
     if (existingTotal + amt > (mo.securityDeposit || 0)) {
-      if (!confirm('Total deductions exceed security deposit. Continue?')) return
+      const ok = await confirm({
+        title: t('moveOut.deductionOverTitle'),
+        description: t('moveOut.deductionOverDesc'),
+        confirmLabel: t('common.confirm'),
+        destructive: true,
+      })
+      if (!ok) return
     }
     const deductions = [...existingDeductions, { description, amount: amt, date: new Date().toISOString().slice(0, 10) }]
     const totalDeductions = deductions.reduce((s, d) => s + d.amount, 0)

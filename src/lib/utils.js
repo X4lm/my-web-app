@@ -5,10 +5,61 @@ export function cn(...inputs) {
   return twMerge(clsx(inputs))
 }
 
+// ── Date formatting ──
+// Non-hook module-level formatter that reads the user's chosen date format
+// from localStorage (set by LocaleContext). React components should prefer
+// useLocale().formatDate, but this shim exists for non-React callers and
+// for PDFs/CSVs that need a quick format.
+const DATE_LOCALES = {
+  'DD/MM/YYYY': 'en-GB',
+  'MM/DD/YYYY': 'en-US',
+  'YYYY-MM-DD': 'en-CA',
+}
+
+function getStoredDateFormat() {
+  try {
+    const stored = localStorage.getItem('localeSettings')
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      return parsed.dateFormat || 'DD/MM/YYYY'
+    }
+  } catch {
+    // fallthrough
+  }
+  return 'DD/MM/YYYY'
+}
+
 export function formatDate(dateStr) {
   if (!dateStr) return '—'
   const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  if (isNaN(d.getTime())) return '—'
+  const fmt = getStoredDateFormat()
+  if (fmt === 'YYYY-MM-DD') {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+  const locale = DATE_LOCALES[fmt] || 'en-GB'
+  return d.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+export function formatDateTime(value) {
+  if (!value) return '—'
+  const d = value?.toDate ? value.toDate() : new Date(value)
+  if (isNaN(d.getTime())) return '—'
+  const fmt = getStoredDateFormat()
+  const locale = DATE_LOCALES[fmt] || 'en-GB'
+  return d.toLocaleDateString(locale, {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
+
+// Pluralization helper: returns singular when n===1, plural otherwise.
+// Simple English rules; for i18n keys, use translations with {n} tokens.
+export function plural(n, singular, pluralForm) {
+  return Number(n) === 1 ? singular : (pluralForm || singular + 's')
 }
 
 // ── Property type config ──

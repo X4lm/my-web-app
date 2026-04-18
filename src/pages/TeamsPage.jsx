@@ -7,6 +7,8 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { getInvitableRoles } from '@/utils/permissions'
 import { createInvitation, revokeInvitation, INVITE_STATUS } from '@/services/invitations'
@@ -75,11 +77,8 @@ function statusVariant(status) {
   }
 }
 
-function formatDate(ts) {
-  if (!ts) return '—'
-  const d = ts.toDate ? ts.toDate() : new Date(ts)
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-}
+// formatDate is provided by useLocale() — kept here as fallback
+// (removed in favor of formatDateTime from context)
 
 // ═════════════════════════════════════════════════════════════════════════════
 // Main Component
@@ -87,7 +86,10 @@ function formatDate(ts) {
 
 export default function TeamsPage() {
   const { currentUser, userProfile } = useAuth()
-  const { t } = useLocale()
+  const { t, formatDateTime } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
+  const formatDate = formatDateTime
   const { properties } = usePropertyAlerts()
 
   // ─── State: active tab ──────────────────────────────────────────────────────
@@ -233,11 +235,18 @@ export default function TeamsPage() {
   }
 
   async function handleRevoke(invitationId) {
-    if (!window.confirm(t('team.revokeConfirm'))) return
+    const ok = await confirm({
+      title: t('tenants.revokeTitle'),
+      description: t('team.revokeConfirm'),
+      confirmLabel: t('common.confirm'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await revokeInvitation(invitationId)
     } catch (err) {
       logError('[Teams] Revoke error:', err)
+      toast.error(t('common.error'))
     }
   }
 
@@ -287,11 +296,17 @@ export default function TeamsPage() {
   }
 
   async function handleVendorDelete(id) {
-    if (!window.confirm(t('vendors.deleteConfirm'))) return
+    const ok = await confirm({
+      description: t('vendors.deleteConfirm'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, vendorColPath, id))
     } catch (err) {
       logError('[Teams] Vendor delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 

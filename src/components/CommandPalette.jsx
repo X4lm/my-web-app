@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, ArrowUpRight, LayoutDashboard, Building2, AlertCircle, Users, CreditCard, PieChart, FileText, Map, ListTodo, Settings, ScrollText, MessageSquare } from 'lucide-react'
+import { Search, ArrowUpRight, LayoutDashboard, Building2, AlertCircle, Users, CreditCard, PieChart, FileText, Map, ListTodo, Settings, ScrollText, MessageSquare, Plus } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
@@ -63,6 +63,18 @@ export default function CommandPalette() {
       .filter(r => !query || t(r.key).toLowerCase().includes(query) || r.id.includes(query))
       .map(r => ({ kind: 'page', id: r.id, label: t(r.key), Icon: r.icon, onSelect: () => navigate(r.to) }))
 
+    const actions = [
+      {
+        kind: 'action', id: 'new-property',
+        label: t('cmdk.action.newProperty'),
+        Icon: Plus,
+        onSelect: () => navigate('/properties?new=1'),
+      },
+    ]
+    const actionHits = actions.filter(a => !query
+      || a.label.toLowerCase().includes(query)
+      || a.id.includes(query))
+
     const propHits = !query ? [] : (properties || [])
       .filter(p =>
         (p.name || '').toLowerCase().includes(query) ||
@@ -77,7 +89,7 @@ export default function CommandPalette() {
         onSelect: () => navigate(`/properties/${p.id}`),
       }))
 
-    return [...pageHits.slice(0, 8), ...propHits]
+    return [...pageHits.slice(0, 8), ...actionHits, ...propHits]
   }, [q, properties, allowed, t, navigate])
 
   useEffect(() => {
@@ -158,7 +170,9 @@ export default function CommandPalette() {
                           {r.sublabel && <p className="text-xs text-muted-foreground truncate">{r.sublabel}</p>}
                         </div>
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                          {r.kind === 'page' ? t('cmdk.hint.pages') : t('cmdk.hint.properties')}
+                          {r.kind === 'page' ? t('cmdk.hint.pages')
+                            : r.kind === 'property' ? t('cmdk.hint.properties')
+                            : t('cmdk.hint.actions')}
                         </span>
                         <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground" />
                       </button>

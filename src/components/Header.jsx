@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, NavLink } from 'react-router-dom'
+import { useNavigate, NavLink, useLocation } from 'react-router-dom'
 import { useAuth, ROLES } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,7 @@ import {
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog, MessageCircle, ListTodo, Map, GraduationCap } from 'lucide-react'
-import { useTutorialContext } from '@/contexts/TutorialContext'
+import { useTutorialContext, pageKeyFromPath } from '@/contexts/TutorialContext'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { getSidebarItems } from '@/utils/permissions'
@@ -65,9 +65,18 @@ const ADMIN_NAV_ITEMS = [
 export default function Header() {
   const { currentUser, userProfile, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const { enabled: tutorialEnabled, toggle: toggleTutorial } = useTutorialContext()
+  const { enabled: tutorialEnabled, toggle: toggleTutorial, restart: restartTutorial } = useTutorialContext()
   const { t } = useLocale()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  function handleTutorialClick() {
+    // If off, turn it on (clears seen → every page plays fresh).
+    if (!tutorialEnabled) { toggleTutorial(); return }
+    // If already on, replay this page's tutorial.
+    const key = pageKeyFromPath(location.pathname)
+    if (key) restartTutorial(key)
+  }
   const [mobileOpen, setMobileOpen] = useState(false)
   const [adminUnread, setAdminUnread] = useState(0)
 
@@ -132,17 +141,17 @@ export default function Header() {
               data-tour="header-tutorial"
               variant="ghost"
               size="icon"
-              onClick={toggleTutorial}
+              onClick={handleTutorialClick}
               className={cn(
                 'h-8 w-8 relative',
                 tutorialEnabled && 'text-primary'
               )}
-              aria-label={tutorialEnabled ? t('tutorial.toggleOff') : t('tutorial.toggleOn')}
-              title={tutorialEnabled ? t('tutorial.toggleOff') : t('tutorial.toggleOn')}
+              aria-label={tutorialEnabled ? t('tutorial.replay') : t('tutorial.toggleOn')}
+              title={tutorialEnabled ? t('tutorial.replay') : t('tutorial.toggleOn')}
             >
               <GraduationCap className="h-4 w-4" />
               {tutorialEnabled && (
-                <span className="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-primary ring-2 ring-background" />
+                <span className="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-primary ring-2 ring-background animate-pulse" />
               )}
             </Button>
 

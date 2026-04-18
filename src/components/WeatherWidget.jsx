@@ -21,10 +21,9 @@ export default function WeatherWidget() {
   const [loading, setLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
 
-  // Resolve the effective unit: auto falls back to browser locale
+  // Resolve the effective unit. App is UAE-first (AED, DD/MM/YYYY), so auto → Celsius.
+  // Only explicit 'fahrenheit' setting flips to °F.
   const useFahrenheit = settings.temperatureUnit === 'fahrenheit'
-    || (settings.temperatureUnit !== 'celsius' && settings.temperatureUnit !== 'fahrenheit'
-        && navigator.language?.startsWith('en-US'))
 
   useEffect(() => {
     let retries = 0

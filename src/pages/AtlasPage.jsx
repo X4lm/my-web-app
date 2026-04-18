@@ -27,7 +27,7 @@ function StatusPin({ tone }) {
 }
 
 export default function AtlasPage() {
-  const { t, isRTL } = useLocale()
+  const { t, tPlural, isRTL } = useLocale()
   const { properties, alertsByProperty, loading: alertsLoading } = usePropertyAlerts()
   const { units, cheques, documents, loading: aggLoading } = usePortfolioAggregates(properties)
   const steps = useMemo(() => getSteps(t).atlas, [t])
@@ -124,8 +124,8 @@ export default function AtlasPage() {
                         )}
                         <div className="flex items-center justify-between text-[11px]">
                           <div className="flex items-center gap-3 text-muted-foreground">
-                            {p.unitCount > 0 && <span>{p.unitCount} units</span>}
-                            {p.alertCount > 0 && <span className="text-amber-500">{p.alertCount} alerts</span>}
+                            {p.unitCount > 0 && <span>{tPlural(p.unitCount, 'plural.unit.one', 'plural.unit.other')}</span>}
+                            {p.alertCount > 0 && <span className="text-amber-500">{tPlural(p.alertCount, 'plural.alert.one', 'plural.alert.other')}</span>}
                           </div>
                           {mapsUrl && (
                             <a

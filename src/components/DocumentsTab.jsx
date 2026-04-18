@@ -8,6 +8,8 @@ import app, { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -46,7 +48,9 @@ const DOC_CATEGORY_KEYS = [
 
 export default function DocumentsTab({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
-  const { t, formatDateTime } = useLocale()
+  const { t, formatDate, formatDateTime } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const uid = ownerUid || currentUser.uid
 
   const DOC_CATEGORIES = DOC_CATEGORY_KEYS.map(c => ({ value: c.value, label: t(c.tKey) }))
@@ -118,7 +122,12 @@ export default function DocumentsTab({ propertyId, ownerUid }) {
   }
 
   async function handleDelete(docItem) {
-    if (!window.confirm(`${t('common.delete')} "${docItem.name}"?`)) return
+    const ok = await confirm({
+      title: `${t('common.delete')} "${docItem.name}"?`,
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, colPath, docItem.id))
       if (docItem.storagePath) {
@@ -129,6 +138,7 @@ export default function DocumentsTab({ propertyId, ownerUid }) {
       }
     } catch (err) {
       logError('[Documents] Delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 
@@ -257,7 +267,7 @@ export default function DocumentsTab({ propertyId, ownerUid }) {
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {docItem.fileName} {docItem.fileSize ? `(${formatFileSize(docItem.fileSize)})` : ''}
-                        {docItem.expiryDate ? ` · ${t('docs.expires')}: ${docItem.expiryDate}` : ''}
+                        {docItem.expiryDate ? ` · ${t('docs.expires')}: ${formatDate(docItem.expiryDate)}` : ''}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">

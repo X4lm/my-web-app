@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function AdminDashboard() {
-  const { t } = useLocale()
+  const { t, formatDateTime } = useLocale()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -135,11 +135,7 @@ export default function AdminDashboard() {
     }
   }
 
-  function formatTimestamp(ts) {
-    if (!ts) return '—'
-    const d = ts.toDate ? ts.toDate() : new Date(ts)
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-  }
+  const formatTimestamp = formatDateTime
 
   const ROLE_COLORS = {
     admin: 'destructive',

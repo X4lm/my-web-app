@@ -2,31 +2,26 @@ import { useState, useEffect } from 'react'
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { getAllInvitationsForEmail, reacceptInvitation } from '@/services/invitations'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Mail, CheckCircle2, XCircle, RotateCcw, Loader2, Building2, Clock } from 'lucide-react'
 
-const STATUS_BADGE = {
-  pending: { variant: 'secondary', label: 'Pending' },
-  accepted: { variant: 'success', label: 'Accepted' },
-  declined: { variant: 'destructive', label: 'Declined' },
-  revoked: { variant: 'outline', label: 'Revoked' },
-}
-
-const ROLE_LABELS = {
-  property_manager: 'Property Manager',
-  staff: 'Staff',
-  vendor: 'Vendor',
-  tenant: 'Tenant',
-}
-
 export default function MyInvitations() {
   const { currentUser, userProfile, refreshProfile } = useAuth()
+  const { t, formatDateTime } = useLocale()
   const [invitations, setInvitations] = useState([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState(null)
+
+  const STATUS_BADGE = {
+    pending: { variant: 'secondary', label: t('invite.statusPending') },
+    accepted: { variant: 'success', label: t('invite.statusAccepted') },
+    declined: { variant: 'destructive', label: t('invite.statusDeclined') },
+    revoked: { variant: 'outline', label: t('invite.statusRevoked') },
+  }
 
   useEffect(() => {
     if (!currentUser?.email) return
@@ -48,16 +43,13 @@ export default function MyInvitations() {
   async function handleReaccept(invite) {
     setProcessingId(invite.id)
     try {
-      // 1. Re-accept the invitation
       await reacceptInvitation(invite.id)
 
-      // 2. Update user profile — add property to linkedProperties
       const userRef = doc(db, 'users', currentUser.uid)
       const updates = {
         linkedProperties: arrayUnion(invite.propertyId),
       }
 
-      // Only change role for users with no properties (fresh accounts defaulted to owner)
       const SAFE_INVITE_ROLES = ['property_manager', 'staff', 'vendor', 'tenant']
       const isNewUser = !userProfile?.role || (
         userProfile.role === 'owner'
@@ -74,7 +66,6 @@ export default function MyInvitations() {
 
       await updateDoc(userRef, updates)
 
-      // 3. Refresh profile and reload invitations
       await refreshProfile()
       await loadInvitations()
     } catch {
@@ -84,23 +75,17 @@ export default function MyInvitations() {
     }
   }
 
-  function formatDate(ts) {
-    if (!ts) return ''
-    const d = ts.toDate ? ts.toDate() : new Date(ts)
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  }
-
   if (loading) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Mail className="w-4 h-4" /> My Invitations
+            <Mail className="w-4 h-4" /> {t('invite.myInvitations')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading invitations...
+            <Loader2 className="w-4 h-4 animate-spin" /> {t('invite.loading')}
           </div>
         </CardContent>
       </Card>
@@ -113,16 +98,17 @@ export default function MyInvitations() {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <Mail className="w-4 h-4" /> My Invitations
+          <Mail className="w-4 h-4" /> {t('invite.myInvitations')}
         </CardTitle>
         <CardDescription>
-          Invitations you have received to join properties.
+          {t('invite.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {invitations.map(inv => {
           const status = STATUS_BADGE[inv.status] || STATUS_BADGE.pending
           const canReaccept = inv.status === 'declined'
+          const roleLabel = t(`role.${inv.role}`) || inv.role
 
           return (
             <div
@@ -138,21 +124,21 @@ export default function MyInvitations() {
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-[10px]">
-                    {ROLE_LABELS[inv.role] || inv.role}
+                    {roleLabel}
                   </Badge>
                   <Badge variant={status.variant} className="text-[10px]">
                     {status.label}
                   </Badge>
                   {inv.inviterName && (
                     <span className="text-xs text-muted-foreground">
-                      from {inv.inviterName}
+                      {t('invite.from')} {inv.inviterName}
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1 mt-1">
                   <Clock className="w-3 h-3 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">
-                    {formatDate(inv.createdAt)}
+                    {formatDateTime(inv.createdAt)}
                   </span>
                 </div>
               </div>
@@ -166,9 +152,9 @@ export default function MyInvitations() {
                   className="shrink-0"
                 >
                   {processingId === inv.id ? (
-                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Accepting...</>
+                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('invite.accepting')}</>
                   ) : (
-                    <><RotateCcw className="w-3.5 h-3.5" /> Accept</>
+                    <><RotateCcw className="w-3.5 h-3.5" /> {t('invite.accept')}</>
                   )}
                 </Button>
               )}

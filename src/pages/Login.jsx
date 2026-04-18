@@ -25,7 +25,7 @@ export default function Login() {
 
     if (lockUntil && Date.now() < lockUntil) {
       const secsLeft = Math.ceil((lockUntil - Date.now()) / 1000)
-      setError(`Too many attempts. Try again in ${secsLeft} seconds.`)
+      setError(t('auth.tooManyAttemptsSeconds').replace('{n}', secsLeft))
       return
     }
 

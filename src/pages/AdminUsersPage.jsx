@@ -3,6 +3,7 @@ import { collection, getDocs, doc, updateDoc, query, orderBy } from 'firebase/fi
 import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAuth, ROLES } from '@/contexts/AuthContext'
 
 import AppLayout from '@/components/AppLayout'
@@ -32,6 +33,7 @@ const ROLE_VARIANT = {
 
 export default function AdminUsersPage() {
   const { t } = useLocale()
+  const confirm = useConfirm()
   const { currentUser, userProfile } = useAuth()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -93,7 +95,12 @@ export default function AdminUsersPage() {
   async function handleSuspend(user) {
     const isSuspended = user.suspended
     const msg = isSuspended ? t('admin.reactivateConfirm') : t('admin.suspendConfirm')
-    if (!window.confirm(msg)) return
+    const ok = await confirm({
+      description: msg,
+      confirmLabel: t('common.confirm'),
+      destructive: !isSuspended,
+    })
+    if (!ok) return
     try {
       await updateDoc(doc(db, 'users', user.id), { suspended: !isSuspended })
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, suspended: !isSuspended } : u))
@@ -104,7 +111,11 @@ export default function AdminUsersPage() {
 
   async function handleChangeRole(user, newRole) {
     const msg = t('admin.changeRoleConfirm').replace('{role}', t(`role.${newRole}`))
-    if (!window.confirm(msg)) return
+    const ok = await confirm({
+      description: msg,
+      confirmLabel: t('common.confirm'),
+    })
+    if (!ok) return
     try {
       await updateDoc(doc(db, 'users', user.id), { role: newRole })
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u))

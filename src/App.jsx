@@ -13,7 +13,7 @@ const AlertsPage = lazy(() => import('@/pages/AlertsPage'))
 const LogsPage = lazy(() => import('@/pages/LogsPage'))
 const TeamsPage = lazy(() => import('@/pages/TeamsPage'))
 const TenantsPage = lazy(() => import('@/pages/TenantsPage'))
-const MessagesPage = lazy(() => import('@/pages/MessagesPage'))
+const TemplatesPage = lazy(() => import('@/pages/TemplatesPage'))
 const ChequeCalendarPage = lazy(() => import('@/pages/ChequeCalendarPage'))
 const PortfolioPage = lazy(() => import('@/pages/PortfolioPage'))
 const PriorityPage = lazy(() => import('@/pages/PriorityPage'))
@@ -70,7 +70,7 @@ export default function App() {
         <Route path="/logs" element={<PrivateRoute><LogsPage /></PrivateRoute>} />
         <Route path="/team" element={<PrivateRoute><TeamsPage /></PrivateRoute>} />
         <Route path="/tenants" element={<PrivateRoute><TenantsPage /></PrivateRoute>} />
-        <Route path="/templates" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
+        <Route path="/templates" element={<PrivateRoute><TemplatesPage /></PrivateRoute>} />
         <Route path="/cheques" element={<PrivateRoute><ChequeCalendarPage /></PrivateRoute>} />
         <Route path="/portfolio" element={<PrivateRoute><PortfolioPage /></PrivateRoute>} />
         <Route path="/today" element={<PrivateRoute><PriorityPage /></PrivateRoute>} />

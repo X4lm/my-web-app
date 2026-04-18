@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import AppLayout from '@/components/AppLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +14,7 @@ import { updateProfile, sendPasswordResetEmail } from 'firebase/auth'
 import { auth, db } from '@/firebase/config'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { Link } from 'react-router-dom'
+import { CheckCircle2 } from 'lucide-react'
 import MyInvitations from '@/components/MyInvitations'
 
 const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
@@ -19,6 +22,8 @@ const SELECT_CLASS = 'flex h-9 w-full rounded-md border border-input bg-transpar
 export default function SettingsPage() {
   const { currentUser } = useAuth()
   const { settings, updateSettings, formatCurrency, formatDate, formatWithConversion, t, CURRENCIES, DATE_FORMATS, LANGUAGES, CALENDAR_SYSTEMS, TEMPERATURE_UNITS } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const [name, setName] = useState(currentUser?.displayName || '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -32,9 +37,10 @@ export default function SettingsPage() {
     try {
       await updateProfile(auth.currentUser, { displayName: name })
       setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
+      toast.success(t('common.success'))
     } catch (err) {
       logError('[Settings] Update failed:', err)
+      toast.error(t('common.saveFailed'))
     } finally {
       setSaving(false)
     }
@@ -55,25 +61,31 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSave} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="display-name">{t('settings.displayName')}</Label>
-                <Input
-                  id="display-name"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder={t('settings.namePlaceholder')}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('settings.email')}</Label>
-                <Input value={currentUser?.email || ''} disabled />
-                <p className="text-xs text-muted-foreground">{t('settings.emailNoChange')}</p>
-              </div>
+              <fieldset disabled={saving} className="space-y-4 contents">
+                <div className="space-y-2">
+                  <Label htmlFor="display-name">{t('settings.displayName')}</Label>
+                  <Input
+                    id="display-name"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder={t('settings.namePlaceholder')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('settings.email')}</Label>
+                  <Input value={currentUser?.email || ''} disabled />
+                  <p className="text-xs text-muted-foreground">{t('settings.emailNoChange')}</p>
+                </div>
+              </fieldset>
               <div className="flex items-center gap-3">
                 <Button type="submit" size="sm" disabled={saving}>
                   {saving ? t('settings.sending') : t('settings.saveChanges')}
                 </Button>
-                {saved && <span className="text-sm text-emerald-600">Saved!</span>}
+                {saved && (
+                  <span className="inline-flex items-center gap-1 text-sm text-emerald-600">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> {t('common.saved')}
+                  </span>
+                )}
               </div>
             </form>
           </CardContent>
@@ -269,9 +281,9 @@ export default function SettingsPage() {
                       status: 'pending',
                       createdAt: serverTimestamp(),
                     })
-                    alert('Data request submitted. You will be notified when ready.')
+                    toast.success(t('settings.dataRequestSubmitted'))
                   } catch {
-                    alert('Failed to submit request. Please try again.')
+                    toast.error(t('settings.requestFailed'))
                   }
                 }}
               >
@@ -288,7 +300,13 @@ export default function SettingsPage() {
                 variant="destructive"
                 size="sm"
                 onClick={async () => {
-                  if (!window.confirm('Are you sure? This action cannot be undone. All your data will be permanently deleted within 30 days.')) return
+                  const ok = await confirm({
+                    title: t('settings.deleteAccountTitle'),
+                    description: t('settings.deleteAccountConfirm'),
+                    confirmLabel: t('settings.deleteAccountBtn') || t('common.delete'),
+                    destructive: true,
+                  })
+                  if (!ok) return
                   try {
                     await addDoc(collection(db, 'dataRequests'), {
                       userId: currentUser.uid,
@@ -297,9 +315,9 @@ export default function SettingsPage() {
                       status: 'pending',
                       createdAt: serverTimestamp(),
                     })
-                    alert('Account deletion request submitted. Your account will be deleted within 30 days.')
+                    toast.success(t('settings.deleteAccountSubmitted'))
                   } catch {
-                    alert('Failed to submit request. Please try again.')
+                    toast.error(t('settings.requestFailed'))
                   }
                 }}
               >
@@ -307,7 +325,7 @@ export default function SettingsPage() {
               </Button>
             </div>
             <div className="text-xs text-muted-foreground">
-              <Link to="/privacy" className="underline underline-offset-2">View Privacy Policy</Link>
+              <Link to="/privacy" className="underline underline-offset-2">{t('settings.viewPrivacyPolicy')}</Link>
             </div>
           </CardContent>
         </Card>

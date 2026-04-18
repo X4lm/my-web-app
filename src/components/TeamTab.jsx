@@ -3,6 +3,7 @@ import { collection, getDocs, doc, updateDoc, arrayRemove } from 'firebase/fires
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import {
   createInvitation, getPropertyInvitations,
   revokeInvitation, INVITE_STATUS, INVITABLE_ROLES,
@@ -39,7 +40,8 @@ const STATUS_VARIANT = {
 
 export default function TeamTab({ propertyId, property, ownerUid }) {
   const { currentUser, userProfile } = useAuth()
-  const { t } = useLocale()
+  const { t, formatDateTime } = useLocale()
+  const confirm = useConfirm()
   const uid = ownerUid || currentUser.uid
   const [invitations, setInvitations] = useState([])
   const [units, setUnits] = useState([])
@@ -125,7 +127,12 @@ export default function TeamTab({ propertyId, property, ownerUid }) {
   }
 
   async function handleRemove(invitation) {
-    if (!window.confirm(t('team.removeConfirm'))) return
+    const ok = await confirm({
+      description: t('team.removeConfirm'),
+      confirmLabel: t('common.confirm'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await revokeInvitation(invitation.id)
       // If they had accepted, remove the property from their linkedProperties
@@ -205,7 +212,7 @@ export default function TeamTab({ propertyId, property, ownerUid }) {
                         </div>
                         <p className="text-[10px] text-muted-foreground mt-0.5">
                           {t('team.invitedBy')} {inv.inviterName}
-                          {inv.createdAt?.toDate && ` · ${inv.createdAt.toDate().toLocaleDateString()}`}
+                          {inv.createdAt && ` · ${formatDateTime(inv.createdAt)}`}
                         </p>
                       </div>
                     </div>

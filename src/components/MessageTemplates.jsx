@@ -7,6 +7,8 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -69,6 +71,8 @@ const DEFAULT_TEMPLATES = [
 export default function MessageTemplates() {
   const { currentUser } = useAuth()
   const { t } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const [templates, setTemplates] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -131,22 +135,35 @@ export default function MessageTemplates() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this template?')) return
+    const ok = await confirm({
+      title: t('templates.deleteTitle'),
+      description: t('templates.deleteConfirm'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
       logError('[Firestore] Template delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 
   async function loadDefaults() {
-    if (!window.confirm('Add default message templates? This won\'t remove existing ones.')) return
+    const ok = await confirm({
+      title: t('templates.loadDefaultsTitle'),
+      description: t('templates.loadDefaultsDesc'),
+      confirmLabel: t('common.add'),
+    })
+    if (!ok) return
     try {
       for (const tmpl of DEFAULT_TEMPLATES) {
         await addDoc(collection(db, colPath), { ...tmpl, createdAt: serverTimestamp() })
       }
     } catch (err) {
       logError('[Firestore] Load defaults error:', err)
+      toast.error(t('common.error'))
     }
   }
 

@@ -7,6 +7,8 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -47,6 +49,8 @@ const DIRECTION_OPTIONS = [
 export default function CommunicationLog({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDateTime } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const uid = ownerUid || currentUser.uid
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
@@ -113,11 +117,17 @@ export default function CommunicationLog({ propertyId, ownerUid }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm(t('comms.deleteConfirm') || 'Delete this communication log?')) return
+    const ok = await confirm({
+      description: t('comms.deleteConfirm'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
       logError('[Firestore] Communication delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 

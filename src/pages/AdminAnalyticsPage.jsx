@@ -23,7 +23,8 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const HOURS_LABELS = ['12a', '2a', '4a', '6a', '8a', '10a', '12p', '2p', '4p', '6p', '8p', '10p']
 
 export default function AdminAnalyticsPage() {
-  const { t } = useLocale()
+  const { t, settings } = useLocale()
+  const chartLocale = settings.language === 'ar' ? 'ar' : 'en'
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState({
     userGrowth: [],
@@ -64,7 +65,7 @@ export default function AdminAnalyticsPage() {
       const userGrowth = []
       for (let i = 11; i >= 0; i--) {
         const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
-        const label = monthDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+        const label = new Intl.DateTimeFormat(chartLocale, { month: 'short', year: '2-digit' }).format(monthDate)
         const count = allUsers.filter(u => {
           const d = u.createdAt?.toDate ? u.createdAt.toDate() : (u.createdAt ? new Date(u.createdAt) : null)
           return d && d <= new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
@@ -76,7 +77,7 @@ export default function AdminAnalyticsPage() {
       const activeUsers = []
       for (let i = 29; i >= 0; i--) {
         const day = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
-        const dayStr = day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        const dayStr = new Intl.DateTimeFormat(chartLocale, { month: 'short', day: 'numeric' }).format(day)
         const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate())
         const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000)
 
@@ -116,7 +117,7 @@ export default function AdminAnalyticsPage() {
       const propertyGrowth = []
       for (let i = 11; i >= 0; i--) {
         const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
-        const label = monthDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+        const label = new Intl.DateTimeFormat(chartLocale, { month: 'short', year: '2-digit' }).format(monthDate)
         const count = allProperties.filter(p => {
           const d = p.createdAt?.toDate ? p.createdAt.toDate() : (p.createdAt ? new Date(p.createdAt) : null)
           return d && d <= new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)

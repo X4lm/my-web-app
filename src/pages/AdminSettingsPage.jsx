@@ -3,6 +3,7 @@ import { doc, getDoc, setDoc, collection, getDocs, query, where, orderBy, server
 import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { getAllInvitations, revokeInvitation, INVITE_STATUS } from '@/services/invitations'
 import AppLayout from '@/components/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +26,7 @@ const STATUS_VARIANT = { pending: 'secondary', accepted: 'success', declined: 'd
 
 export default function AdminSettingsPage() {
   const { t } = useLocale()
+  const confirm = useConfirm()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -98,7 +100,12 @@ export default function AdminSettingsPage() {
   }
 
   async function handleRevokeInvitation(invId) {
-    if (!window.confirm(t('team.removeConfirm'))) return
+    const ok = await confirm({
+      description: t('team.removeConfirm'),
+      confirmLabel: t('common.confirm'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await revokeInvitation(invId)
       setInvitations(prev => prev.map(inv =>
@@ -316,7 +323,12 @@ export default function AdminSettingsPage() {
                 size="sm"
                 disabled={migrating}
                 onClick={async () => {
-                  if (!window.confirm('This will scan all work orders and backfill vendor UIDs. Continue?')) return
+                  const ok = await confirm({
+                    title: 'Run Vendor UID Migration?',
+                    description: 'This will scan all work orders and backfill vendor UIDs. Continue?',
+                    confirmLabel: 'Run',
+                  })
+                  if (!ok) return
                   setMigrating(true)
                   setMigrationResult(null)
                   try {

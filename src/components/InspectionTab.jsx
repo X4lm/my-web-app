@@ -6,6 +6,7 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useToast } from '@/components/ui/toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -88,6 +89,7 @@ const CONDITION_COLORS = {
 export default function InspectionTab({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatDate, formatDateTime } = useLocale()
+  const toast = useToast()
   const uid = ownerUid || currentUser.uid
   const [data, setData] = useState({})
   const [notes, setNotes] = useState({})
@@ -148,6 +150,7 @@ export default function InspectionTab({ propertyId, ownerUid }) {
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
       logError('[Inspection] Save error:', err)
+      toast.error(t('common.saveFailed'))
     } finally {
       setSaving(false)
     }

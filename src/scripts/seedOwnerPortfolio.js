@@ -252,23 +252,26 @@ function maintenanceDoc(propertyStart) {
 }
 
 function makeCheques(propIndex, tenantIndex) {
-  // Mix across -180 to +120 days with varied statuses
+  // Mix across -180 to +120 days with varied statuses.
+  // Each cheque number is unique: the final 4 digits encode property + tenant + sequence,
+  // so test data mirrors the real-world rule that cheque numbers don't repeat.
+  const baseSeq = (propIndex * 17 + tenantIndex * 3) * 10
   const patterns = [
-    { offset: -150, status: 'cleared',  amount: 40000, num: '000101' },
-    { offset: -120, status: 'cleared',  amount: 40000, num: '000102' },
-    { offset:  -90, status: 'cleared',  amount: 40000, num: '000103' },
-    { offset:  -60, status: 'bounced',  amount: 40000, num: '000104' },
-    { offset:  -30, status: 'cleared',  amount: 40000, num: '000105' },
-    { offset:   -5, status: 'pending',  amount: 40000, num: '000106' },  // overdue
-    { offset:   25, status: 'pending',  amount: 40000, num: '000107' },
-    { offset:   55, status: 'pending',  amount: 40000, num: '000108' },
+    { offset: -150, status: 'cleared',  amount: 40000, seq: 1 },
+    { offset: -120, status: 'cleared',  amount: 40000, seq: 2 },
+    { offset:  -90, status: 'cleared',  amount: 40000, seq: 3 },
+    { offset:  -60, status: 'bounced',  amount: 40000, seq: 4 },
+    { offset:  -30, status: 'cleared',  amount: 40000, seq: 5 },
+    { offset:   -5, status: 'pending',  amount: 40000, seq: 6 },  // overdue
+    { offset:   25, status: 'pending',  amount: 40000, seq: 7 },
+    { offset:   55, status: 'pending',  amount: 40000, seq: 8 },
   ]
   const banks = ['Emirates NBD', 'FAB', 'ADCB', 'Mashreq Bank', 'RAK Bank']
   return patterns.map(p => ({
     date: daysFromNow(p.offset),
     amount: p.amount + propIndex * 500,
     status: p.status,
-    chequeNumber: p.num,
+    chequeNumber: String(baseSeq + p.seq).padStart(6, '0'),
     bankName: banks[(propIndex + tenantIndex) % banks.length],
   }))
 }
