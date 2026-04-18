@@ -48,6 +48,10 @@ export default function PropertyDetail() {
   const [ownerUid, setOwnerUid] = useState(null)
   const isOwnerRole = role === 'admin' || role === 'owner'
 
+  // Tutorial must be called unconditionally (before any early return) to
+  // keep hook order stable across renders.
+  const tutorial = useTutorial('property_detail', STEPS.property_detail)
+
   const tabFromUrl = searchParams.get('tab')
   const sectionFromUrl = searchParams.get('section')
 
@@ -148,7 +152,6 @@ export default function PropertyDetail() {
   function handleTabChange(next) {
     navigate(`/properties/${id}?tab=${next}`, { replace: true })
   }
-  const tutorial = useTutorial('property_detail', STEPS.property_detail)
 
   return (
     <AppLayout>
