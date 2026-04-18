@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
@@ -18,4 +18,15 @@ const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const db = getFirestore(app)
 export const storage = getStorage(app)
+
+// Dev-only: expose db + auth (+ sign-in helpers) on window so seed scripts
+// can run from the console or via preview_eval during testing. Never
+// exposed in production.
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  window.__db = db
+  window.__auth = auth
+  window.__signInWithEmailAndPassword = (email, password) => signInWithEmailAndPassword(auth, email, password)
+  window.__signOut = () => signOut(auth)
+}
+
 export default app
