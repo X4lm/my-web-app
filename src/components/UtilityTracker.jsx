@@ -93,7 +93,7 @@ export default function UtilityTracker({ propertyId, ownerUid }) {
     if (!form.accountNumber.trim()) return
     if (form.depositAmount) {
       const depErr = validateAmount(form.depositAmount)
-      if (depErr) { alert(depErr); return }
+      if (depErr) { toast.error(depErr); return }
     }
     setSaving(true)
     try {
