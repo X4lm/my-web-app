@@ -8,6 +8,8 @@ import { logError } from '@/utils/logger'
 import { validateAmount } from '@/utils/validation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -38,6 +40,8 @@ const UTILITY_TYPE_KEYS = [
 export default function UtilityTracker({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
   const { t, formatCurrency } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const uid = ownerUid || currentUser.uid
 
   const UTILITY_TYPES = UTILITY_TYPE_KEYS.map(u => ({ value: u.value, label: t(u.tKey) }))
@@ -89,7 +93,7 @@ export default function UtilityTracker({ propertyId, ownerUid }) {
     if (!form.accountNumber.trim()) return
     if (form.depositAmount) {
       const depErr = validateAmount(form.depositAmount)
-      if (depErr) { alert(depErr); return }
+      if (depErr) { toast.error(depErr); return }
     }
     setSaving(true)
     try {
@@ -109,11 +113,17 @@ export default function UtilityTracker({ propertyId, ownerUid }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm(`${t('common.delete')}?`)) return
+    const ok = await confirm({
+      title: `${t('common.delete')}?`,
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
       logError('[Utilities] Delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 

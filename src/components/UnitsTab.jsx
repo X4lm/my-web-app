@@ -7,6 +7,8 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import {
   createInvitation, getPropertyInvitations, INVITE_STATUS,
 } from '@/services/invitations'
@@ -34,6 +36,8 @@ const CONDITION_VARIANT = { good: 'success', needs_attention: 'warning', critica
 export default function UnitsTab({ propertyId, propertyType, propertyName, ownerUid }) {
   const { currentUser, userProfile } = useAuth()
   const { t, formatCurrency } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const uid = ownerUid || currentUser.uid
   const [units, setUnits] = useState([])
   const [loading, setLoading] = useState(true)
@@ -175,11 +179,17 @@ export default function UnitsTab({ propertyId, propertyType, propertyName, owner
   }
 
   async function handleDelete(id) {
-    if (!window.confirm(t('units.deleteConfirm'))) return
+    const ok = await confirm({
+      description: t('units.deleteConfirm'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, basePath, id))
     } catch (err) {
       logError('[Firestore] Unit delete error:', err.code, err.message)
+      toast.error(t('common.deleteFailed'))
     }
   }
 

@@ -114,10 +114,25 @@ export function LocaleProvider({ children }) {
     document.documentElement.setAttribute('dir', dir)
   }, [settings.language])
 
-  const t = useCallback((key) => {
+  const t = useCallback((key, tokens) => {
     const lang = settings.language || 'en'
-    return translations[lang]?.[key] || translations.en?.[key] || key
+    let str = translations[lang]?.[key] || translations.en?.[key] || key
+    if (tokens && typeof str === 'string') {
+      for (const [k, v] of Object.entries(tokens)) {
+        str = str.replaceAll(`{${k}}`, String(v))
+      }
+    }
+    return str
   }, [settings.language])
+
+  // Translated pluralization: given a count, a singular key, and a plural key,
+  // returns a string like "1 unit" / "5 units" using the translations.
+  // Usage: tPlural(count, 'unit.singular', 'unit.plural') returns "{n} unit" etc.
+  const tPlural = useCallback((count, singularKey, pluralKey) => {
+    const n = Number(count)
+    const key = n === 1 ? singularKey : pluralKey
+    return t(key, { n })
+  }, [t])
 
   const isRTL = (LANGUAGES[settings.language]?.dir || 'ltr') === 'rtl'
 
@@ -218,6 +233,24 @@ export function LocaleProvider({ children }) {
     return gregorian
   }
 
+  // Relative-time formatter ("2 hours ago", "Yesterday", "Apr 18").
+  // Uses Intl.RelativeTimeFormat for up-to-now values within a week, then
+  // falls back to the fixed date. Locale-aware.
+  function formatRelativeTime(value) {
+    if (!value) return '\u2014'
+    const d = value?.toDate ? value.toDate() : new Date(value)
+    if (isNaN(d.getTime())) return '\u2014'
+    const diffMs = d.getTime() - Date.now()
+    const absSec = Math.abs(diffMs / 1000)
+    const lang = settings.language === 'ar' ? 'ar' : 'en'
+    const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' })
+    if (absSec < 60) return rtf.format(Math.round(diffMs / 1000), 'second')
+    if (absSec < 3600) return rtf.format(Math.round(diffMs / 60000), 'minute')
+    if (absSec < 86400) return rtf.format(Math.round(diffMs / 3600000), 'hour')
+    if (absSec < 604800) return rtf.format(Math.round(diffMs / 86400000), 'day')
+    return formatDateTime(value)
+  }
+
   function getCurrencyCode() {
     return settings.currency
   }
@@ -229,10 +262,10 @@ export function LocaleProvider({ children }) {
   return (
     <LocaleContext.Provider value={{
       settings, updateSettings,
-      formatCurrency, formatDate, formatDateTime,
+      formatCurrency, formatDate, formatDateTime, formatRelativeTime,
       formatWithConversion, convertCurrency,
       getCurrencyCode, getCurrencyLabel,
-      t, isRTL,
+      t, tPlural, isRTL,
       CURRENCIES, DATE_FORMATS, LANGUAGES,
       CALENDAR_SYSTEMS, EXCHANGE_RATES, TEMPERATURE_UNITS,
     }}>

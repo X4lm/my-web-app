@@ -25,7 +25,7 @@ const ROLE_VARIANT = {
 
 export default function AdminSupportChatPage() {
   const { currentUser, userProfile } = useAuth()
-  const { t } = useLocale()
+  const { t, formatDate } = useLocale()
   const [threads, setThreads] = useState([])
   const [selected, setSelected] = useState(null)
   const [messages, setMessages] = useState([])
@@ -102,7 +102,7 @@ export default function AdminSupportChatPage() {
     if (hrs < 24) return `${hrs}h`
     const days = Math.floor(hrs / 24)
     if (days < 7) return `${days}d`
-    return d.toLocaleDateString()
+    return formatDate(d.toISOString().slice(0, 10))
   }
 
   const filtered = threads.filter(th => {

@@ -2,6 +2,7 @@ import Sidebar from './Sidebar'
 import Header from './Header'
 import InvitationChecker from './InvitationChecker'
 import AnalyticsTracker from './AnalyticsTracker'
+import KeyboardShortcutsDialog from './KeyboardShortcutsDialog'
 
 export default function AppLayout({ children }) {
   return (
@@ -15,6 +16,7 @@ export default function AppLayout({ children }) {
       </div>
       <InvitationChecker />
       <AnalyticsTracker />
+      <KeyboardShortcutsDialog />
     </div>
   )
 }

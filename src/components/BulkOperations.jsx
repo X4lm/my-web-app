@@ -6,6 +6,7 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,7 +20,8 @@ import {
 
 export default function BulkOperations({ propertyId, property, ownerUid }) {
   const { currentUser } = useAuth()
-  const { t, formatCurrency } = useLocale()
+  const { t, tPlural, formatCurrency } = useLocale()
+  const confirm = useConfirm()
   const uid = ownerUid || currentUser.uid
   const [rentDialogOpen, setRentDialogOpen] = useState(false)
   const [increasePercent, setIncreasePercent] = useState('5')
@@ -34,7 +36,13 @@ export default function BulkOperations({ propertyId, property, ownerUid }) {
     if (!pct || pct <= 0 || pct > 100) return
     const MAX_RERA_INCREASE = 20
     if (pct > MAX_RERA_INCREASE) {
-      if (!confirm(`Warning: ${pct}% exceeds typical RERA rent increase limits (${MAX_RERA_INCREASE}%). Continue?`)) return
+      const ok = await confirm({
+        title: t('bulk.reraWarningTitle'),
+        description: t('bulk.reraWarningDesc', { pct, max: MAX_RERA_INCREASE }),
+        confirmLabel: t('common.confirm'),
+        destructive: true,
+      })
+      if (!ok) return
     }
     setProcessing(true)
     setResult(null)
@@ -69,11 +77,11 @@ export default function BulkOperations({ propertyId, property, ownerUid }) {
           })
         } catch { /* audit log failure shouldn't block */ }
       }
-      setResult({ success: true, message: `Updated rent for ${updated} unit${updated !== 1 ? 's' : ''} by ${pct}%` })
+      setResult({ success: true, message: t('plural.unitsUpdated.' + (updated === 1 ? 'one' : 'other'), { n: updated, pct }) })
       setRentDialogOpen(false)
     } catch (err) {
       logError('[Bulk] Rent increase error:', err)
-      setResult({ success: false, message: 'Failed to update rents. Please try again.' })
+      setResult({ success: false, message: t('common.error') })
     } finally {
       setProcessing(false)
     }
@@ -132,7 +140,7 @@ export default function BulkOperations({ propertyId, property, ownerUid }) {
       const MAX_IMPORT_ROWS = 500
       const rows = lines.slice(1)
       if (rows.length > MAX_IMPORT_ROWS) {
-        alert(`CSV import limited to ${MAX_IMPORT_ROWS} rows. Please split your file.`)
+        setResult({ success: false, message: t('bulk.csvLimit', { max: MAX_IMPORT_ROWS }) })
         return
       }
 
@@ -195,10 +203,10 @@ export default function BulkOperations({ propertyId, property, ownerUid }) {
           })
         } catch { /* audit log failure shouldn't block */ }
       }
-      setResult({ success: true, message: `Updated ${updated} unit${updated !== 1 ? 's' : ''} from CSV.` })
+      setResult({ success: true, message: tPlural(updated, 'plural.unitsImported.one', 'plural.unitsImported.other') })
     } catch (err) {
       logError('[Bulk] CSV import error:', err)
-      setResult({ success: false, message: 'Failed to import CSV. Check file format.' })
+      setResult({ success: false, message: t('bulk.csvError') })
     } finally {
       setProcessing(false)
       e.target.value = ''

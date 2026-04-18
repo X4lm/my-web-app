@@ -26,7 +26,7 @@ import PlatformAnnouncement from '@/components/PlatformAnnouncement'
 
 export default function Dashboard() {
   const { currentUser, userProfile } = useAuth()
-  const { t } = useLocale()
+  const { t, tPlural } = useLocale()
   const steps = useMemo(() => getSteps(t).dashboard, [t])
   const tutorial = useTutorial('dashboard', steps)
 
@@ -138,10 +138,9 @@ export default function Dashboard() {
   ]
 
   const unitStatCards = [
-    { label: t('dashboard.totalUnits'), value: totalUnits, icon: Home, description: t('dashboard.allProperties') },
-    { label: t('dashboard.occupied'), value: occupiedUnits, icon: Users, description: `${totalUnits - occupiedUnits} vacant` },
+    { label: t('dashboard.totalUnits'), value: totalUnits, icon: Home, description: t('dashboard.acrossAllProperties') },
+    { label: t('dashboard.occupied'), value: occupiedUnits, icon: Users, description: tPlural(totalUnits - occupiedUnits, 'plural.vacant.one', 'plural.vacant.other') },
     { label: t('dashboard.occupancy'), value: `${occupancyRate}%`, icon: Percent, description: totalUnits > 0 ? `${occupiedUnits} / ${totalUnits}` : t('dashboard.totalUnits') },
-    { label: t('common.rent'), value: formatCurrency(totalExpectedRent), icon: DollarSign, description: t('dashboard.allProperties') },
   ]
 
   const recent = properties.slice(0, 5)
@@ -152,7 +151,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground text-sm">
-            {t('dashboard.welcomeBack')}, {currentUser?.displayName || 'there'}.
+            {t('dashboard.welcomeBack')}, {currentUser?.displayName || t('dashboard.greeting.fallback')}.
           </p>
         </div>
 
@@ -201,7 +200,7 @@ export default function Dashboard() {
         {!loading && !unitsLoading && totalUnits > 0 && (
           <div>
             <h2 className="text-sm font-medium text-muted-foreground mb-3">{t('dashboard.unitOverview')}</h2>
-            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
               {unitStatCards.map(({ label, value, icon: Icon, description }) => (
                 <Card key={label}>
                   <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -218,9 +217,18 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Global alerts panel */}
+        {/* Global alerts panel — cap at 5 on Dashboard; full list lives at /alerts */}
         {!loading && allAlerts.length > 0 && (
-          <AlertsPanel alerts={allAlerts} title={t('dashboard.activeAlerts')} maxItems={8} />
+          <div>
+            <AlertsPanel alerts={allAlerts} title={t('dashboard.activeAlerts')} maxItems={5} />
+            {allAlerts.length > 5 && (
+              <div className="mt-2 text-center">
+                <Button variant="link" size="sm" onClick={() => navigate('/alerts')}>
+                  {t('dashboard.viewAllAlerts', { n: allAlerts.length })}
+                </Button>
+              </div>
+            )}
+          </div>
         )}
 
         <div className="grid gap-6 lg:grid-cols-2">

@@ -7,6 +7,8 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -61,7 +63,9 @@ const EMPTY = {
 
 export default function WorkOrdersTab({ propertyId, ownerUid }) {
   const { currentUser } = useAuth()
-  const { t, formatCurrency, formatDate } = useLocale()
+  const { t, tPlural, formatCurrency, formatDate, formatDateTime } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const uid = ownerUid || currentUser.uid
   const [orders, setOrders] = useState([])
   const [vendors, setVendors] = useState([])
@@ -153,17 +157,24 @@ export default function WorkOrdersTab({ propertyId, ownerUid }) {
       setEditing(null)
     } catch (err) {
       logError('[WorkOrders] Save error:', err)
+      toast.error(t('common.saveFailed'))
     } finally {
       setSaving(false)
     }
   }
 
   async function handleDelete(id) {
-    if (!window.confirm(t('workOrders.deleteConfirm'))) return
+    const ok = await confirm({
+      description: t('workOrders.deleteConfirm'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
       logError('[WorkOrders] Delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 
@@ -181,7 +192,7 @@ export default function WorkOrdersTab({ propertyId, ownerUid }) {
           )}
           {urgentCount > 0 && (
             <Badge variant="destructive" className="text-xs flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" /> {urgentCount} {t('workOrders.urgent')}
+              <AlertCircle className="w-3 h-3" /> {tPlural(urgentCount, 'plural.urgent.one', 'plural.urgent.other')}
             </Badge>
           )}
         </div>
@@ -386,7 +397,7 @@ export default function WorkOrdersTab({ propertyId, ownerUid }) {
                   <p className="text-sm text-muted-foreground italic">"{editing.ratingComment}"</p>
                 )}
                 <p className="text-[11px] text-muted-foreground">
-                  {editing.ratedBy || 'Tenant'} · {editing.ratedAt ? new Date(editing.ratedAt).toLocaleString() : ''}
+                  {editing.ratedBy || t('common.tenant')} · {editing.ratedAt ? formatDateTime(editing.ratedAt) : ''}
                 </p>
               </div>
             )}
@@ -399,7 +410,7 @@ export default function WorkOrdersTab({ propertyId, ownerUid }) {
                   {editing.statusHistory.map((h, i) => {
                     const toLabel = t(STATUS[h.to]?.tKey || h.to)
                     const fromLabel = h.from ? t(STATUS[h.from]?.tKey || h.from) : null
-                    const when = h.at ? new Date(h.at).toLocaleString() : '—'
+                    const when = h.at ? formatDateTime(h.at) : '—'
                     return (
                       <li key={i} className="flex items-start gap-2">
                         <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />

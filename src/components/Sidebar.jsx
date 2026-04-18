@@ -167,7 +167,12 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="px-6 py-4 border-t border-sidebar-border">
-        <p className="text-xs text-muted-foreground">Bait to Maintain v1.0</p>
+        <a
+          href="/privacy"
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {t('auth.propManager')} v1.0
+        </a>
       </div>
     </aside>
   )

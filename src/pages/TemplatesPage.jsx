@@ -2,7 +2,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import AppLayout from '@/components/AppLayout'
 import MessageTemplates from '@/components/MessageTemplates'
 
-export default function MessagesPage() {
+export default function TemplatesPage() {
   const { t } = useLocale()
   return (
     <AppLayout>

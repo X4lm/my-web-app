@@ -5,6 +5,23 @@ const TutorialContext = createContext(null)
 const LS_ENABLED = 'tutorialEnabled'
 const LS_SEEN = 'tutorialSeen'
 
+// Map URL pathnames to the pageKey used by useTutorial() calls.
+// Keep in sync with the `useTutorial('<key>', ...)` calls in each page.
+const PATH_TO_KEY = [
+  ['/dashboard', 'dashboard'],
+  ['/properties/', 'propertyDetail'],
+  ['/properties', 'properties'],
+  ['/today', 'priority'],
+  ['/atlas', 'atlas'],
+]
+
+export function pageKeyFromPath(pathname) {
+  for (const [prefix, key] of PATH_TO_KEY) {
+    if (pathname.startsWith(prefix)) return key
+  }
+  return null
+}
+
 function readLS() {
   try {
     const enabledRaw = localStorage.getItem(LS_ENABLED)

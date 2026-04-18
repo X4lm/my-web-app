@@ -6,6 +6,8 @@ import {
 import { db } from '@/firebase/config'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import { diffFields, TYPE_LABELS } from '@/lib/utils'
 import AppLayout from '@/components/AppLayout'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
@@ -21,12 +23,12 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { usePortfolioAggregates } from '@/hooks/usePortfolioAggregates'
 import { computeHealthScore } from '@/utils/visibility'
 import PropertyHealthBadge from '@/components/PropertyHealthBadge'
-import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCircle } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCircle, Info } from 'lucide-react'
 
 
 import { canEdit, FEATURES } from '@/utils/permissions'
@@ -40,6 +42,8 @@ const OWNER_ROLES = new Set(['admin', 'owner'])
 export default function Properties() {
   const { currentUser, userProfile } = useAuth()
   const { t, formatCurrency } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const role = userProfile?.role || 'owner'
   const isOwnerRole = OWNER_ROLES.has(role)
   const [ownProperties, setOwnProperties] = useState([])
@@ -51,6 +55,7 @@ export default function Properties() {
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   // usePropertyAlerts handles linked-property lookup for non-owner roles via propertyIndex.
   const { properties: alertsProperties, alertsByProperty, loading: alertsLoading } = usePropertyAlerts()
 
@@ -134,11 +139,16 @@ export default function Properties() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm(t('properties.deleteConfirm'))) return
+    const ok = await confirm({
+      description: t('properties.deleteConfirm'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, 'users', currentUser.uid, 'properties', id))
-    } catch {
-      // silently handle
+    } catch (err) {
+      toast.error(t('common.deleteFailed'))
     }
   }
 
@@ -146,6 +156,33 @@ export default function Properties() {
     setEditing(null)
     setDialogOpen(true)
   }
+
+  // Auto-open the Add Property dialog if navigated here with ?new=1
+  // (e.g. from the command palette "Add new property" action).
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      openAdd()
+      const next = new URLSearchParams(searchParams)
+      next.delete('new')
+      setSearchParams(next, { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // N = New property (skip when typing in an input or when a dialog is open).
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key !== 'n' && e.key !== 'N') return
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+      const tag = (e.target?.tagName || '').toLowerCase()
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable) return
+      if (dialogOpen) return
+      e.preventDefault()
+      openAdd()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [dialogOpen])
 
   function openEdit(property) {
     setEditing(property)
@@ -203,6 +240,16 @@ export default function Properties() {
                     <option key={val} value={val}>{t(`type.${val}`)}</option>
                   ))}
                 </select>
+                {(search || statusFilter !== 'all' || typeFilter !== 'all') && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setSearch(''); setStatusFilter('all'); setTypeFilter('all') }}
+                  >
+                    {t('properties.clearFilters')}
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
@@ -236,7 +283,20 @@ export default function Properties() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead data-tour="properties-health" className="w-14">{t('health.title')}</TableHead>
+                    <TableHead data-tour="properties-health" className="w-16">
+                      <span className="inline-flex items-center gap-1">
+                        {t('health.title')}
+                        <span
+                          tabIndex={0}
+                          role="img"
+                          aria-label={t('health.legend')}
+                          title={t('health.legend')}
+                          className="inline-flex items-center text-muted-foreground cursor-help"
+                        >
+                          <Info className="w-3 h-3" />
+                        </span>
+                      </span>
+                    </TableHead>
                     <TableHead>{t('properties.property')}</TableHead>
                     <TableHead className="hidden sm:table-cell">{t('common.type')}</TableHead>
                     <TableHead className="hidden md:table-cell">{t('common.address')}</TableHead>
@@ -255,7 +315,7 @@ export default function Properties() {
                     return (
                     <TableRow key={p.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/properties/${p.id}`)}>
                       <TableCell>
-                        <PropertyHealthBadge score={health.score} grade={health.grade} tone={health.tone} size="sm" />
+                        <PropertyHealthBadge score={health.score} grade={health.grade} tone={health.tone} breakdown={health.breakdown} size="sm" />
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">

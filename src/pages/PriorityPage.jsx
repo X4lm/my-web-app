@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout'
 import TutorialBubble from '@/components/TutorialBubble'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { usePortfolioAggregates } from '@/hooks/usePortfolioAggregates'
@@ -101,7 +102,20 @@ export default function PriorityPage() {
         </div>
 
         {loading && (
-          <Card><CardContent className="py-12 text-center text-sm text-muted-foreground">{t('priority.loading')}</CardContent></Card>
+          <Card>
+            <CardContent className="py-6 space-y-3">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="flex items-center gap-3 py-1.5">
+                  <Skeleton className="w-8 h-8 rounded-md" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                  <Skeleton className="h-4 w-14" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         )}
 
         {!loading && totalCount === 0 && (

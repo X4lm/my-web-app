@@ -32,12 +32,12 @@ export default function Signup() {
       navigate('/')
     } catch (err) {
       const safeErrors = {
-        'auth/email-already-in-use': 'Unable to create account. Please try a different email or sign in.',
-        'auth/invalid-email': 'Please enter a valid email address.',
-        'auth/weak-password': 'Please choose a stronger password.',
-        'auth/too-many-requests': 'Too many attempts. Please try again later.',
+        'auth/email-already-in-use': t('auth.emailInUse'),
+        'auth/invalid-email': t('auth.invalidEmail'),
+        'auth/weak-password': t('auth.weakPassword'),
+        'auth/too-many-requests': t('auth.tooManyAttempts'),
       }
-      setError(safeErrors[err.code] || 'An error occurred creating your account. Please try again.')
+      setError(safeErrors[err.code] || t('auth.signupError'))
     } finally {
       setLoading(false)
     }
@@ -100,7 +100,7 @@ export default function Signup() {
                   required
                   autoComplete="new-password"
                 />
-                <p className="text-xs text-muted-foreground">At least 12 characters, including uppercase, lowercase, number, and special character.</p>
+                <p className="text-xs text-muted-foreground">{t('auth.passwordHint')}</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm">{t('auth.confirmPassword')}</Label>
@@ -122,9 +122,9 @@ export default function Signup() {
                   className="mt-1 rounded border-input"
                 />
                 <Label htmlFor="consent" className="text-xs text-muted-foreground font-normal leading-relaxed">
-                  I agree to the processing of my personal data as described in the{' '}
+                  {t('auth.consentAgree')}{' '}
                   <Link to="/privacy" target="_blank" className="text-foreground underline underline-offset-2">
-                    Privacy Policy
+                    {t('auth.privacyPolicy')}
                   </Link>
                 </Label>
               </div>

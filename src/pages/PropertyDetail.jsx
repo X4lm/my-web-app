@@ -37,7 +37,7 @@ export default function PropertyDetail() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const { currentUser, userProfile } = useAuth()
-  const { t, formatCurrency, formatDate } = useLocale()
+  const { t, formatCurrency, formatDate, formatDateTime, formatRelativeTime } = useLocale()
   const role = userProfile?.role || 'owner'
   const navigate = useNavigate()
   const [property, setProperty] = useState(null)
@@ -181,10 +181,11 @@ export default function PropertyDetail() {
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <User className="w-3 h-3" />
                 {t('property.lastEditedBy')} {property.updatedBy || property.createdBy}
-                {property.updatedAt && (() => {
-                  const d = property.updatedAt?.toDate ? property.updatedAt.toDate() : new Date(property.updatedAt)
-                  return ` · ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                })()}
+                {property.updatedAt && (
+                  <span title={formatDateTime(property.updatedAt)}>
+                    &nbsp;·&nbsp;{formatRelativeTime(property.updatedAt)}
+                  </span>
+                )}
               </p>
             )}
           </div>

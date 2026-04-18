@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { MessageCircle, Send, X, Loader2 } from 'lucide-react'
 import { useAuth, ROLES } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useToast } from '@/components/ui/toast'
 import { useTheme } from '@/contexts/ThemeContext'
 import { logError } from '@/utils/logger'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,7 @@ import {
 export default function ChatWithDev() {
   const { currentUser, userProfile } = useAuth()
   const { t } = useLocale()
+  const toast = useToast()
   const { theme } = useTheme()
   const [open, setOpen] = useState(false)
   const [thread, setThread] = useState(null)
@@ -100,6 +102,7 @@ export default function ChatWithDev() {
       setDraft('')
     } catch (err) {
       logError('[ChatWithDev] send error:', err)
+      toast.error(t('common.error'))
     } finally {
       setSending(false)
     }

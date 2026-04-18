@@ -7,6 +7,8 @@ import { db } from '@/firebase/config'
 import { logError } from '@/utils/logger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import AppLayout from '@/components/AppLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,6 +52,8 @@ const EMPTY = {
 export default function VendorsPage() {
   const { currentUser } = useAuth()
   const { t } = useLocale()
+  const confirm = useConfirm()
+  const toast = useToast()
   const [vendors, setVendors] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -121,11 +125,17 @@ export default function VendorsPage() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm(t('vendors.deleteConfirm'))) return
+    const ok = await confirm({
+      description: t('vendors.deleteConfirm'),
+      confirmLabel: t('common.delete'),
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteDoc(doc(db, colPath, id))
     } catch (err) {
       logError('[Vendors] Delete error:', err)
+      toast.error(t('common.deleteFailed'))
     }
   }
 

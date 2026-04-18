@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { logError } from '@/utils/logger'
+import { useToast } from '@/components/ui/toast'
 import AppLayout from '@/components/AppLayout'
 import ChequeFormDialog from '@/components/ChequeFormDialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,7 +15,8 @@ import { FileCheck, ChevronLeft, ChevronRight, AlertCircle, Plus } from 'lucide-
 
 export default function ChequeCalendarPage() {
   const { currentUser } = useAuth()
-  const { formatCurrency, formatDate, t } = useLocale()
+  const { formatCurrency, formatDate, t, settings } = useLocale()
+  const toast = useToast()
   const { properties, loading: propsLoading } = usePropertyAlerts()
   const [allCheques, setAllCheques] = useState([])
   const [loading, setLoading] = useState(true)
@@ -51,6 +53,21 @@ export default function ChequeCalendarPage() {
     return () => unsubs.forEach(u => u())
   }, [currentUser, properties, propsLoading])
 
+  // N = New cheque (skip when typing or dialog already open, or no properties).
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key !== 'n' && e.key !== 'N') return
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+      const tag = (e.target?.tagName || '').toLowerCase()
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable) return
+      if (chequeDialogOpen || properties.length === 0) return
+      e.preventDefault()
+      setChequeDialogOpen(true)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [chequeDialogOpen, properties.length])
+
   async function handleChequeSave(data) {
     const propId = selectedPropertyId || (properties.length > 0 ? properties[0].id : null)
     if (!propId) return
@@ -59,8 +76,10 @@ export default function ChequeCalendarPage() {
       const chequePath = `users/${currentUser.uid}/properties/${propId}/cheques`
       await addDoc(collection(db, chequePath), { ...data, createdAt: serverTimestamp() })
       setChequeDialogOpen(false)
+      toast.success(t('common.success'))
     } catch (err) {
       logError('[Firestore] Cheque save error:', err)
+      toast.error(t('common.saveFailed'))
     } finally {
       setChequeSaving(false)
     }
@@ -94,7 +113,7 @@ export default function ChequeCalendarPage() {
     byDate[c.date].push(c)
   })
 
-  const monthName = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+  const monthName = new Intl.DateTimeFormat(settings.language === 'ar' ? 'ar' : 'en', { month: 'long', year: 'numeric' }).format(viewDate)
 
   const STATUS_COLORS = {
     pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
@@ -118,6 +137,7 @@ export default function ChequeCalendarPage() {
                 value={selectedPropertyId || (properties[0]?.id || '')}
                 onChange={e => setSelectedPropertyId(e.target.value)}
                 className="h-8 rounded-md border border-input bg-transparent px-2 text-sm"
+                aria-label={t('cheques.selectProperty')}
               >
                 {properties.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
@@ -125,7 +145,7 @@ export default function ChequeCalendarPage() {
               </select>
             )}
             <Button size="sm" onClick={() => setChequeDialogOpen(true)} disabled={properties.length === 0}>
-              <Plus className="w-4 h-4 mr-1" /> {t('cheques.addCheque') || 'Add Cheque'}
+              <Plus className="w-4 h-4 mr-1" /> {t('cheques.addCheque')}
             </Button>
           </div>
         </div>
@@ -157,7 +177,7 @@ export default function ChequeCalendarPage() {
               <div className="text-2xl font-semibold">{loading ? '—' : overdue.length}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {overdue.length > 0
-                  ? `${formatCurrency(overdue.reduce((s, c) => s + Number(c.amount || 0), 0))} pending`
+                  ? `${formatCurrency(overdue.reduce((s, c) => s + Number(c.amount || 0), 0))} ${t('cheques.pending')}`
                   : t('cheques.allCaughtUp')}
               </p>
             </CardContent>
