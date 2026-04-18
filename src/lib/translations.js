@@ -107,6 +107,8 @@ const translations = {
     'cmdk.hint.properties': 'Properties',
     'cmdk.hint.tenants': 'Tenants',
     'cmdk.empty': 'No results.',
+    'tutorial.toggleOn': 'Turn tutorial ON',
+    'tutorial.toggleOff': 'Turn tutorial OFF',
 
     'common.save': 'Save',
     'common.cancel': 'Cancel',
@@ -1230,6 +1232,8 @@ const translations = {
     'cmdk.hint.properties': 'العقارات',
     'cmdk.hint.tenants': 'المستأجرين',
     'cmdk.empty': 'لا توجد نتائج.',
+    'tutorial.toggleOn': 'تشغيل الجولة التعريفية',
+    'tutorial.toggleOff': 'إيقاف الجولة التعريفية',
 
     // ─── Common ───
     'common.save': 'حفظ',

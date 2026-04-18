@@ -6,6 +6,9 @@ import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { Skeleton } from '@/components/ui/skeleton'
 import AppLayout from '@/components/AppLayout'
 import AlertsPanel from '@/components/AlertsPanel'
+import TutorialBubble from '@/components/TutorialBubble'
+import { useTutorial } from '@/hooks/useTutorial'
+import { STEPS } from '@/lib/tutorialSteps'
 import TenantDashboard from '@/components/TenantDashboard'
 import VendorDashboard from '@/components/VendorDashboard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,6 +26,7 @@ import PlatformAnnouncement from '@/components/PlatformAnnouncement'
 
 export default function Dashboard() {
   const { currentUser, userProfile } = useAuth()
+  const tutorial = useTutorial('dashboard', STEPS.dashboard)
 
   // If user is a tenant, render the tenant-specific dashboard
   if (userProfile?.role === ROLES.TENANT) {
@@ -176,7 +180,7 @@ export default function Dashboard() {
         )}
 
         {/* Property stats */}
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <div data-tour="dashboard-kpi" className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {statCards.map(({ label, value, icon: Icon, description }) => (
             <Card key={label}>
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -332,6 +336,7 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
+      {tutorial.active && <TutorialBubble {...tutorial} />}
     </AppLayout>
   )
 }

@@ -93,11 +93,12 @@ export default function Sidebar() {
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t(group.header)}</p>
                 </div>
               )}
-              {visibleItems.map(({ to, key, icon: Icon }) => (
+              {visibleItems.map(({ id, to, key, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
                   end={to === '/'}
+                  data-tour={`sidebar-${id}`}
                   className={({ isActive }) =>
                     cn(
                       'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',

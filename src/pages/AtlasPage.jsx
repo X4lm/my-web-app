@@ -2,9 +2,12 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Building2, MapPin, AlertTriangle, ExternalLink } from 'lucide-react'
 import AppLayout from '@/components/AppLayout'
+import TutorialBubble from '@/components/TutorialBubble'
 import { Card, CardContent } from '@/components/ui/card'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
+import { useTutorial } from '@/hooks/useTutorial'
+import { STEPS } from '@/lib/tutorialSteps'
 import { emirateOf, EMIRATE_LABELS, EMIRATE_LABELS_AR, computeHealthScore } from '@/utils/visibility'
 import { usePortfolioAggregates } from '@/hooks/usePortfolioAggregates'
 import { cn } from '@/lib/utils'
@@ -27,6 +30,7 @@ export default function AtlasPage() {
   const { t, isRTL } = useLocale()
   const { properties, alertsByProperty, loading: alertsLoading } = usePropertyAlerts()
   const { units, cheques, documents, loading: aggLoading } = usePortfolioAggregates(properties)
+  const tutorial = useTutorial('atlas', STEPS.atlas)
 
   const labels = isRTL ? EMIRATE_LABELS_AR : EMIRATE_LABELS
 
@@ -78,7 +82,7 @@ export default function AtlasPage() {
           const list = grouped[emirate]
           const totalAlerts = list.reduce((s, p) => s + p.alertCount, 0)
           return (
-            <section key={emirate}>
+            <section key={emirate} data-tour="atlas-groups">
               <div className="flex items-center gap-3 mb-3">
                 <MapPin className="w-4 h-4 text-primary" />
                 <h2 className="text-base font-semibold">{labels[emirate]}</h2>
@@ -96,7 +100,7 @@ export default function AtlasPage() {
                 {list.map(p => {
                   const mapsUrl = p.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.address)}` : null
                   return (
-                    <Card key={p.id} className="group hover:border-primary/40 transition-colors">
+                    <Card key={p.id} data-tour="atlas-card" className="group hover:border-primary/40 transition-colors">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2 min-w-0">
@@ -142,6 +146,7 @@ export default function AtlasPage() {
           )
         })}
       </div>
+      {tutorial.active && <TutorialBubble {...tutorial} />}
     </AppLayout>
   )
 }

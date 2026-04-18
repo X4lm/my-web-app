@@ -31,6 +31,9 @@ import { Plus, Search, MoreHorizontal, Pencil, Trash2, Building2, Eye, AlertCirc
 
 import { canEdit, FEATURES } from '@/utils/permissions'
 import { upsertPropertyIndex } from '@/services/propertyIndex'
+import TutorialBubble from '@/components/TutorialBubble'
+import { useTutorial } from '@/hooks/useTutorial'
+import { STEPS } from '@/lib/tutorialSteps'
 
 const OWNER_ROLES = new Set(['admin', 'owner'])
 
@@ -56,6 +59,7 @@ export default function Properties() {
   const properties = isOwnerRole ? ownProperties : alertsProperties
   const loading = isOwnerRole ? ownLoading : alertsLoading
   const { units: allUnits, cheques: allCheques, documents: allDocs } = usePortfolioAggregates(properties)
+  const tutorial = useTutorial('properties', STEPS.properties)
 
   useEffect(() => {
     if (!isOwnerRole) {
@@ -158,7 +162,7 @@ export default function Properties() {
             </p>
           </div>
           {canEdit(role, FEATURES.ADD_PROPERTY) && (
-            <Button onClick={openAdd} size="sm">
+            <Button data-tour="properties-add" onClick={openAdd} size="sm">
               <Plus className="w-4 h-4" />
               {t('properties.addProperty')}
             </Button>
@@ -169,7 +173,7 @@ export default function Properties() {
         <Card>
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
+              <div data-tour="properties-search" className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder={t('properties.search')}
@@ -231,7 +235,7 @@ export default function Properties() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-14">{t('health.title')}</TableHead>
+                    <TableHead data-tour="properties-health" className="w-14">{t('health.title')}</TableHead>
                     <TableHead>{t('properties.property')}</TableHead>
                     <TableHead className="hidden sm:table-cell">{t('common.type')}</TableHead>
                     <TableHead className="hidden md:table-cell">{t('common.address')}</TableHead>
@@ -336,6 +340,7 @@ export default function Properties() {
         onSave={handleSave}
         saving={saving}
       />
+      {tutorial.active && <TutorialBubble {...tutorial} />}
     </AppLayout>
   )
 }

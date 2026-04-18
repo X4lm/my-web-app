@@ -2,11 +2,14 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertCircle, FileText, Wrench, CreditCard, Users, ShieldCheck, Building2 } from 'lucide-react'
 import AppLayout from '@/components/AppLayout'
+import TutorialBubble from '@/components/TutorialBubble'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePropertyAlerts } from '@/hooks/usePropertyAlerts'
 import { usePortfolioAggregates } from '@/hooks/usePortfolioAggregates'
+import { useTutorial } from '@/hooks/useTutorial'
+import { STEPS } from '@/lib/tutorialSteps'
 import { buildPriorityQueue } from '@/utils/visibility'
 import { formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -42,6 +45,7 @@ export default function PriorityPage() {
   const { properties, allAlerts, loading: alertsLoading } = usePropertyAlerts()
   const { cheques, workOrders, documents, loading: aggLoading } = usePortfolioAggregates(properties)
   const [filter, setFilter] = useState('all')
+  const tutorial = useTutorial('priority', STEPS.priority)
 
   const items = useMemo(() => {
     return buildPriorityQueue({
@@ -69,13 +73,13 @@ export default function PriorityPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
+        <div data-tour="priority-header">
           <h1 className="text-2xl font-bold tracking-tight">{t('priority.title')}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t('priority.subtitle')}</p>
         </div>
 
         {/* Filter pills */}
-        <div className="flex flex-wrap gap-2">
+        <div data-tour="priority-filters" className="flex flex-wrap gap-2">
           {FILTER_KINDS.map(f => (
             <button
               key={f.id}
@@ -111,7 +115,7 @@ export default function PriorityPage() {
         )}
 
         {!loading && (
-          <div className="space-y-6">
+          <div data-tour="priority-list" className="space-y-6">
             {['overdue', 'critical', 'upcoming', 'later'].map(level => {
               const list = grouped[level]
               if (!list.length) return null
@@ -165,6 +169,7 @@ export default function PriorityPage() {
           </div>
         )}
       </div>
+      {tutorial.active && <TutorialBubble {...tutorial} />}
     </AppLayout>
   )
 }

@@ -10,7 +10,8 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog, MessageCircle, ListTodo, Map } from 'lucide-react'
+import { LogOut, User, Menu, X, LayoutDashboard, Building2, Settings, Home, Moon, Sun, AlertCircle, ScrollText, Users, UserCheck, FileText, FileCheck, PieChart, ShieldCheck, BarChart3, Cog, MessageCircle, ListTodo, Map, GraduationCap } from 'lucide-react'
+import { useTutorialContext } from '@/contexts/TutorialContext'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import { getSidebarItems } from '@/utils/permissions'
@@ -64,6 +65,7 @@ const ADMIN_NAV_ITEMS = [
 export default function Header() {
   const { currentUser, userProfile, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const { enabled: tutorialEnabled, toggle: toggleTutorial } = useTutorialContext()
   const { t } = useLocale()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -118,13 +120,31 @@ export default function Header() {
           {/* Spacer for desktop */}
           <div className="hidden md:block" />
 
-          {/* Right side: search + weather + chat + theme toggle + user menu */}
+          {/* Right side: search + weather + chat + tutorial + theme toggle + user menu */}
           <div className="flex items-center gap-3">
-            <CommandPalette />
+            <div data-tour="header-cmdk"><CommandPalette /></div>
 
             <WeatherWidget />
 
             <ChatWithDev />
+
+            <Button
+              data-tour="header-tutorial"
+              variant="ghost"
+              size="icon"
+              onClick={toggleTutorial}
+              className={cn(
+                'h-8 w-8 relative',
+                tutorialEnabled && 'text-primary'
+              )}
+              aria-label={tutorialEnabled ? t('tutorial.toggleOff') : t('tutorial.toggleOn')}
+              title={tutorialEnabled ? t('tutorial.toggleOff') : t('tutorial.toggleOn')}
+            >
+              <GraduationCap className="h-4 w-4" />
+              {tutorialEnabled && (
+                <span className="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-primary ring-2 ring-background" />
+              )}
+            </Button>
 
             <Button
               variant="ghost"

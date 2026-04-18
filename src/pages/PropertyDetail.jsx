@@ -20,6 +20,9 @@ import UtilityTracker from '@/components/UtilityTracker'
 import BulkOperations from '@/components/BulkOperations'
 import TeamTab from '@/components/TeamTab'
 import PropertyFormDialog from '@/components/PropertyFormDialog'
+import TutorialBubble from '@/components/TutorialBubble'
+import { useTutorial } from '@/hooks/useTutorial'
+import { STEPS } from '@/lib/tutorialSteps'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -145,6 +148,7 @@ export default function PropertyDetail() {
   function handleTabChange(next) {
     navigate(`/properties/${id}?tab=${next}`, { replace: true })
   }
+  const tutorial = useTutorial('property_detail', STEPS.property_detail)
 
   return (
     <AppLayout>
@@ -191,7 +195,7 @@ export default function PropertyDetail() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <div className="flex items-center gap-2">
+          <div data-tour="pd-tabs" className="flex items-center gap-2">
             <TabsList className="inline-flex w-auto">
               {canAccess(role, FEATURES.TAB_OVERVIEW) && <TabsTrigger value="overview">{t('property.overview')}</TabsTrigger>}
               {isBuilding && canAccess(role, FEATURES.TAB_UNITS) && <TabsTrigger value="units">{t('property.units')}</TabsTrigger>}
@@ -290,7 +294,7 @@ export default function PropertyDetail() {
 
             {/* Documents section */}
             {(property.titleDeedNumber || property.insuranceExpiry || property.municipalityPermitExpiry) && (
-              <Card className={`mt-4 ${sectionFromUrl === 'property' ? 'ring-2 ring-primary' : ''}`} id="section-documents">
+              <Card data-tour="pd-overview-docs" className={`mt-4 ${sectionFromUrl === 'property' ? 'ring-2 ring-primary' : ''}`} id="section-documents">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
@@ -416,6 +420,7 @@ export default function PropertyDetail() {
         onSave={handleEditSave}
         saving={editSaving}
       />
+      {tutorial.active && <TutorialBubble {...tutorial} />}
     </AppLayout>
   )
 }
