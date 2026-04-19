@@ -18,8 +18,19 @@ const ANTHROPIC_API_KEY = defineSecret('ANTHROPIC_API_KEY')
 const MAX_TURNS_PER_DAY = 100
 const MAX_USER_MESSAGE_CHARS = 2000
 
+// Allowed browser origins that may invoke callable functions.
+// Gen-2 functions block cross-origin requests by default; we need to
+// whitelist the GitHub Pages URL + local dev ports explicitly.
+const ALLOWED_ORIGINS = [
+  'https://x4lm.github.io',
+  /^https:\/\/x4lm\.github\.io$/,
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+]
+
 export const askAdvisor = onCall(
   {
+    cors: ALLOWED_ORIGINS,
     secrets: [ANTHROPIC_API_KEY],
     region: 'us-central1',
     maxInstances: 10,
@@ -251,7 +262,7 @@ function parseMeta(raw: string): {
 // each law into Firestore. Callable by admin only.
 // ──────────────────────────────────────────────────────────────────────
 export const seedLegalLibrary = onCall(
-  { region: 'us-central1' },
+  { cors: ALLOWED_ORIGINS, region: 'us-central1' },
   async (request) => {
     const uid = request.auth?.uid
     if (!uid) throw new HttpsError('unauthenticated', 'Sign in required.')
