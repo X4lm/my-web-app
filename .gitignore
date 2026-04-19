@@ -11,3 +11,9 @@ firebase-debug.log
 firestore-debug.log
 storage-debug.log
 .DS_Store
+
+# Cloud Functions build output
+functions/lib
+
+# Claude Code worktrees (ephemeral, not source)
+.claude/worktrees/

@@ -1,0 +1,162 @@
+{
+  "_comment": "UAE real estate legal library — starter set. All text is in plain English summary, NOT the official legal wording. Users should always consult the sourceUrl for the authoritative text. Reviewed by a licensed UAE real estate lawyer before going live.",
+  "_reviewStatus": "UNREVIEWED_STARTER_DRAFT",
+  "laws": [
+    {
+      "id": "uae-fl-26-2007",
+      "title": "Federal Law No. 26 of 2007 — Regulating Relationship Between Landlords and Tenants in the Emirate of Dubai",
+      "titleAr": "قانون اتحادي رقم 26 لسنة 2007 — تنظيم العلاقة بين مؤجري ومستأجري العقارات في إمارة دبي",
+      "jurisdiction": "Dubai",
+      "year": 2007,
+      "effectiveDate": "2007-11-26",
+      "supersededBy": null,
+      "sourceUrl": "https://dubailand.gov.ae/en/legal-affairs/real-estate-laws/",
+      "summary": "The foundational Dubai tenancy law. Covers the landlord-tenant contractual relationship, lease term rules, maintenance obligations, and the dispute process via the Rental Disputes Settlement Centre (RDSC).",
+      "articles": [
+        {
+          "number": "4",
+          "title": "Lease must be in writing",
+          "text": "A lease relationship must be documented in writing between the landlord and the tenant. The lease is not valid unless it is registered with the competent authority (Ejari).",
+          "topics": ["lease", "ejari", "registration", "lease-validity"]
+        },
+        {
+          "number": "16",
+          "title": "Landlord maintenance obligation",
+          "text": "Unless otherwise agreed, the landlord shall be liable for the maintenance of the property and repair of any defect or damage that may affect the intended benefit of the tenant.",
+          "topics": ["maintenance", "landlord-obligation", "repairs"]
+        },
+        {
+          "number": "19",
+          "title": "Tenant alteration obligation",
+          "text": "The tenant may not make any changes to the leased property or carry out any restoration or maintenance works therein unless after obtaining the permission of the landlord and approvals from the competent official authorities.",
+          "topics": ["tenant-obligation", "alterations", "renovations"]
+        },
+        {
+          "number": "20",
+          "title": "Return of the property",
+          "text": "Upon lease expiry, the tenant shall return the property in the condition it was received, taking into consideration fair wear and tear. The tenant is liable for any damages beyond that.",
+          "topics": ["deposit", "return-of-property", "wear-and-tear", "damages"]
+        }
+      ]
+    },
+    {
+      "id": "uae-fl-33-2008",
+      "title": "Federal Law No. 33 of 2008 — Amendments to Law No. 26 of 2007",
+      "titleAr": "قانون اتحادي رقم 33 لسنة 2008 — تعديل القانون رقم 26 لسنة 2007",
+      "jurisdiction": "Dubai",
+      "year": 2008,
+      "effectiveDate": "2008-12-01",
+      "supersededBy": null,
+      "sourceUrl": "https://dubailand.gov.ae/en/legal-affairs/real-estate-laws/",
+      "summary": "Key amendments to the 2007 law. Most cited are the eviction grounds (Article 25) — the strict list of reasons a landlord can evict a tenant before or at the end of lease.",
+      "articles": [
+        {
+          "number": "25(1)",
+          "title": "Grounds for eviction BEFORE end of lease",
+          "text": "A landlord may request eviction of the tenant before the end of the lease in any of the following cases: (a) the tenant fails to pay rent within 30 days of a written notice of demand from the landlord; (b) the tenant sublets the property without the landlord's written approval; (c) the tenant uses the property for illegal purposes or against the intended purpose; (d) the tenant causes damage to the property intentionally or by gross negligence; (e) the tenant uses the property in a way that breaches public order; (f) a competent authority orders evacuation of the property for reconstruction; (g) the property is in a condition that threatens public safety.",
+          "topics": ["eviction", "non-payment", "lease-termination", "subletting", "damage", "illegal-use"]
+        },
+        {
+          "number": "25(2)",
+          "title": "Grounds for eviction at END of lease (12-month notice)",
+          "text": "A landlord may request eviction at the end of the lease only in the following cases, and must give the tenant at least 12 months' written notice served through a notary public or registered mail: (a) the landlord or a first-degree relative wants to occupy the property personally; (b) the owner wants to sell the property; (c) the property requires comprehensive maintenance or renovation that cannot be done while occupied; (d) the property is to be demolished and rebuilt.",
+          "topics": ["eviction", "12-month-notice", "owner-occupancy", "sale", "renovation", "demolition"]
+        }
+      ]
+    },
+    {
+      "id": "dubai-decree-43-2013",
+      "title": "Dubai Decree No. 43 of 2013 — Determining the Rent Increase Percentage for Real Estate Properties in Dubai",
+      "titleAr": "مرسوم رقم 43 لسنة 2013 — تحديد نسبة زيادة الإيجار للعقارات في إمارة دبي",
+      "jurisdiction": "Dubai",
+      "year": 2013,
+      "effectiveDate": "2013-12-22",
+      "supersededBy": null,
+      "sourceUrl": "https://dubailand.gov.ae/en/legal-affairs/real-estate-laws/",
+      "summary": "The RERA rent increase cap. Maximum allowable annual rent increase is tied to how far below the RERA Rental Index the current rent sits. Calculated via the RERA Rent Calculator.",
+      "articles": [
+        {
+          "number": "1",
+          "title": "Rent increase tiered cap",
+          "text": "No rent increase is allowed if the current rent is within 10% of the average market rent according to the RERA rental index. If the current rent is 11–20% below the average, the maximum increase is 5%. If 21–30% below, maximum 10%. If 31–40% below, maximum 15%. If more than 40% below, maximum 20%.",
+          "topics": ["rent-increase", "rera-cap", "rental-index", "rent-calculator"]
+        },
+        {
+          "number": "2",
+          "title": "90-day notice requirement",
+          "text": "Any rent increase requires the landlord to give the tenant at least 90 days' written notice before the renewal date. Without such notice, the rent renews at the same amount.",
+          "topics": ["rent-increase", "notice-period", "90-days"]
+        }
+      ]
+    },
+    {
+      "id": "ad-law-20-2006",
+      "title": "Abu Dhabi Law No. 20 of 2006 — Regulating Rent Relationship Between Landlords and Tenants",
+      "titleAr": "قانون رقم 20 لسنة 2006 — تنظيم العلاقة الإيجارية بين المؤجرين والمستأجرين في أبوظبي",
+      "jurisdiction": "Abu Dhabi",
+      "year": 2006,
+      "effectiveDate": "2006-10-03",
+      "supersededBy": null,
+      "sourceUrl": "https://www.adjd.gov.ae/en/pages/laws.aspx",
+      "summary": "The foundational Abu Dhabi tenancy law. Does NOT apply in Dubai. Note: Abu Dhabi removed its rent cap in 2013, then reinstated a 5% cap via Law No. 4 of 2011 amendments; rules differ meaningfully from Dubai.",
+      "articles": [
+        {
+          "number": "16",
+          "title": "Rent increase cap (Abu Dhabi)",
+          "text": "Annual rent increase in Abu Dhabi is capped at 5% of the current rent. The landlord must give the tenant two months' written notice before renewal of any proposed rent increase.",
+          "topics": ["rent-increase", "abu-dhabi-cap", "notice-period"]
+        },
+        {
+          "number": "21",
+          "title": "Grounds for eviction (Abu Dhabi)",
+          "text": "A landlord may terminate the lease and seek eviction in cases including: non-payment of rent after formal notice, use of the property for purposes contrary to the lease or law, subletting without consent, and material damage to the property.",
+          "topics": ["eviction", "abu-dhabi", "non-payment", "subletting"]
+        }
+      ]
+    },
+    {
+      "id": "uae-fl-8-1980-labour",
+      "title": "Federal Law No. 8 of 1980 — UAE Labour Law (Relevant Sections for Real Estate Housing Allowance)",
+      "titleAr": "قانون اتحادي رقم 8 لسنة 1980 — قانون العمل",
+      "jurisdiction": "UAE",
+      "year": 1980,
+      "effectiveDate": "1980-04-20",
+      "supersededBy": "uae-fl-33-2021-labour",
+      "sourceUrl": "https://mohre.gov.ae/en/laws-and-regulations.aspx",
+      "summary": "Historical labour law. Superseded by Federal Decree-Law No. 33 of 2021. Referenced here because housing allowances in lease guarantees sometimes cite the older framework. Users should check the 2021 law for current rules.",
+      "articles": [
+        {
+          "number": "Reference-only",
+          "title": "Superseded — see 2021 law",
+          "text": "This law has been superseded by Federal Decree-Law No. 33 of 2021 on the Regulation of Labour Relations. Housing allowance provisions, employer-provided accommodation rules, and tenant-as-employee arrangements should be checked against the 2021 framework.",
+          "topics": ["housing-allowance", "superseded", "labour"]
+        }
+      ]
+    },
+    {
+      "id": "rera-circular-security-deposit",
+      "title": "RERA Guidance — Security Deposits for Residential Leases (Dubai)",
+      "titleAr": "توجيهات مؤسسة التنظيم العقاري — تأمين الإيجار السكني (دبي)",
+      "jurisdiction": "Dubai",
+      "year": 2020,
+      "effectiveDate": "2020-01-01",
+      "supersededBy": null,
+      "sourceUrl": "https://www.dubailand.gov.ae/en/real-estate-regulatory-agency/",
+      "summary": "RERA practice guidance on security deposits. The market norm is 5% of annual rent (furnished units sometimes 10%). Deposit must be returned within a reasonable time (typically 30 days) after the tenant moves out, minus documented damages beyond fair wear and tear.",
+      "articles": [
+        {
+          "number": "G-1",
+          "title": "Standard security deposit amount",
+          "text": "The market standard security deposit for unfurnished residential units in Dubai is 5% of the annual rent. For furnished units, 10% is common. The exact amount must be specified in the lease (Ejari registration).",
+          "topics": ["security-deposit", "deposit-amount", "furnished", "unfurnished"]
+        },
+        {
+          "number": "G-2",
+          "title": "Deposit return process",
+          "text": "Upon the tenant vacating the property in acceptable condition, the landlord must return the security deposit within a reasonable period (normally 30 days). The landlord may deduct documented repair costs for damage beyond fair wear and tear, but must provide itemized receipts to the tenant.",
+          "topics": ["security-deposit", "return", "deductions", "wear-and-tear", "receipts"]
+        }
+      ]
+    }
+  ]
+}

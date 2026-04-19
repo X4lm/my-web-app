@@ -3,6 +3,7 @@ import Header from './Header'
 import InvitationChecker from './InvitationChecker'
 import AnalyticsTracker from './AnalyticsTracker'
 import KeyboardShortcutsDialog from './KeyboardShortcutsDialog'
+import AdvisorChat from './AdvisorChat'
 
 export default function AppLayout({ children }) {
   return (
@@ -17,6 +18,7 @@ export default function AppLayout({ children }) {
       <InvitationChecker />
       <AnalyticsTracker />
       <KeyboardShortcutsDialog />
+      <AdvisorChat />
     </div>
   )
 }

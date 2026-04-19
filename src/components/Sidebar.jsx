@@ -49,6 +49,7 @@ const ADMIN_NAV_ITEMS = [
   { id: 'admin_users',        to: '/admin/users',        key: 'nav.adminUsers',        icon: Users },
   { id: 'admin_analytics',    to: '/admin/analytics',    key: 'nav.adminAnalytics',    icon: BarChart3 },
   { id: 'admin_support_chat', to: '/admin/support-chat', key: 'nav.adminSupportChat',  icon: MessageCircle },
+  { id: 'admin_advisor_logs', to: '/admin/advisor-logs', key: 'nav.adminAdvisorLogs',  icon: ScrollText },
   { id: 'admin_settings',     to: '/admin/settings',     key: 'nav.adminSettings',     icon: Cog },
 ]
 

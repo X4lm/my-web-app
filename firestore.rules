@@ -186,6 +186,33 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ─── Legal library (curated real-estate laws, read-only to users) ──
+    match /legalLibrary/{lawId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ─── Advisor chats (user ↔ agent) ────────────────────────────────
+    // User-visible conversations. Only the user reads theirs; admin can read all.
+    // Writes happen server-side via the askAdvisor Cloud Function (Admin SDK).
+    match /users/{userId}/advisorChats/{chatId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if false;
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+        allow write: if false;
+      }
+    }
+
+    // ─── Advisor audit log (admin-only classification mirror) ────────
+    // One doc per chat/turn with intent+quality tags, for library growth
+    // and QA. Cloud Function writes; only admins read.
+    match /advisorAuditLog/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // ─── Deny everything else ────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
